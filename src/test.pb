@@ -1,4 +1,4 @@
-﻿XIncludeFile "pnb2.pbi"
+﻿XIncludeFile "pnb.pbi"
 DisableExplicit
 
 OpenConsole()
@@ -81,7 +81,6 @@ EvalString("Debug (Testmacro Reversed is Order)")
 
 End
 ; IDE Options = PureBasic 5.46 LTS (Windows - x86)
-; CursorPosition = 16
-; FirstLine = 4
+; CursorPosition = 2
 ; EnableUnicode
 ; EnableXP
