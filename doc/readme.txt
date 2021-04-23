@@ -55,24 +55,34 @@ A B C D E
 
 2.2 - Types
 PNB has the following types:
--Int (32/64 bit signed integer)
+-UByte (8 bit unsigned integer)
+-Character (8/16 bit unsigned integer, depending on compiler Unicode switch)
+-UWord (16 bit unsigned integer)
+-Byte (8 bit signed integer)
+-Word (16 bit signed integer)
+-Integer (32/64 bit signed integer, depending on compiler bitness)
+-Long (32 bit signed integer)
+-Epic (64 bit signed integer, used when integer input is 11 characters or longer, or 0x hex input is 11 characters or longer, or 0b binary input is 35 characters or longer)
+-Pointer (32/64 bit signed integer, depending on compiler bitness)
 -Float (32 bit single precision floating point number)
--String (8/16 bit character strings)
+-Double (64 bit single precision floating point number, used when float input is 12 characters or longer)
+-String (8/16 bit character strings, depending on compiler Unicode switch)
 
 Internal types that are used for program flow:
 -List (Only contains subelements)
 -Name (Subtype of String)
+-Command (Subtype of Name, added to each first element of a list that does not conform to other types.
 
 The lexer searches for the following elements:
--List       = Everything in (Parentheses) will create a List type element. This does not apply to parentheses inside Strings.
--Int        = Everything starting with numbers, +, and -, without any decimal . in them.
--Float      = Everything starting with numbers, +, -, and decimal . . The decimal is only allowed to exist once.
--String     = Everything encased in 'quotes', "double quotes", and [square brackets].
--Command    = Everything that does not fit other criteria, but is the first element. These elements also get the Name type.
--Name       = Everything that does not fit any other criteria.
+-List           = Everything in (Parentheses) will create a List type element. This does not apply to parentheses inside Strings.
+-Integer/Epic   = Everything starting with numbers, +, and -, without any decimal . in them. Hex input via 0x and binary input via 0b are supported.
+-Float/Double   = Everything starting with numbers, +, -, and decimal . . The decimal is only allowed to exist once.
+-String         = Everything encased in 'quotes', "double quotes", and [square brackets].
+-Command        = Everything that does not fit other criteria, but is the first element. These elements also get the Name type.
+-Name           = Everything that does not fit any other criteria.
 
-You can convert Int, Float, String, and Name liberally with built-in commands.
-Command and List behave differently, see their respective entries in Command Reference.
+You can convert normal types liberally with built-in commands.
+Command and List behave differently, see their respective entries under Command Reference.
 
 
 2.3 - Conditons
