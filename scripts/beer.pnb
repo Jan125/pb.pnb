@@ -1,0 +1,100 @@
+( ;Set variable for For.;
+    Set Bottles 4
+)
+
+(
+    Function (GetBottleString) Do (
+        (
+            Set BottlesString (
+                + (
+                    If (
+                        >= (
+                            (
+                                Get Bottles
+                            )
+                            1
+                        )
+                    ) Do (
+                            Get Bottles
+                    ) Else Do (
+                        [No]
+                    )
+                )
+                (
+                    If (
+                        Or (
+                            (
+                                >= (
+                                    Get Bottles
+                                )
+                                2
+                            )
+                            (
+                                = (
+                                    Get Bottles
+                                )
+                                0
+                            )
+                        )
+                    ) Do (
+                        [ bottles]
+                    ) Else Do (
+                        [ bottle]
+                    )
+                )
+            )
+        )
+    )
+)
+(
+    (
+        GetBottleString
+    )
+    (
+        For ( ;For every bottle;
+            Get Bottles
+        ) Do (
+            (
+                Debug (
+                    + (
+                        Get BottlesString
+                    )
+                    [ of beer on the wall!]
+                )
+            )
+            (
+                Debug (
+                    + (
+                        Get BottlesString
+                    )
+                    [ of beer!]
+                )
+            )
+            (
+                Debug [Take one down, pass it around!]
+            )
+            (
+                Set Bottles (
+                    - (
+                        Get Bottles
+                    )
+                    1
+                )
+            )
+            (
+                GetBottleString
+            )
+            (
+                Debug (
+                    + (
+                        Get BottlesString
+                    )
+                    [ of beer on the wall!]
+                )
+            )
+            (
+                Debug []
+            )
+        )
+    )
+)

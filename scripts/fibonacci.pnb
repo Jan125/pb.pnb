@@ -1,0 +1,29 @@
+(
+    Function (Fibonacci) Do (
+        If (
+            < N 2
+        ) Do (
+            N
+        ) Else Do (
+            +
+                (
+                    Fibonacci (
+                        - N 1
+                    )
+                )
+                (
+                    Fibonacci (
+                        - N 2
+                    )
+                )
+        )
+    ) With (N)
+)
+
+
+(
+    For (12) Do (
+        (Set ForVar (+ (Get ForVar) 1))
+        (Debug (Fibonacci (Get ForVar)))
+    )
+)
