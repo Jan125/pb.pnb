@@ -5343,7 +5343,7 @@ Procedure.i nListEval(List nList.nList())
               Case #PNB_TYPE_UBYTE
                 RASC = nList()\a
                 nList()\q = 0
-                nList()\a = RCHR
+                nList()\a = RASC
                 RASC = 0
             EndSelect
             nList()\Flags = RTYP
