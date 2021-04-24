@@ -2,21 +2,22 @@
 
 <project xmlns="http://www.purebasic.com/namespace" version="1.0" creator="PureBasic 5.46 LTS (Windows - x86)">
   <section name="config">
-    <options closefiles="1" openmode="0" name="PNB"/>
+    <options closefiles="1" openmode="0" name="Prefix Notation Basic"/>
+    <comment>A LISP/BASIC hybrid language.</comment>
   </section>
   <section name="data">
     <explorer view="C:\ProgramData\PureBasic\Examples\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2021-04-24 13:12" user="Dino" host="HUSKLET"/>
+    <lastopen date="2021-04-25 00:46" user="Dino" host="HUSKLET"/>
   </section>
   <section name="files">
     <file name="pnb.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="49d786a4a57c75ea6a356c9ac24b6642"/>
+      <fingerprint md5="7b85e560d95232d451d12fbd8d91fd77"/>
     </file>
     <file name="test.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="222de4d22520c40e634c2a3d80157e21"/>
+      <fingerprint md5="a9f8711ff8f813fa5490d4625d724372"/>
     </file>
   </section>
   <section name="targets">
@@ -28,8 +29,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <compilecount enable="1" value="116"/>
-      <buildcount enable="1" value="1019"/>
+      <buildcount enable="1" value="1022"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -54,8 +54,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <compilecount enable="1" value="116"/>
-      <buildcount enable="1" value="1019"/>
+      <buildcount enable="1" value="1022"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -76,11 +75,9 @@
       <inputfile value="test.pb"/>
       <outputfile value=""/>
       <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
-      <executable value="..\pnb.dll"/>
-      <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
-      <compilecount enable="1" value="181"/>
-      <buildcount enable="1" value="1000"/>
+      <format exe="console" cpu="0"/>
+      <compilecount enable="1" value="187"/>
     </target>
   </section>
 </project>

@@ -94,4 +94,32 @@ Debug "#Macro/As function parameter test: Should read 'Order is Reversed'."
 EvalString("Function (Testmacro) Do (+ ff [ ] ee [ ] dd) With (dd ee ff)")
 EvalString("Debug (Testmacro Reversed is Order)")
 
+Debug "#Beer song time!"
+CompilerSelect #PB_Compiler_Unicode
+  CompilerCase 1
+    EvalString(PeekS(?Beer, -1, #PB_UTF8))
+  CompilerDefault
+    EvalString(PeekS(?Beer, -1, #PB_Ascii))
+CompilerEndSelect
+
+Debug "#Fibonacci calculation! This may take a while."
+CompilerSelect #PB_Compiler_Unicode
+  CompilerCase 1
+    EvalString(PeekS(?Fibonacci, -1, #PB_UTF8))
+  CompilerDefault
+    EvalString(PeekS(?Fibonacci, -1, #PB_Ascii))
+CompilerEndSelect
+
 End
+
+DataSection
+  Beer:
+  IncludeBinary "..\scripts\beer.pnb"
+  Data.c 0 ;Null terminator.
+EndDataSection
+
+DataSection
+  Fibonacci:
+  IncludeBinary "..\scripts\fibonacci.pnb"
+  Data.c 0 ;Null terminator.
+EndDataSection
