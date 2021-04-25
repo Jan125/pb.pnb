@@ -1,6 +1,5 @@
 ﻿EnableExplicit
 
-
 EnumerationBinary PNB_TYPE 0
   #PNB_TYPE_NONE
   #PNB_TYPE_LIST = 1
@@ -102,7 +101,16 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
           Case #PNB_TYPE_STRING
             nList()\Flags = #PNB_TYPE_STRING
           Case #PNB_TYPE_POINTER
-            nList()\p = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\p = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\p = Val("$"+nList()\s)
+            Else
+              nList()\p = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_POINTER
           Case #PNB_TYPE_DOUBLE
@@ -114,35 +122,107 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_FLOAT
           Case #PNB_TYPE_EPIC
-            nList()\q = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\q = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\q = Val("$"+nList()\s)
+            Else
+              nList()\q = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_EPIC
           Case #PNB_TYPE_INTEGER
-            nList()\i = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\i = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\i = Val("$"+nList()\s)
+            Else
+              nList()\i = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_INTEGER
           Case #PNB_TYPE_LONG
-            nList()\l = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\l = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\l = Val("$"+nList()\s)
+            Else
+              nList()\l = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_LONG
           Case #PNB_TYPE_WORD
-            nList()\w = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\w = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\w = Val("$"+nList()\s)
+            Else
+              nList()\w = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_WORD
           Case #PNB_TYPE_BYTE
-            nList()\b = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\b = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\b = Val("$"+nList()\s)
+            Else
+              nList()\b = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_BYTE
           Case #PNB_TYPE_UWORD
-            nList()\u = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\u = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\u = Val("$"+nList()\s)
+            Else
+              nList()\u = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_UWORD
           Case #PNB_TYPE_CHARACTER
-            nList()\c = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\c = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\c = Val("$"+nList()\s)
+            Else
+              nList()\c = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_CHARACTER
           Case #PNB_TYPE_UBYTE
-            nList()\a = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\a = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\a = Val("$"+nList()\s)
+            Else
+              nList()\a = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_UBYTE
         EndSelect
@@ -151,7 +231,16 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
           Case #PNB_TYPE_NAME
             nList()\Flags = #PNB_TYPE_NAME
           Case #PNB_TYPE_POINTER
-            nList()\p = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\p = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\p = Val("$"+nList()\s)
+            Else
+              nList()\p = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_POINTER
           Case #PNB_TYPE_DOUBLE
@@ -163,35 +252,107 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_FLOAT
           Case #PNB_TYPE_EPIC
-            nList()\q = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\q = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\q = Val("$"+nList()\s)
+            Else
+              nList()\q = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_EPIC
           Case #PNB_TYPE_INTEGER
-            nList()\i = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\i = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\i = Val("$"+nList()\s)
+            Else
+              nList()\i = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_INTEGER
           Case #PNB_TYPE_LONG
-            nList()\l = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\l = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\l = Val("$"+nList()\s)
+            Else
+              nList()\l = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_LONG
           Case #PNB_TYPE_WORD
-            nList()\w = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\w = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\w = Val("$"+nList()\s)
+            Else
+              nList()\w = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_WORD
           Case #PNB_TYPE_BYTE
-            nList()\b = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\b = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\b = Val("$"+nList()\s)
+            Else
+              nList()\b = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_BYTE
           Case #PNB_TYPE_UWORD
-            nList()\u = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\u = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\u = Val("$"+nList()\s)
+            Else
+              nList()\u = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_UWORD
           Case #PNB_TYPE_CHARACTER
-            nList()\c = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\c = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\c = Val("$"+nList()\s)
+            Else
+              nList()\c = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_CHARACTER
           Case #PNB_TYPE_UBYTE
-            nList()\a = Val(nList()\s)
+            While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+              nList()\s = Mid(nList()\s, 2)
+            Wend
+            If Left(nList()\s, 2) = "0x"
+              nList()\a = Val("$"+nList()\s)
+            ElseIf Left(nList()\s, 2) = "0b"
+              nList()\a = Val("$"+nList()\s)
+            Else
+              nList()\a = Val(nList()\s)
+            EndIf
             nList()\s = ""
             nList()\Flags = #PNB_TYPE_UBYTE
         EndSelect
@@ -239,11 +400,11 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
       Case #PNB_TYPE_DOUBLE
         Select DesiredType
           Case #PNB_TYPE_NAME
-            nList()\s = StrD(nList()\d, 20)
+            nList()\s = StrD(nList()\d, 19)
             nList()\d = 0
             nlist()\Flags = #PNB_TYPE_NAME
           Case #PNB_TYPE_STRING
-            nList()\s = StrD(nList()\d, 20)
+            nList()\s = StrD(nList()\d, 19)
             nList()\d = 0
             nlist()\Flags = #PNB_TYPE_STRING
           Case #PNB_TYPE_POINTER
@@ -280,11 +441,11 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
       Case #PNB_TYPE_FLOAT
         Select DesiredType
           Case #PNB_TYPE_NAME
-            nList()\s = StrF(nList()\f, 20)
+            nList()\s = StrF(nList()\f, 14)
             nList()\f = 0
             nlist()\Flags = #PNB_TYPE_NAME
           Case #PNB_TYPE_STRING
-            nList()\s = StrF(nList()\f, 20)
+            nList()\s = StrF(nList()\f, 14)
             nList()\f = 0
             nlist()\Flags = #PNB_TYPE_STRING
           Case #PNB_TYPE_POINTER
@@ -941,7 +1102,7 @@ Procedure.i nListPNBTonList(List nList.nList(), String$)
                 EndIf
             EndSelect
             If FindString(nList()\s, ".")
-              If Len(nList()\s) < 12
+              If Len(StringField(nList()\s, 2, ".")) < 15
                 nList()\f = ValF(nList()\s)
                 nList()\Flags | #PNB_TYPE_FLOAT
                 nList()\s = ""
@@ -1018,9 +1179,9 @@ Procedure.s nListPNBToString(List nList.nList(), a.i = 0, PrettyPrint.i = 1)
             Case #PNB_TYPE_CHARACTER
               String + Space(a*4)+Str(nList()\c)+#CRLF$
             Case #PNB_TYPE_DOUBLE
-              String + Space(a*4)+StrD(nList()\d, 20)+#CRLF$
+              String + Space(a*4)+StrD(nList()\d, 19)+#CRLF$
             Case #PNB_TYPE_FLOAT
-              String + Space(a*4)+StrF(nList()\f, 20)+#CRLF$
+              String + Space(a*4)+StrF(nList()\f, 14)+#CRLF$
             Case #PNB_TYPE_INTEGER
               String + Space(a*4)+Str(nList()\i)+#CRLF$
             Case #PNB_TYPE_LONG
@@ -1052,9 +1213,9 @@ Procedure.s nListPNBToString(List nList.nList(), a.i = 0, PrettyPrint.i = 1)
             Case #PNB_TYPE_CHARACTER
               String + Str(nList()\c)+" "
             Case #PNB_TYPE_DOUBLE
-              String + StrD(nList()\d, 20)+" "
+              String + StrD(nList()\d, 19)+" "
             Case #PNB_TYPE_FLOAT
-              String + StrF(nList()\f, 20)+" "
+              String + StrF(nList()\f, 14)+" "
             Case #PNB_TYPE_INTEGER
               String + Str(nList()\i)+" "
             Case #PNB_TYPE_LONG
@@ -1931,13 +2092,13 @@ Procedure.i nListEval(List nList.nList())
                   Debug nList()\c
                 CompilerEndIf
               Case #PNB_TYPE_DOUBLE
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrD(nList()\d)+#CRLF$, Len(StrD(nList()\d)+#CRLF$), @RINT, 0)
+                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrD(nList()\d, 19)+#CRLF$, Len(StrD(nList()\d, 19)+#CRLF$), @RINT, 0)
                 RINT = 0
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\d
                 CompilerEndIf
               Case #PNB_TYPE_FLOAT
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrF(nList()\f)+#CRLF$, Len(StrF(nList()\f)+#CRLF$), @RINT, 0)
+                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrF(nList()\f, 14)+#CRLF$, Len(StrF(nList()\f, 14)+#CRLF$), @RINT, 0)
                 RINT = 0
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\f
