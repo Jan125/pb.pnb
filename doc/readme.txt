@@ -16,6 +16,7 @@ Index:
         3.1.4 - Variables
         3.1.5 - Arithmetic
         3.1.6 - Logic
+        3.1.7 - Memory
     
 1.) Preamble
 PNB is supposed to be an easy to learn mix of a LISP like structure and BASIC commands.
@@ -93,7 +94,7 @@ Each work slightly different.
 As an example:
 (If (A) Do (B) ElseIf (C) Do (D) Else Do (E))
 In this case, If evaluates the Expression (A).
-If (A) is True If, (B) will be executed.
+If (A) is True, (B) will be executed.
 If (A) were False, then (B) would be skipped, and (C) will be evaluated.
 If (C) is True, (D) will be executed.
 If (C) is False, then (E) will be executed.
@@ -128,15 +129,23 @@ It then repeats (B) return-value-of-(A)-times.
 Functions can be used to compact code, make it more versatile, and enable recursion.
 
 As an example:
-Function (A) Do (B C D) With (C D)
+Function (A) Do (B C D) With (C D) As (E F)
 will add a function entry called (A) that will run (B C D), with C and D replaced by parameters.
+If parameters are underloaded, they will be replaced by the default parameters.
 (A 1 2)
 will be replaced to
 (B 1 2)
+while the call
+(A 3)
+will be replaced to
+(A 3 F)
+because of default parameters being defined.
 
-Additonal parameters are discarded.
-If there are less parameters than intended, blanks are deleted.
-By default, B can not be a parameter.
+If there are either more or less parameters than intended, the function will not register.
+If the amount of default parameters is not equal to the amount of parameters, the function will not register.
+If default parameters are defined, less parameters in calls can be be used.
+
+B can not be a parameter.
 To enable code injection, use this syntax:
 Function (A) Do (Command B C D) With (B C D)
 
@@ -214,13 +223,15 @@ Type
     
 <Type>
     Takes:      Parameter0, Parameter1, ..., ParameterN
-    Returns:    Integer0, Integer1, ..., IntegerN
+    Returns:    <Type>0, <Type>1, ..., <Type>N
     Everything is converted to <Type>.
     Accepted names are Name, String, Pointer, Double, Float, Epic, Integer, Long, Word, Byte, UWord, Character, UByte.
+    Note that if <Type> is Pointer, everything is allocated to a memory address. This memory address must be freed with Free to stop memory leaks.
+    If a Parameter is a Pointer, the program will read the memory from the pointer's address. Memory is not freed after usage.
     
 Force<Type>
     Takes:      Parameter0, Parameter1, ..., ParameterN
-    Returns:    Integer0, Integer1, ..., IntegerN
+    Returns:    <Type>0, <Type>1, ..., <Type>N
     Everything is cast to <Type>.
     No conversion is done. You can treat Float as Long with this.
     Accepted names are Name, String, Pointer, Double, Float, Epic, Integer, Long, Word, Byte, UWord, Character, UByte.
@@ -497,4 +508,36 @@ bNot, b~
     Returns:    Integer0, Integer1, ..., IntegerN
     Performs a bitwise NOT with all entries.
     This works with integers only.
+    
+    
+3.1.7 - Memory
+Comparisons and stuff.
+    
+Allocate
+    Takes:      Value0, Value1, ..., ValueN
+    Returns:    Pointer1, Pointer1, ..., PointerN
+    Allocates memory areas in the size of Value.
+    These memory areas have to be freed to prevent memory leaks.
+    
+Free
+    Takes:      Pointer0, Pointer1, ..., PointerN OR NameN=All
+    Returns:    None
+    Frees specific memory areas, OR frees all memory areas defined by the program.
+    Externally passed memory is not freed with All.
+    Freeing externally passed memory may result in problems.
+    
+Poke
+    Takes:      Pointer, Parameter0, Parameter1, ..., ParameterN
+    Returns:    None
+    Writes parameters of their respective types into the address at pointer, incrementing the address with each entry by the size of the type.
+    Strings are pushed as 16bit per character in unicode mode, 8bit otherwise.
+    Strings are null-terminated.
+    
+Peek
+    Takes:      Pointer, Name0=<Type>, Name1=<Type>, ..., NameN=<Type>
+    Returns:    <Type>0, <Type>1, ..., <TypeN>
+    Reads parameters of their respective types, incrementing the address with each entry by the size of the type.
+    Strings are read as 16bit per character in unicode mode, 8bit otherwise.
+    Strings must be null-terminated.
+    
     
