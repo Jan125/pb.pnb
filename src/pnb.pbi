@@ -78,6 +78,7 @@ Procedure.i nListGetHighestType(Flags.i)
   EndIf
   ProcedureReturn #PNB_TYPE_NONE
 EndProcedure
+
 Procedure.i nListTypeFromList(List nList.nList())
   Protected Flags.i
   If ListSize(nList())
@@ -89,7 +90,9 @@ Procedure.i nListTypeFromList(List nList.nList())
   EndIf
   ProcedureReturn Flags
 EndProcedure
-Procedure nListConvert(List nList.nList(), DesiredType.i)
+
+Procedure nListConvert(List nList.nList(), DesiredType.i, ConvertPointers.i = 0)
+  Protected *PTR
   PushListPosition(nList())
   ForEach nList()
     Select nListGetHighestType(nList()\Flags)
@@ -230,7 +233,7 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
         Select DesiredType
           Case #PNB_TYPE_NAME
             nList()\Flags = #PNB_TYPE_NAME
-          Case #PNB_TYPE_POINTER
+            Case #PNB_TYPE_POINTER
             While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
               nList()\s = Mid(nList()\s, 2)
             Wend
@@ -357,6 +360,82 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
             nList()\Flags = #PNB_TYPE_UBYTE
         EndSelect
       Case #PNB_TYPE_POINTER
+        If ConvertPointers
+        Select DesiredType
+          Case #PNB_TYPE_NAME
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\s = PeekS(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_NAME
+          Case #PNB_TYPE_STRING
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\s = PeekS(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_STRING
+          Case #PNB_TYPE_DOUBLE
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\d = PeekD(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_DOUBLE
+          Case #PNB_TYPE_FLOAT
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\f = PeekF(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_FLOAT
+          Case #PNB_TYPE_EPIC
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\q = PeekQ(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_EPIC
+          Case #PNB_TYPE_INTEGER
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\i = PeekI(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_INTEGER
+          Case #PNB_TYPE_LONG
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\l = PeekL(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_LONG
+          Case #PNB_TYPE_WORD
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\w = PeekW(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_WORD
+          Case #PNB_TYPE_BYTE
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\b = PeekB(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_BYTE
+          Case #PNB_TYPE_UWORD
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\u = PeekU(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_UWORD
+          Case #PNB_TYPE_CHARACTER
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\c = PeekC(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_CHARACTER
+          Case #PNB_TYPE_UBYTE
+            *PTR = nList()\p
+            nList()\p = 0
+            nList()\a = PeekA(*PTR)
+            *PTR = 0
+            nlist()\Flags = #PNB_TYPE_UBYTE
+        EndSelect
+      Else
         Select DesiredType
           Case #PNB_TYPE_NAME
             nList()\s = Str(nList()\p)
@@ -397,6 +476,7 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
             nList()\a = nList()\p
             nlist()\Flags = #PNB_TYPE_UBYTE
         EndSelect
+        EndIf
       Case #PNB_TYPE_DOUBLE
         Select DesiredType
           Case #PNB_TYPE_NAME
@@ -807,7 +887,6 @@ Procedure nListConvert(List nList.nList(), DesiredType.i)
             nList()\c = nList()\a
             nlist()\Flags = #PNB_TYPE_CHARACTER
         EndSelect
-        
     EndSelect
   Next
   PopListPosition(nList())
@@ -1269,7 +1348,9 @@ CompilerEndIf
 Procedure.i nListEval(List nList.nList())
   Static NewMap Lexicon.nList()
   Static NewMap Param.nList()
+  Static NewMap ParamDefault.nList()
   Static NewMap Memory.nList()
+  Static NewMap *PLIST()
   Protected CAR.s
   Protected a.i
   Protected b.i
@@ -1300,82 +1381,188 @@ Procedure.i nListEval(List nList.nList())
   
   ;-Preprocess
   If FirstElement(nList())
-    Select nList()\Flags & #PNB_TYPE_LIST
-      Case 0
-        If nList()\Flags & #PNB_TYPE_COMMAND
-          Select nList()\s
-            Case "If" ;--If
-              RCNT = 0
-              ForEach nList()
-                If nList()\Flags & #PNB_TYPE_NAME
-                  Select nList()\s
-                    Case "If", "ElseIf"
-                      Select nList()\s ;Check for first run to ensure language specification
-                        Case "If"
-                          If RCNT <> 0
+    If nList()\Flags & #PNB_TYPE_LIST = 0
+      If nList()\Flags & #PNB_TYPE_COMMAND
+        Select nList()\s
+          Case "If" ;--If
+            RCNT = 0
+            ForEach nList()
+              If nList()\Flags & #PNB_TYPE_NAME
+                Select nList()\s
+                  Case "If", "ElseIf"
+                    Select nList()\s ;Check for first run to ensure language specification
+                      Case "If"
+                        If RCNT <> 0
+                          ClearList(nList())
+                          Break
+                        EndIf
+                        RCNT = 1
+                      Case "ElseIf"
+                        If RCNT <> 1
+                          ClearList(nList())
+                          Break
+                        EndIf
+                    EndSelect
+                    DeleteElement(nList()) ;Delete the If/ElseIf
+                    If NextElement(nList())
+                      ;We compare here.
+                      If nList()\Flags & #PNB_TYPE_LIST
+                        nListEval(nList()\nList())
+                        MergeLists(nList()\nList(), cList1(), #PB_List_After)
+                      Else
+                        ClearList(nList())
+                        Break
+                      EndIf
+                      DeleteElement(nList())
+                      If NextElement(nList()) ;This is Do
+                        If nList()\Flags & #PNB_TYPE_NAME
+                          If nList()\s = "Do"
+                            DeleteElement(nList())
+                            If NextElement(nList()) ;This is the expression.
+                              RBOL = Bool(ListSize(cList1()))
+                              ForEach cList1()
+                                Select nListGetHighestType(cList1()\Flags)
+                                  Case #PNB_TYPE_UBYTE
+                                    RBOL = Bool(RBOL And Bool(cList1()\a))
+                                  Case #PNB_TYPE_BYTE
+                                    RBOL = Bool(RBOL And Bool(cList1()\b))
+                                  Case #PNB_TYPE_CHARACTER
+                                    RBOL = Bool(RBOL And Bool(cList1()\c))
+                                  Case #PNB_TYPE_DOUBLE
+                                    RBOL = Bool(RBOL And Bool(cList1()\d))
+                                  Case #PNB_TYPE_FLOAT
+                                    RBOL = Bool(RBOL And Bool(cList1()\f))
+                                  Case #PNB_TYPE_INTEGER
+                                    RBOL = Bool(RBOL And Bool(cList1()\i))
+                                  Case #PNB_TYPE_LONG
+                                    RBOL = Bool(RBOL And Bool(cList1()\l))
+                                  Case #PNB_TYPE_NAME
+                                    RBOL = Bool(RBOL And Bool(cList1()\s = "True"))
+                                  Case #PNB_TYPE_EPIC
+                                    RBOL = Bool(RBOL And Bool(cList1()\q))
+                                  Case #PNB_TYPE_STRING
+                                    RBOL = Bool(RBOL And Bool(cList1()\s = "True"))
+                                  Case #PNB_TYPE_UWORD
+                                    RBOL = Bool(RBOL And Bool(cList1()\u))
+                                  Case #PNB_TYPE_WORD
+                                    RBOL = Bool(RBOL And Bool(cList1()\w))
+                                EndSelect
+                              Next
+                              ClearList(cList1())
+                              If RBOL
+                                If nList()\Flags & #PNB_TYPE_LIST
+                                  nListEval(nList()\nList())
+                                  MergeLists(nList()\nList(), nList(), #PB_List_Before)
+                                  DeleteElement(nList())
+                                Else
+                                  ClearList(nList())
+                                  Break
+                                EndIf
+                                While NextElement(nList())
+                                  DeleteElement(nList())
+                                Wend
+                              Else
+                                DeleteElement(nList())
+                              EndIf
+                            Else
+                              ClearList(nList())
+                              Break
+                            EndIf
+                          Else
                             ClearList(nList())
                             Break
                           EndIf
-                          RCNT = 1
-                        Case "ElseIf"
-                          If RCNT <> 1
-                            ClearList(nList())
-                            Break
-                          EndIf
-                      EndSelect
-                      DeleteElement(nList()) ;Delete the If/ElseIf
-                      If NextElement(nList())
-                        ;We compare here.
-                        If nList()\Flags & #PNB_TYPE_LIST
-                          nListEval(nList()\nList())
-                          MergeLists(nList()\nList(), cList1(), #PB_List_After)
                         Else
                           ClearList(nList())
                           Break
                         EndIf
+                      Else
+                        ClearList(nList())
+                        Break
+                      EndIf
+                    Else
+                      ClearList(nList())
+                      Break
+                    EndIf
+                  Case "Else"
+                    DeleteElement(nList())
+                    If NextElement(nList()) ; Do
+                      If nList()\Flags & #PNB_TYPE_NAME
+                        If nList()\s = "Do"
+                          DeleteElement(nList())
+                          If NextElement(nList()) ;Expression
+                            If nList()\Flags & #PNB_TYPE_LIST
+                              nListEval(nList()\nList())
+                              MergeLists(nList()\nList(), nList(), #PB_List_Before)
+                              DeleteElement(nList())
+                            Else
+                              ClearList(nList())
+                              Break
+                            EndIf
+                            While NextElement(nList())
+                              DeleteElement(nList())
+                            Wend
+                          Else
+                            ClearList(nList())
+                            Break
+                          EndIf
+                        Else
+                          ClearList(nList())
+                        EndIf
+                      Else
+                        ClearList(nList())
+                        Break
+                      EndIf
+                    Else
+                      ClearList(nList())
+                      Break
+                    EndIf
+                EndSelect
+              Else
+                ClearList(nList())
+                Break
+              EndIf
+            Next
+            
+            
+          Case "Select" ;--Select
+            DeleteElement(nList()) ;Free the Select
+            If NextElement(nList())
+              If nList()\Flags & #PNB_TYPE_LIST
+                nListEval(nList()\nList())
+                MergeLists(nList()\nList(), cList1(), #PB_List_After)
+              Else
+                ClearList(nList())
+              EndIf
+              DeleteElement(nList())
+              ForEach nList()
+                If nList()\Flags & #PNB_TYPE_NAME
+                  Select nList()\s
+                    Case "Case"
+                      DeleteElement(nList())
+                      If NextElement(nList()) ;Expression
+                        If nList()\Flags & #PNB_TYPE_LIST
+                          nListEval(nList()\nList())
+                          MergeLists(nList()\nList(), cList2(), #PB_List_After)
+                        Else
+                          ClearList(nList())
+                          ClearList(cList2())
+                          Break
+                        EndIf
                         DeleteElement(nList())
-                        If NextElement(nList()) ;This is Do
+                        If NextElement(nList()) ; do
                           If nList()\Flags & #PNB_TYPE_NAME
                             If nList()\s = "Do"
                               DeleteElement(nList())
-                              If NextElement(nList()) ;This is the expression.
-                                RBOL = Bool(ListSize(cList1()))
-                                ForEach cList1()
-                                  Select nListGetHighestType(cList1()\Flags)
-                                    Case #PNB_TYPE_UBYTE
-                                      RBOL = Bool(RBOL And Bool(cList1()\a))
-                                    Case #PNB_TYPE_BYTE
-                                      RBOL = Bool(RBOL And Bool(cList1()\b))
-                                    Case #PNB_TYPE_CHARACTER
-                                      RBOL = Bool(RBOL And Bool(cList1()\c))
-                                    Case #PNB_TYPE_DOUBLE
-                                      RBOL = Bool(RBOL And Bool(cList1()\d))
-                                    Case #PNB_TYPE_FLOAT
-                                      RBOL = Bool(RBOL And Bool(cList1()\f))
-                                    Case #PNB_TYPE_INTEGER
-                                      RBOL = Bool(RBOL And Bool(cList1()\i))
-                                    Case #PNB_TYPE_LONG
-                                      RBOL = Bool(RBOL And Bool(cList1()\l))
-                                    Case #PNB_TYPE_NAME
-                                      RBOL = Bool(RBOL And Bool(cList1()\s = "True"))
-                                    Case #PNB_TYPE_EPIC
-                                      RBOL = Bool(RBOL And Bool(cList1()\q))
-                                    Case #PNB_TYPE_STRING
-                                      RBOL = Bool(RBOL And Bool(cList1()\s = "True"))
-                                    Case #PNB_TYPE_UWORD
-                                      RBOL = Bool(RBOL And Bool(cList1()\u))
-                                    Case #PNB_TYPE_WORD
-                                      RBOL = Bool(RBOL And Bool(cList1()\w))
-                                  EndSelect
-                                Next
-                                ClearList(cList1())
-                                If RBOL
+                              If NextElement(nList())
+                                If nListCompare(cList1(), cList2())
                                   If nList()\Flags & #PNB_TYPE_LIST
                                     nListEval(nList()\nList())
                                     MergeLists(nList()\nList(), nList(), #PB_List_Before)
                                     DeleteElement(nList())
                                   Else
                                     ClearList(nList())
+                                    ClearList(cList2())
                                     Break
                                   EndIf
                                   While NextElement(nList())
@@ -1383,118 +1570,6 @@ Procedure.i nListEval(List nList.nList())
                                   Wend
                                 Else
                                   DeleteElement(nList())
-                                EndIf
-                              Else
-                                ClearList(nList())
-                                Break
-                              EndIf
-                            Else
-                              ClearList(nList())
-                              Break
-                            EndIf
-                          Else
-                            ClearList(nList())
-                            Break
-                          EndIf
-                        Else
-                          ClearList(nList())
-                          Break
-                        EndIf
-                      Else
-                        ClearList(nList())
-                        Break
-                      EndIf
-                    Case "Else"
-                      DeleteElement(nList())
-                      If NextElement(nList()) ; Do
-                        If nList()\Flags & #PNB_TYPE_NAME
-                          If nList()\s = "Do"
-                            DeleteElement(nList())
-                            If NextElement(nList()) ;Expression
-                              If nList()\Flags & #PNB_TYPE_LIST
-                                nListEval(nList()\nList())
-                                MergeLists(nList()\nList(), nList(), #PB_List_Before)
-                                DeleteElement(nList())
-                              Else
-                                ClearList(nList())
-                                Break
-                              EndIf
-                              While NextElement(nList())
-                                DeleteElement(nList())
-                              Wend
-                            Else
-                              ClearList(nList())
-                              Break
-                            EndIf
-                          Else
-                            ClearList(nList())
-                          EndIf
-                        Else
-                          ClearList(nList())
-                          Break
-                        EndIf
-                      Else
-                        ClearList(nList())
-                        Break
-                      EndIf
-                  EndSelect
-                Else
-                  ClearList(nList())
-                  Break
-                EndIf
-              Next
-              
-              
-            Case "Select" ;--Select
-              DeleteElement(nList()) ;Free the Select
-              If NextElement(nList())
-                If nList()\Flags & #PNB_TYPE_LIST
-                  nListEval(nList()\nList())
-                  MergeLists(nList()\nList(), cList1(), #PB_List_After)
-                Else
-                  ClearList(nList())
-                EndIf
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\Flags & #PNB_TYPE_NAME
-                    Select nList()\s
-                      Case "Case"
-                        DeleteElement(nList())
-                        If NextElement(nList()) ;Expression
-                          If nList()\Flags & #PNB_TYPE_LIST
-                            nListEval(nList()\nList())
-                            MergeLists(nList()\nList(), cList2(), #PB_List_After)
-                          Else
-                            ClearList(nList())
-                            ClearList(cList2())
-                            Break
-                          EndIf
-                          DeleteElement(nList())
-                          If NextElement(nList()) ; do
-                            If nList()\Flags & #PNB_TYPE_NAME
-                              If nList()\s = "Do"
-                                DeleteElement(nList())
-                                If NextElement(nList())
-                                  If nListCompare(cList1(), cList2())
-                                    If nList()\Flags & #PNB_TYPE_LIST
-                                      nListEval(nList()\nList())
-                                      MergeLists(nList()\nList(), nList(), #PB_List_Before)
-                                      DeleteElement(nList())
-                                    Else
-                                      ClearList(nList())
-                                      ClearList(cList2())
-                                      Break
-                                    EndIf
-                                    While NextElement(nList())
-                                      DeleteElement(nList())
-                                    Wend
-                                  Else
-                                    DeleteElement(nList())
-                                  EndIf
-                                Else
-                                  ClearList(nList())
-                                  ClearList(cList2())
-                                  Break
                                 EndIf
                               Else
                                 ClearList(nList())
@@ -1516,303 +1591,222 @@ Procedure.i nListEval(List nList.nList())
                           ClearList(cList2())
                           Break
                         EndIf
+                      Else
+                        ClearList(nList())
                         ClearList(cList2())
-                      Case "Default"
-                        DeleteElement(nList())
-                        If NextElement(nList())
-                          If nList()\Flags & #PNB_TYPE_NAME
-                            If nList()\s = "Do"
-                              DeleteElement(nList()) ;do
-                              If NextElement(nList())
-                                If nList()\Flags & #PNB_TYPE_LIST
-                                  nListEval(nList()\nList())
-                                  MergeLists(nList()\nList(), nList(), #PB_List_Before)
-                                  DeleteElement(nList())
-                                Else
-                                  ClearList(nList())
-                                  ClearList(cList2())
-                                  Break
-                                EndIf
-                                While NextElement(nList())
-                                  DeleteElement(nList())
-                                Wend
+                        Break
+                      EndIf
+                      ClearList(cList2())
+                    Case "Default"
+                      DeleteElement(nList())
+                      If NextElement(nList())
+                        If nList()\Flags & #PNB_TYPE_NAME
+                          If nList()\s = "Do"
+                            DeleteElement(nList()) ;do
+                            If NextElement(nList())
+                              If nList()\Flags & #PNB_TYPE_LIST
+                                nListEval(nList()\nList())
+                                MergeLists(nList()\nList(), nList(), #PB_List_Before)
+                                DeleteElement(nList())
                               Else
                                 ClearList(nList())
+                                ClearList(cList2())
                                 Break
                               EndIf
+                              While NextElement(nList())
+                                DeleteElement(nList())
+                              Wend
                             Else
-                              ClearList(nList())  
+                              ClearList(nList())
+                              Break
                             EndIf
                           Else
-                            ClearList(nList())
+                            ClearList(nList())  
                           EndIf
                         Else
                           ClearList(nList())
-                          Break
                         EndIf
-                    EndSelect
-                  Else
-                    ClearList(nList())
-                    Break
-                  EndIf
-                Next
-              Else
-                ClearList(nList())
-              EndIf
-              ClearList(cList1())
-              
-              
-            Case "While" ;--While
-              DeleteElement(nList()) ;Free the While
-              If NextElement(nList());condition
-                If nList()\Flags & #PNB_TYPE_LIST
-                  AddElement(cList1())
-                  cList1() = nList()
-                  DeleteElement(nList())
-                  If NextElement(nList()) ;do
-                    If nList()\Flags & #PNB_TYPE_NAME
-                      If nList()\s = "Do"
-                        DeleteElement(nList())
-                        If NextElement(nList()) ;expression
-                          If nList()\Flags & #PNB_TYPE_LIST
-                            AddElement(cList2())
-                            cList2() = nList()
-                            DeleteElement(nList())
-                            Repeat
-                              AddElement(cList3())
-                              cList3() = cList1()
-                              If cList3()\Flags & #PNB_TYPE_LIST
-                                nListEval(cList3()\nList())
-                                MergeLists(cList3()\nList(), cList3(), #PB_List_After)
-                                DeleteElement(cList3())
-                              EndIf
-                              RBOL = Bool(ListSize(cList3()))
-                              ForEach cList3()
-                                Select nListGetHighestType(cList3()\Flags)
-                                  Case #PNB_TYPE_UBYTE
-                                    RBOL = Bool(RBOL And Bool(cList3()\a))
-                                  Case #PNB_TYPE_BYTE
-                                    RBOL = Bool(RBOL And Bool(cList3()\b))
-                                  Case #PNB_TYPE_CHARACTER
-                                    RBOL = Bool(RBOL And Bool(cList3()\c))
-                                  Case #PNB_TYPE_DOUBLE
-                                    RBOL = Bool(RBOL And Bool(cList3()\d))
-                                  Case #PNB_TYPE_FLOAT
-                                    RBOL = Bool(RBOL And Bool(cList3()\f))
-                                  Case #PNB_TYPE_INTEGER
-                                    RBOL = Bool(RBOL And Bool(cList3()\i))
-                                  Case #PNB_TYPE_LONG
-                                    RBOL = Bool(RBOL And Bool(cList3()\l))
-                                  Case #PNB_TYPE_NAME
-                                    RBOL = Bool(RBOL And Bool(cList3()\s = "True"))
-                                  Case #PNB_TYPE_EPIC
-                                    RBOL = Bool(RBOL And Bool(cList3()\q))
-                                  Case #PNB_TYPE_STRING
-                                    RBOL = Bool(RBOL And Bool(cList3()\s = "True"))
-                                  Case #PNB_TYPE_UWORD
-                                    RBOL = Bool(RBOL And Bool(cList3()\u))
-                                  Case #PNB_TYPE_WORD
-                                    RBOL = Bool(RBOL And Bool(cList3()\w))
-                                EndSelect
-                              Next
-                              ClearList(cList3())
-                              AddElement(cList4())
-                              cList4() = cList2()
-                              If RBOL
-                                If cList4()\Flags & #PNB_TYPE_LIST
-                                  nListEval(cList4()\nList())
-                                  MergeLists(cList4()\nList(), nList(), #PB_List_Before)
-                                EndIf
-                              Else
-                                While NextElement(nList())
-                                  DeleteElement(nList())
-                                Wend
-                                Break
-                              EndIf
-                              ClearList(cList4())
-                            ForEver
-                          Else
-                            ClearList(nList())
-                            ClearList(cList1())
-                          EndIf
-                        EndIf
-                        ClearList(cList1())
-                        ClearList(cList2())
-                        ClearList(cList3())
-                        ClearList(cList4())
                       Else
                         ClearList(nList())
-                        ClearList(cList1())
+                        Break
                       EndIf
-                    Else
-                      ClearList(nList())
-                      ClearList(cList1())
-                    EndIf
-                  Else
-                    ClearList(nList())
-                    ClearList(cList1())
-                  EndIf
+                  EndSelect
                 Else
                   ClearList(nList())
+                  Break
                 EndIf
-              Else
-                ClearList(nList())
-              EndIf
-              
-              
-            Case "Until" ;--Until
-              DeleteElement(nList()) ;Free the Until
-              If NextElement(nList());condition
-                If nList()\Flags & #PNB_TYPE_LIST
-                  AddElement(cList1())
-                  cList1() = nList()
-                  DeleteElement(nList())
-                  If NextElement(nList())
-                    If nList()\Flags & #PNB_TYPE_NAME
-                      If nList()\s = "Do"
-                        DeleteElement(nList())
-                        If NextElement(nList()) ;expression
-                          If nList()\Flags & #PNB_TYPE_LIST
-                            AddElement(cList2())
-                            cList2() = nList()
-                            DeleteElement(nList())
-                            Repeat
-                              AddElement(cList4())
-                              cList4() = cList2()
-                              nListEval(cList4()\nList())
-                              MergeLists(cList4()\nList(), nList(), #PB_List_Before)
-                              AddElement(cList3())
-                              cList3() = cList1()
+              Next
+            Else
+              ClearList(nList())
+            EndIf
+            ClearList(cList1())
+            
+            
+          Case "While" ;--While
+            DeleteElement(nList()) ;Free the While
+            If NextElement(nList());condition
+              If nList()\Flags & #PNB_TYPE_LIST
+                AddElement(cList1())
+                cList1() = nList()
+                DeleteElement(nList())
+                If NextElement(nList()) ;do
+                  If nList()\Flags & #PNB_TYPE_NAME
+                    If nList()\s = "Do"
+                      DeleteElement(nList())
+                      If NextElement(nList()) ;expression
+                        If nList()\Flags & #PNB_TYPE_LIST
+                          AddElement(cList2())
+                          cList2() = nList()
+                          DeleteElement(nList())
+                          Repeat
+                            AddElement(cList3())
+                            cList3() = cList1()
+                            If cList3()\Flags & #PNB_TYPE_LIST
                               nListEval(cList3()\nList())
                               MergeLists(cList3()\nList(), cList3(), #PB_List_After)
                               DeleteElement(cList3())
-                              RBOL = Bool(ListSize(cList3()))
-                              ForEach cList3()
-                                Select nListGetHighestType(cList3()\Flags)
-                                  Case #PNB_TYPE_UBYTE
-                                    RBOL = Bool(RBOL And Bool(cList3()\a))
-                                  Case #PNB_TYPE_BYTE
-                                    RBOL = Bool(RBOL And Bool(cList3()\b))
-                                  Case #PNB_TYPE_CHARACTER
-                                    RBOL = Bool(RBOL And Bool(cList3()\c))
-                                  Case #PNB_TYPE_DOUBLE
-                                    RBOL = Bool(RBOL And Bool(cList3()\d))
-                                  Case #PNB_TYPE_FLOAT
-                                    RBOL = Bool(RBOL And Bool(cList3()\f))
-                                  Case #PNB_TYPE_INTEGER
-                                    RBOL = Bool(RBOL And Bool(cList3()\i))
-                                  Case #PNB_TYPE_LONG
-                                    RBOL = Bool(RBOL And Bool(cList3()\l))
-                                  Case #PNB_TYPE_NAME
-                                    RBOL = Bool(RBOL And Bool(cList3()\s = "True"))
-                                  Case #PNB_TYPE_EPIC
-                                    RBOL = Bool(RBOL And Bool(cList3()\q))
-                                  Case #PNB_TYPE_STRING
-                                    RBOL = Bool(RBOL And Bool(cList3()\s = "True"))
-                                  Case #PNB_TYPE_UWORD
-                                    RBOL = Bool(RBOL And Bool(cList3()\u))
-                                  Case #PNB_TYPE_WORD
-                                    RBOL = Bool(RBOL And Bool(cList3()\w))
-                                EndSelect
-                              Next
-                              ClearList(cList3())
-                              If RBOL
-                                While NextElement(nList())
-                                  DeleteElement(nList())
-                                Wend
-                                Break
-                              EndIf
-                            ForEver
-                            ClearList(cList1())
-                            ClearList(cList2())
-                            ClearList(cList3())
-                            ClearList(cList4())
-                          Else
-                            ClearList(nList())
-                            ClearList(cList1())
-                          EndIf
-                        Else
-                          ClearList(nList())
-                          ClearList(cList1())
-                        EndIf
-                      Else
-                        ClearList(nList())
-                        ClearList(cList1())
-                      EndIf
-                    Else
-                      ClearList(nList())
-                      ClearList(cList1())
-                    EndIf
-                  Else
-                    ClearList(nList())
-                    ClearList(cList1())
-                  EndIf
-                Else
-                  ClearList(nList())
-                EndIf
-              Else
-                ClearList(nList())
-              EndIf
-              
-              
-            Case "For" ;--For
-              DeleteElement(nList()) ;Free the For
-              If NextElement(nList());count
-                If nList()\Flags & #PNB_TYPE_LIST
-                  nListEval(nList()\nList())
-                  MergeLists(nList()\nList(), cList1(), #PB_List_After)
-                  DeleteElement(nList())
-                  RINT = 0
-                  ForEach cList1()
-                    Select nListGetHighestType(cList1()\Flags)
-                      Case #PNB_TYPE_UBYTE
-                        RINT = RINT + cList1()\a
-                      Case #PNB_TYPE_BYTE
-                        RINT = RINT + cList1()\b
-                      Case #PNB_TYPE_CHARACTER
-                        RINT = RINT + cList1()\c
-                      Case #PNB_TYPE_DOUBLE
-                        RINT = RINT + cList1()\d
-                      Case #PNB_TYPE_FLOAT
-                        RINT = RINT + cList1()\f
-                      Case #PNB_TYPE_INTEGER
-                        RINT = RINT + cList1()\i
-                      Case #PNB_TYPE_LONG
-                        RINT = RINT + cList1()\l
-                      Case #PNB_TYPE_EPIC
-                        RINT = RINT + cList1()\q
-                      Case #PNB_TYPE_UWORD
-                        RINT = RINT + cList1()\u
-                      Case #PNB_TYPE_WORD
-                        RINT = RINT + cList1()\w
-                    EndSelect
-                  Next
-                  ClearList(cList1())
-                  If NextElement(nList()) ;do
-                    If nList()\Flags & #PNB_TYPE_NAME
-                      If nList()\s = "Do"
-                        DeleteElement(nList())
-                        If NextElement(nList()) ;expression
-                          If nList()\Flags & #PNB_TYPE_LIST
-                            AddElement(cList2()) 
-                            cList2() = nList()
-                            DeleteElement(nList())
-                            If RINT > 0
-                              For RCNT = 1 To RINT
-                                AddElement(cList3())
-                                cList3() = cList2()
-                                nListEval(cList3()\nList())
-                                MergeLists(cList3()\nList(), nList(), #PB_List_Before)
-                                ClearList(cList3())
-                              Next
                             EndIf
-                            ClearList(cList1())
-                            ClearList(cList2())
+                            RBOL = Bool(ListSize(cList3()))
+                            ForEach cList3()
+                              Select nListGetHighestType(cList3()\Flags)
+                                Case #PNB_TYPE_UBYTE
+                                  RBOL = Bool(RBOL And Bool(cList3()\a))
+                                Case #PNB_TYPE_BYTE
+                                  RBOL = Bool(RBOL And Bool(cList3()\b))
+                                Case #PNB_TYPE_CHARACTER
+                                  RBOL = Bool(RBOL And Bool(cList3()\c))
+                                Case #PNB_TYPE_DOUBLE
+                                  RBOL = Bool(RBOL And Bool(cList3()\d))
+                                Case #PNB_TYPE_FLOAT
+                                  RBOL = Bool(RBOL And Bool(cList3()\f))
+                                Case #PNB_TYPE_INTEGER
+                                  RBOL = Bool(RBOL And Bool(cList3()\i))
+                                Case #PNB_TYPE_LONG
+                                  RBOL = Bool(RBOL And Bool(cList3()\l))
+                                Case #PNB_TYPE_NAME
+                                  RBOL = Bool(RBOL And Bool(cList3()\s = "True"))
+                                Case #PNB_TYPE_EPIC
+                                  RBOL = Bool(RBOL And Bool(cList3()\q))
+                                Case #PNB_TYPE_STRING
+                                  RBOL = Bool(RBOL And Bool(cList3()\s = "True"))
+                                Case #PNB_TYPE_UWORD
+                                  RBOL = Bool(RBOL And Bool(cList3()\u))
+                                Case #PNB_TYPE_WORD
+                                  RBOL = Bool(RBOL And Bool(cList3()\w))
+                              EndSelect
+                            Next
                             ClearList(cList3())
-                          Else
-                            ClearList(nList())
-                            ClearList(cList1())
-                          EndIf
+                            AddElement(cList4())
+                            cList4() = cList2()
+                            If RBOL
+                              If cList4()\Flags & #PNB_TYPE_LIST
+                                nListEval(cList4()\nList())
+                                MergeLists(cList4()\nList(), nList(), #PB_List_Before)
+                              EndIf
+                            Else
+                              While NextElement(nList())
+                                DeleteElement(nList())
+                              Wend
+                              Break
+                            EndIf
+                            ClearList(cList4())
+                          ForEver
+                        Else
+                          ClearList(nList())
+                          ClearList(cList1())
+                        EndIf
+                      EndIf
+                      ClearList(cList1())
+                      ClearList(cList2())
+                      ClearList(cList3())
+                      ClearList(cList4())
+                    Else
+                      ClearList(nList())
+                      ClearList(cList1())
+                    EndIf
+                  Else
+                    ClearList(nList())
+                    ClearList(cList1())
+                  EndIf
+                Else
+                  ClearList(nList())
+                  ClearList(cList1())
+                EndIf
+              Else
+                ClearList(nList())
+              EndIf
+            Else
+              ClearList(nList())
+            EndIf
+            
+            
+          Case "Until" ;--Until
+            DeleteElement(nList()) ;Free the Until
+            If NextElement(nList());condition
+              If nList()\Flags & #PNB_TYPE_LIST
+                AddElement(cList1())
+                cList1() = nList()
+                DeleteElement(nList())
+                If NextElement(nList())
+                  If nList()\Flags & #PNB_TYPE_NAME
+                    If nList()\s = "Do"
+                      DeleteElement(nList())
+                      If NextElement(nList()) ;expression
+                        If nList()\Flags & #PNB_TYPE_LIST
+                          AddElement(cList2())
+                          cList2() = nList()
+                          DeleteElement(nList())
+                          Repeat
+                            AddElement(cList4())
+                            cList4() = cList2()
+                            nListEval(cList4()\nList())
+                            MergeLists(cList4()\nList(), nList(), #PB_List_Before)
+                            AddElement(cList3())
+                            cList3() = cList1()
+                            nListEval(cList3()\nList())
+                            MergeLists(cList3()\nList(), cList3(), #PB_List_After)
+                            DeleteElement(cList3())
+                            RBOL = Bool(ListSize(cList3()))
+                            ForEach cList3()
+                              Select nListGetHighestType(cList3()\Flags)
+                                Case #PNB_TYPE_UBYTE
+                                  RBOL = Bool(RBOL And Bool(cList3()\a))
+                                Case #PNB_TYPE_BYTE
+                                  RBOL = Bool(RBOL And Bool(cList3()\b))
+                                Case #PNB_TYPE_CHARACTER
+                                  RBOL = Bool(RBOL And Bool(cList3()\c))
+                                Case #PNB_TYPE_DOUBLE
+                                  RBOL = Bool(RBOL And Bool(cList3()\d))
+                                Case #PNB_TYPE_FLOAT
+                                  RBOL = Bool(RBOL And Bool(cList3()\f))
+                                Case #PNB_TYPE_INTEGER
+                                  RBOL = Bool(RBOL And Bool(cList3()\i))
+                                Case #PNB_TYPE_LONG
+                                  RBOL = Bool(RBOL And Bool(cList3()\l))
+                                Case #PNB_TYPE_NAME
+                                  RBOL = Bool(RBOL And Bool(cList3()\s = "True"))
+                                Case #PNB_TYPE_EPIC
+                                  RBOL = Bool(RBOL And Bool(cList3()\q))
+                                Case #PNB_TYPE_STRING
+                                  RBOL = Bool(RBOL And Bool(cList3()\s = "True"))
+                                Case #PNB_TYPE_UWORD
+                                  RBOL = Bool(RBOL And Bool(cList3()\u))
+                                Case #PNB_TYPE_WORD
+                                  RBOL = Bool(RBOL And Bool(cList3()\w))
+                              EndSelect
+                            Next
+                            ClearList(cList3())
+                            If RBOL
+                              While NextElement(nList())
+                                DeleteElement(nList())
+                              Wend
+                              Break
+                            EndIf
+                          ForEver
+                          ClearList(cList1())
+                          ClearList(cList2())
+                          ClearList(cList3())
+                          ClearList(cList4())
                         Else
                           ClearList(nList())
                           ClearList(cList1())
@@ -1831,42 +1825,158 @@ Procedure.i nListEval(List nList.nList())
                   EndIf
                 Else
                   ClearList(nList())
+                  ClearList(cList1())
                 EndIf
               Else
                 ClearList(nList())
               EndIf
-              
-            Case "Function" ;--Function
-              DeleteElement(nList()) ;Free the Function
-              
-              If NextElement(nList())
-                If nList()\Flags & #PNB_TYPE_LIST
-                  AddElement(cList1()) ;names, aliases
-                  cList1() = nList()
-                  DeleteElement(nList())
-                  If NextElement(nList());do
-                    If nList()\Flags & #PNB_TYPE_NAME
-                      If nList()\s = "Do"
-                        DeleteElement(nList())
-                        If NextElement(nList())
-                          If nList()\Flags & #PNB_TYPE_LIST
-                            AddElement(cList2()) ;core function
-                            cList2() = nList()
-                            DeleteElement(nList())
-                            If NextElement(nList())
-                              If nList()\Flags & #PNB_TYPE_NAME
-                                If nList()\s = "With"
-                                  DeleteElement(nList())
-                                  If NextElement(nList())
-                                    If nList()\Flags & #PNB_TYPE_LIST
-                                      AddElement(cList3()) ;core function
-                                      cList3() = nList()
-                                      ClearList(nList())
-                                    Else
-                                      ClearList(nList())
-                                      ClearList(cList1())
-                                      ClearList(cList2())
+            Else
+              ClearList(nList())
+            EndIf
+            
+            
+          Case "For" ;--For
+            DeleteElement(nList()) ;Free the For
+            If NextElement(nList());count
+              If nList()\Flags & #PNB_TYPE_LIST
+                nListEval(nList()\nList())
+                MergeLists(nList()\nList(), cList1(), #PB_List_After)
+                DeleteElement(nList())
+                RINT = 0
+                ForEach cList1()
+                  Select nListGetHighestType(cList1()\Flags)
+                    Case #PNB_TYPE_UBYTE
+                      RINT = RINT + cList1()\a
+                    Case #PNB_TYPE_BYTE
+                      RINT = RINT + cList1()\b
+                    Case #PNB_TYPE_CHARACTER
+                      RINT = RINT + cList1()\c
+                    Case #PNB_TYPE_DOUBLE
+                      RINT = RINT + cList1()\d
+                    Case #PNB_TYPE_FLOAT
+                      RINT = RINT + cList1()\f
+                    Case #PNB_TYPE_INTEGER
+                      RINT = RINT + cList1()\i
+                    Case #PNB_TYPE_LONG
+                      RINT = RINT + cList1()\l
+                    Case #PNB_TYPE_EPIC
+                      RINT = RINT + cList1()\q
+                    Case #PNB_TYPE_UWORD
+                      RINT = RINT + cList1()\u
+                    Case #PNB_TYPE_WORD
+                      RINT = RINT + cList1()\w
+                  EndSelect
+                Next
+                ClearList(cList1())
+                If NextElement(nList()) ;do
+                  If nList()\Flags & #PNB_TYPE_NAME
+                    If nList()\s = "Do"
+                      DeleteElement(nList())
+                      If NextElement(nList()) ;expression
+                        If nList()\Flags & #PNB_TYPE_LIST
+                          AddElement(cList2()) 
+                          cList2() = nList()
+                          DeleteElement(nList())
+                          If RINT > 0
+                            For RCNT = 1 To RINT
+                              AddElement(cList3())
+                              cList3() = cList2()
+                              nListEval(cList3()\nList())
+                              MergeLists(cList3()\nList(), nList(), #PB_List_Before)
+                              ClearList(cList3())
+                            Next
+                          EndIf
+                          ClearList(cList1())
+                          ClearList(cList2())
+                          ClearList(cList3())
+                        Else
+                          ClearList(nList())
+                          ClearList(cList1())
+                        EndIf
+                      Else
+                        ClearList(nList())
+                        ClearList(cList1())
+                      EndIf
+                    Else
+                      ClearList(nList())
+                      ClearList(cList1())
+                    EndIf
+                  Else
+                    ClearList(nList())
+                    ClearList(cList1())
+                  EndIf
+                Else
+                  ClearList(nList())
+                  ClearList(cList1())
+                EndIf
+              Else
+                ClearList(nList())
+              EndIf
+            Else
+              ClearList(nList())
+            EndIf
+            
+          Case "Function" ;--Function
+            DeleteElement(nList()) ;Free the Function
+            
+            If NextElement(nList())
+              If nList()\Flags & #PNB_TYPE_LIST
+                AddElement(cList1()) ;names, aliases
+                cList1() = nList()
+                DeleteElement(nList())
+                If NextElement(nList());do
+                  If nList()\Flags & #PNB_TYPE_NAME
+                    If nList()\s = "Do"
+                      DeleteElement(nList())
+                      If NextElement(nList())
+                        If nList()\Flags & #PNB_TYPE_LIST
+                          AddElement(cList2()) ;core function
+                          cList2() = nList()
+                          DeleteElement(nList())
+                          If NextElement(nList())
+                            If nList()\Flags & #PNB_TYPE_NAME
+                              If nList()\s = "With"
+                                DeleteElement(nList())
+                                If NextElement(nList())
+                                  If nList()\Flags & #PNB_TYPE_LIST
+                                    AddElement(cList3()) ;core function
+                                    cList3() = nList()
+                                    DeleteElement(nList())
+                                    If NextElement(nList())
+                                      If nList()\Flags & #PNB_TYPE_NAME
+                                        If nList()\s = "As"
+                                          DeleteElement(nList())
+                                          If NextElement(nList())
+                                            If nList()\Flags & #PNB_TYPE_LIST
+                                              AddElement(cList4()) ;default params
+                                              cList4() = nList()
+                                              DeleteElement(nList())
+                                            Else
+                                              ClearList(nList())
+                                              ClearList(cList1())
+                                              ClearList(cList2())
+                                              ClearList(cList3())
+                                            EndIf
+                                          Else
+                                            ClearList(nList())
+                                            ClearList(cList1())
+                                            ClearList(cList2())
+                                            ClearList(cList3())
+                                          EndIf
+                                        Else
+                                          ClearList(nList())
+                                          ClearList(cList1())
+                                          ClearList(cList2())
+                                          ClearList(cList3())
+                                        EndIf
+                                      Else
+                                        ClearList(nList())
+                                        ClearList(cList1())
+                                        ClearList(cList2())
+                                        ClearList(cList3())
+                                      EndIf
                                     EndIf
+                                    ClearList(nList())
                                   Else
                                     ClearList(nList())
                                     ClearList(cList1())
@@ -1882,86 +1992,105 @@ Procedure.i nListEval(List nList.nList())
                                 ClearList(cList1())
                                 ClearList(cList2())
                               EndIf
+                            Else
+                              ClearList(nList())
+                              ClearList(cList1())
+                              ClearList(cList2())
                             EndIf
-                            ForEach cList1()\nList()
-                              If cList1()\nList()\Flags & #PNB_TYPE_NAME
-                                If cList1()\nList()\s = "All"
-                                  If FirstElement(cList2()\nList())
-                                    If cList2()\nList()\Flags & #PNB_TYPE_NAME
-                                      If cList2()\nList()\s = "Clear"
-                                        ClearList(cList1())
-                                        ClearList(cList2())
-                                        ClearList(cList3())
-                                        ClearList(nList())
-                                        CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
-                                          LockMutex(MutexFuncMap)
-                                        CompilerEndIf
-                                        ClearMap(Lexicon())
-                                        ClearMap(Param())
-                                        CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
-                                          UnlockMutex(MutexFuncMap)
-                                        CompilerEndIf
-                                        Break
-                                      Else
-                                        ClearList(nList())
-                                        ClearList(cList1())
-                                        ClearList(cList2())
-                                        ClearList(cList3())
-                                      EndIf
+                          EndIf
+                          
+                          ForEach cList1()\nList()
+                            If cList1()\nList()\Flags & #PNB_TYPE_NAME
+                              If cList1()\nList()\s = "All"
+                                If FirstElement(cList2()\nList())
+                                  If cList2()\nList()\Flags & #PNB_TYPE_NAME
+                                    If cList2()\nList()\s = "Clear"
+                                      CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                                        LockMutex(MutexFuncMap)
+                                      CompilerEndIf
+                                      ClearMap(Lexicon())
+                                      ClearMap(Param())
+                                      ClearMap(ParamDefault())
+                                      CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                                        UnlockMutex(MutexFuncMap)
+                                      CompilerEndIf
+                                      Break
                                     Else
-                                      ClearList(nList())
-                                      ClearList(cList1())
-                                      ClearList(cList2())
-                                      ClearList(cList3())
+                                      Break
                                     EndIf
                                   Else
-                                    ClearList(nList())
-                                    ClearList(cList1())
-                                    ClearList(cList2())
-                                    ClearList(cList3())
                                     Break
                                   EndIf
                                 Else
-                                  CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
-                                    LockMutex(MutexFuncMap)
-                                  CompilerEndIf
-                                  AddMapElement(Lexicon(), cList1()\nList()\s)
-                                  AddMapElement(Param(), cList1()\nList()\s)
-                                  If FirstElement(cList2()\nList())
-                                    If cList2()\nList()\Flags & #PNB_TYPE_NAME
-                                      If cList2()\nList()\s = "Clear"
-                                        DeleteMapElement(Lexicon())
-                                        DeleteMapElement(Param())
+                                  Break
+                                EndIf
+                              Else ;normal function declaration
+                                CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                                  LockMutex(MutexFuncMap)
+                                CompilerEndIf
+                                AddMapElement(Lexicon(), cList1()\nList()\s)
+                                AddMapElement(Param(), cList1()\nList()\s)
+                                AddMapElement(ParamDefault(), cList1()\nList()\s)
+                                If FirstElement(cList2()\nList())
+                                  If cList2()\nList()\Flags & #PNB_TYPE_NAME
+                                    If cList2()\nList()\s = "Clear"
+                                      DeleteMapElement(Lexicon())
+                                      DeleteMapElement(Param())
+                                      DeleteMapElement(ParamDefault())
+                                    Else
+                                      If ListSize(cList4())
+                                        If ListSize(cList3()\nList()) = ListSize(cList4()\nList())
+                                          Lexicon() = cList2()
+                                          Param() = cList3()
+                                          ParamDefault() = cList4()
+                                        Else
+                                          DeleteMapElement(Lexicon())
+                                          DeleteMapElement(Param())
+                                          DeleteMapElement(ParamDefault())
+                                          Break
+                                        EndIf
                                       Else
                                         Lexicon() = cList2()
+                                        If ListSize(cList3())
+                                          Param() = cList3()
+                                          EndIf
                                       EndIf
-                                    Else
-                                      Lexicon() = cList2()
                                     EndIf
                                   Else
-                                    DeleteMapElement(Lexicon())
-                                    DeleteMapElement(Param())
+                                    If ListSize(cList4())
+                                      If ListSize(cList3()\nList()) = ListSize(cList4()\nList())
+                                          Lexicon() = cList2()
+                                          Param() = cList3()
+                                          ParamDefault() = cList4()
+                                        Else
+                                          DeleteMapElement(Lexicon())
+                                          DeleteMapElement(Param())
+                                          DeleteMapElement(ParamDefault())
+                                          Break
+                                        EndIf
+                                      Else
+                                        Lexicon() = cList2()
+                                        If ListSize(cList3())
+                                          Param() = cList3()
+                                          EndIf
+                                      EndIf
                                   EndIf
-                                  If ListSize(cList3())
-                                    Param() = cList3()
-                                  Else
-                                    If MapKey(Param())
-                                      DeleteMapElement(Param())
-                                    EndIf
-                                  EndIf
-                                  CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
-                                    UnlockMutex(MutexFuncMap)
-                                  CompilerEndIf
+                                Else
+                                  DeleteMapElement(Lexicon())
+                                  DeleteMapElement(Param())
+                                  DeleteMapElement(ParamDefault())
                                 EndIf
+                                CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                                  UnlockMutex(MutexFuncMap)
+                                CompilerEndIf
                               EndIf
-                            Next
-                            ClearList(cList1())
-                            ClearList(cList2())
-                            ClearList(cList3())
-                          Else
-                            ClearList(nList())
-                            ClearList(cList1())
-                          EndIf
+                            EndIf
+                          Next
+                          ClearList(nList())
+                          ClearList(cList1())
+                          ClearList(cList2())
+                          ClearList(cList3())
+                          ClearList(cList4())
                         Else
                           ClearList(nList())
                           ClearList(cList1())
@@ -1980,37 +2109,38 @@ Procedure.i nListEval(List nList.nList())
                   EndIf
                 Else
                   ClearList(nList())
+                  ClearList(cList1())
                 EndIf
               Else
                 ClearList(nList())
               EndIf
-              
-              
-            Case "List" ;--List
-              DeleteElement(nList())
-              ProcedureReturn
-              
-            Case "Command"
-              DeleteElement(nList())
-              If NextElement(nList()) 
-                If nList()\Flags & #PNB_TYPE_LIST
-                  nListEval(nList()\nList())
-                  MergeLists(nList()\nList(), nList(), #PB_List_After)
-                  DeleteElement(nList())
-                  If NextElement(nList())
-                    nList()\Flags = #PNB_TYPE_COMMAND | #PNB_TYPE_NAME
-                  EndIf
-                Else
+            Else
+              ClearList(nList())
+            EndIf
+            
+            
+          Case "List" ;--List
+            DeleteElement(nList())
+            ProcedureReturn
+            
+          Case "Command"
+            DeleteElement(nList())
+            If NextElement(nList()) 
+              If nList()\Flags & #PNB_TYPE_LIST
+                nListEval(nList()\nList())
+                MergeLists(nList()\nList(), nList(), #PB_List_After)
+                DeleteElement(nList())
+                If NextElement(nList())
                   nList()\Flags = #PNB_TYPE_COMMAND | #PNB_TYPE_NAME
                 EndIf
+              Else
+                nList()\Flags = #PNB_TYPE_COMMAND | #PNB_TYPE_NAME
               EndIf
-          EndSelect
-        EndIf
-      Default
-        
-    EndSelect
+            EndIf
+        EndSelect
+      EndIf
+    EndIf
   EndIf
-  
   
   
   ;-List split
@@ -2074,80 +2204,106 @@ Procedure.i nListEval(List nList.nList())
           ForEach nList()
             Select nListGetHighestType(nList()\Flags)
               Case #PNB_TYPE_UBYTE
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\a)+#CRLF$, Len(Str(nList()\a)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\a)+#CRLF$, Len(Str(nList()\a)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\a
                 CompilerEndIf
               Case #PNB_TYPE_BYTE
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\b)+#CRLF$, Len(Str(nList()\b)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\b)+#CRLF$, Len(Str(nList()\b)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\b
                 CompilerEndIf
               Case #PNB_TYPE_CHARACTER
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\c)+#CRLF$, Len(Str(nList()\c)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\c)+#CRLF$, Len(Str(nList()\c)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\c
                 CompilerEndIf
               Case #PNB_TYPE_DOUBLE
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrD(nList()\d, 19)+#CRLF$, Len(StrD(nList()\d, 19)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrD(nList()\d, 19)+#CRLF$, Len(StrD(nList()\d, 19)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\d
                 CompilerEndIf
               Case #PNB_TYPE_FLOAT
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrF(nList()\f, 14)+#CRLF$, Len(StrF(nList()\f, 14)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrF(nList()\f, 14)+#CRLF$, Len(StrF(nList()\f, 14)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\f
                 CompilerEndIf
               Case #PNB_TYPE_INTEGER
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\i)+#CRLF$, Len(Str(nList()\i)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\i)+#CRLF$, Len(Str(nList()\i)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\i
                 CompilerEndIf
               Case #PNB_TYPE_LONG
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\l)+#CRLF$, Len(Str(nList()\l)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\l)+#CRLF$, Len(Str(nList()\l)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\l
                 CompilerEndIf
               Case #PNB_TYPE_NAME
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), nList()\s+#CRLF$, Len(nList()\s+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), nList()\s+#CRLF$, Len(nList()\s+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\s
                 CompilerEndIf
               Case #PNB_TYPE_POINTER
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\p)+#CRLF$, Len(Str(nList()\p)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\p)+#CRLF$, Len(Str(nList()\p)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\p
                 CompilerEndIf
               Case #PNB_TYPE_EPIC
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\q)+#CRLF$, Len(Str(nList()\q)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\q)+#CRLF$, Len(Str(nList()\q)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\q
                 CompilerEndIf
               Case #PNB_TYPE_STRING
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), nList()\s+#CRLF$, Len(nList()\s+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), nList()\s+#CRLF$, Len(nList()\s+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\s
                 CompilerEndIf
               Case #PNB_TYPE_UWORD
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\u)+#CRLF$, Len(Str(nList()\u)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\u)+#CRLF$, Len(Str(nList()\u)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\u
                 CompilerEndIf
               Case #PNB_TYPE_WORD
-                WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\w)+#CRLF$, Len(Str(nList()\w)+#CRLF$), @RINT, 0)
-                RINT = 0
+                If GetStdHandle_(#STD_ERROR_HANDLE)
+                  WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\w)+#CRLF$, Len(Str(nList()\w)+#CRLF$), @RINT, 0)
+                  RINT = 0
+                EndIf
                 CompilerIf #PB_Compiler_Debugger
                   Debug nList()\w
                 CompilerEndIf
@@ -2265,79 +2421,250 @@ Procedure.i nListEval(List nList.nList())
           ;---Name
         Case "Name"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_NAME)
+          nListConvert(nList(), #PNB_TYPE_NAME, 1)
           
           
           ;---String
         Case "String"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_STRING)
+          nListConvert(nList(), #PNB_TYPE_STRING, 1)
           
           
           ;---Pointer
         Case "Pointer"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_POINTER)
+          ForEach nList()
+            Select nListGetHighestType(nList()\Flags)
+              Case #PNB_TYPE_NAME
+                *RPTR = AllocateMemory(StringByteLength(nList()\s)+SizeOf(Character))
+                PokeS(*RPTR, nList()\s)
+                nList()\s = ""
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_STRING
+                *RPTR = AllocateMemory(StringByteLength(nList()\s)+SizeOf(Character))
+                PokeS(*RPTR, nList()\s)
+                nList()\s = ""
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_DOUBLE
+                *RPTR = AllocateMemory(SizeOf(Double))
+                PokeD(*RPTR, nList()\d)
+                nList()\d = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_FLOAT
+                *RPTR = AllocateMemory(SizeOf(Float))
+                PokeF(*RPTR, nList()\f)
+                nList()\f = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_EPIC
+                *RPTR = AllocateMemory(SizeOf(Quad))
+                PokeQ(*RPTR, nList()\q)
+                nList()\q = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_INTEGER
+                *RPTR = AllocateMemory(SizeOf(Integer))
+                PokeI(*RPTR, nList()\i)
+                nList()\i = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_LONG
+                *RPTR = AllocateMemory(SizeOf(Long))
+                PokeL(*RPTR, nList()\l)
+                nList()\l = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_WORD
+                *RPTR = AllocateMemory(SizeOf(Word))
+                PokeW(*RPTR, nList()\w)
+                nList()\w = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_BYTE
+                *RPTR = AllocateMemory(SizeOf(Byte))
+                PokeB(*RPTR, nList()\b)
+                nList()\b = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_UWORD
+                *RPTR = AllocateMemory(SizeOf(Unicode))
+                PokeU(*RPTR, nList()\u)
+                nList()\u = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_CHARACTER
+                *RPTR = AllocateMemory(SizeOf(Character))
+                PokeC(*RPTR, nList()\c)
+                nList()\c = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+              Case #PNB_TYPE_UBYTE
+                *RPTR = AllocateMemory(SizeOf(Ascii))
+                PokeA(*RPTR, nList()\a)
+                nList()\a = 0
+                nList()\p = *RPTR
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+                *RPTR = 0
+                nList()\Flags = #PNB_TYPE_POINTER
+            EndSelect
+          Next
           
           
           ;---Double
         Case "Double"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_DOUBLE)
+          nListConvert(nList(), #PNB_TYPE_DOUBLE, 1)
           
           
           ;---Float
         Case "Float"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_FLOAT)
+          nListConvert(nList(), #PNB_TYPE_FLOAT, 1)
           
           
           ;---Epic
         Case "Epic"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_EPIC)
+          nListConvert(nList(), #PNB_TYPE_EPIC, 1)
           
           
           ;---Integer
         Case "Integer"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_INTEGER)
+          nListConvert(nList(), #PNB_TYPE_INTEGER, 1)
           
           
           ;---Long
         Case "Long"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_LONG)
+          nListConvert(nList(), #PNB_TYPE_LONG, 1)
           
           
           ;---Word
         Case "Word"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_WORD)
+          nListConvert(nList(), #PNB_TYPE_WORD, 1)
           
           
           ;---Byte
         Case "Byte"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_BYTE)
+          nListConvert(nList(), #PNB_TYPE_BYTE, 1)
           
           
           ;---UWord
         Case "UWord"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_UWORD)
+          nListConvert(nList(), #PNB_TYPE_UWORD, 1)
           
           
           ;---Character
         Case "Character"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_CHARACTER)
+          nListConvert(nList(), #PNB_TYPE_CHARACTER, 1)
           
           
           ;---UByte
         Case "UByte"
           DeleteElement(nList())
-          nListConvert(nList(), #PNB_TYPE_UBYTE)
+          nListConvert(nList(), #PNB_TYPE_UBYTE, 1)
           
           
           ;---ForceName
@@ -2558,6 +2885,8 @@ Procedure.i nListEval(List nList.nList())
               If FindMapElement(Memory(), nList()\s)
                 CopyList(Memory()\nList(), cList1())
                 MergeLists(cList1(), cList2())
+              Else
+                ResetMap(Memory())
               EndIf
               DeleteElement(nList())
               CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
@@ -2614,6 +2943,8 @@ Procedure.i nListEval(List nList.nList())
                     DeleteMapElement(Memory())
                   EndIf
                 EndIf
+              Else
+                ResetMap(Memory())
               EndIf
             Else
               CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
@@ -2675,6 +3006,8 @@ Procedure.i nListEval(List nList.nList())
                     DeleteMapElement(Memory())
                   EndIf
                 EndIf
+              Else
+                ResetMap(Memory())
               EndIf
             Else
               CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
@@ -2704,6 +3037,8 @@ Procedure.i nListEval(List nList.nList())
                 AddElement(cList1())
                 cList1()\i = ListSize(Memory()\nList())
                 cList1()\Flags = #PNB_TYPE_INTEGER
+                Else
+                ResetMap(Memory())
               EndIf
               CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
                 UnlockMutex(MutexVarMap)
@@ -3944,9 +4279,11 @@ Procedure.i nListEval(List nList.nList())
           RTYP = nListGetHighestType(nList()\Flags)
           Select RTYP
             Case #PNB_TYPE_NAME
-              ClearList(nList())
+              RSTR = nList()\s
+              DeleteElement(nList())
             Case #PNB_TYPE_STRING
-              ClearList(nList())
+              RSTR = nList()\s
+              DeleteElement(nList())
             Case #PNB_TYPE_POINTER
               *RPTR = nList()\p
               DeleteElement(nList())
@@ -4025,9 +4362,29 @@ Procedure.i nListEval(List nList.nList())
             EndSelect
             Select RTYP
               Case #PNB_TYPE_NAME
-                ;-###add rot
+                If RCNT > 0
+                  While RCNT > Len(RSTR)
+                    RCNT-Len(RSTR)
+                    Wend
+                  RSTR = Mid(RSTR, RCNT+1)+Left(RSTR, RCNT)
+                ElseIf RCNT < 0
+                  While -RCNT > Len(RSTR)
+                    RCNT+Len(RSTR)
+                    Wend
+                  RSTR = Right(RSTR, -RCNT)+Mid(RSTR, 1, Len(RSTR)+RCNT)
+                EndIf
               Case #PNB_TYPE_STRING
-                ;-###add rot
+                If RCNT > 0
+                  While RCNT > Len(RSTR)
+                    RCNT-Len(RSTR)
+                    Wend
+                  RSTR = Mid(RSTR, RCNT+1)+Left(RSTR, RCNT)
+                ElseIf RCNT < 0
+                  While -RCNT > Len(RSTR)
+                    RCNT+Len(RSTR)
+                    Wend
+                  RSTR = Right(RSTR, -RCNT)+Mid(RSTR, 1, Len(RSTR)+RCNT)
+                EndIf
               Case #PNB_TYPE_POINTER
                 If RCNT > 0
                   *RPTR<<RCNT
@@ -4099,6 +4456,10 @@ Procedure.i nListEval(List nList.nList())
           
           AddElement(nList())
           Select RTYP
+            Case #PNB_TYPE_NAME
+              nList()\s = RSTR
+            Case #PNB_TYPE_STRING
+              nList()\s = RSTR
             Case #PNB_TYPE_POINTER
               nList()\p = *RPTR
             Case #PNB_TYPE_DOUBLE
@@ -4124,6 +4485,7 @@ Procedure.i nListEval(List nList.nList())
           EndSelect
           nList()\Flags = RTYP
           
+          RSTR = ""
           RCNT = 0
           RINT = 0
           RTYP = 0
@@ -4143,9 +4505,11 @@ Procedure.i nListEval(List nList.nList())
           RTYP = nListGetHighestType(nList()\Flags)
           Select RTYP
             Case #PNB_TYPE_NAME
-              ClearList(nList())
+              RSTR = nList()\s
+              DeleteElement(nList())
             Case #PNB_TYPE_STRING
-              ClearList(nList())
+              RSTR = nList()\s
+              DeleteElement(nList())
             Case #PNB_TYPE_POINTER
               *RPTR = nList()\p
               DeleteElement(nList())
@@ -4224,9 +4588,29 @@ Procedure.i nListEval(List nList.nList())
             EndSelect
             Select RTYP
               Case #PNB_TYPE_NAME
-                ;-###add rot
+                If RCNT > 0
+                  While RCNT > Len(RSTR)
+                    RCNT-Len(RSTR)
+                    Wend
+                  RSTR = Right(RSTR, RCNT)+Mid(RSTR, 1, Len(RSTR)-RCNT)
+                ElseIf RCNT < 0
+                  While -RCNT > Len(RSTR)
+                    RCNT+Len(RSTR)
+                    Wend
+                  RSTR = Mid(RSTR, -RCNT+1)+Left(RSTR, -RCNT)
+                EndIf
               Case #PNB_TYPE_STRING
-                ;-###add rot
+                If RCNT > 0
+                  While RCNT > Len(RSTR)
+                    RCNT-Len(RSTR)
+                    Wend
+                  RSTR = Right(RSTR, RCNT)+Mid(RSTR, 1, Len(RSTR)-RCNT)
+                ElseIf RCNT < 0
+                  While -RCNT > Len(RSTR)
+                    RCNT+Len(RSTR)
+                    Wend
+                  RSTR = Mid(RSTR, -RCNT+1)+Left(RSTR, -RCNT)
+                EndIf
               Case #PNB_TYPE_POINTER
                 If RCNT > 0
                   *RPTR>>RCNT
@@ -4298,6 +4682,10 @@ Procedure.i nListEval(List nList.nList())
           
           AddElement(nList())
           Select RTYP
+            Case #PNB_TYPE_NAME
+              nList()\s = RSTR
+            Case #PNB_TYPE_STRING
+              nList()\s = RSTR
             Case #PNB_TYPE_POINTER
               nList()\p = *RPTR
             Case #PNB_TYPE_DOUBLE
@@ -4323,6 +4711,7 @@ Procedure.i nListEval(List nList.nList())
           EndSelect
           nList()\Flags = RTYP
           
+          RSTR = ""
           RCNT = 0
           RINT = 0
           RTYP = 0
@@ -5589,6 +5978,240 @@ Procedure.i nListEval(List nList.nList())
                 nList()\a = ~nList()\a
             EndSelect
           Next
+          ;-#Memory
+          ;---Allocate
+        Case "Allocate"
+          DeleteElement(nList())
+          ForEach nList()
+            Select nListGetHighestType(nList()\Flags)
+              Case #PNB_TYPE_NAME
+                DeleteElement(nList())
+              Case #PNB_TYPE_STRING
+                DeleteElement(nList())
+              Case #PNB_TYPE_POINTER
+                DeleteElement(nList())
+              Case #PNB_TYPE_DOUBLE
+                *RPTR = AllocateMemory(nList()\d)
+                nList()\d = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+              Case #PNB_TYPE_FLOAT
+                *RPTR = AllocateMemory(nList()\f)
+                nList()\f = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+              Case #PNB_TYPE_EPIC
+                *RPTR = AllocateMemory(nList()\q)
+                nList()\q = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+              Case #PNB_TYPE_INTEGER
+                *RPTR = AllocateMemory(nList()\i)
+                nList()\i = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+              Case #PNB_TYPE_LONG
+                *RPTR = AllocateMemory(nList()\l)
+                nList()\l = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+              Case #PNB_TYPE_WORD
+                *RPTR = AllocateMemory(nList()\w)
+                nList()\w = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+              Case #PNB_TYPE_BYTE
+                *RPTR = AllocateMemory(nList()\b)
+                nList()\b = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+              Case #PNB_TYPE_UWORD
+                *RPTR = AllocateMemory(nList()\u)
+                nList()\u = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+              Case #PNB_TYPE_CHARACTER
+                *RPTR = AllocateMemory(nList()\c)
+                nList()\c = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+              Case #PNB_TYPE_UBYTE
+                *RPTR = AllocateMemory(nList()\a)
+                nList()\a = 0
+                nList()\p = *RPTR
+                *RPTR = 0
+                nList()\Flags | #PNB_TYPE_POINTER
+            EndSelect
+          Next
+          
+          ;---Free
+        Case "Free"
+          DeleteElement(nList())
+          ForEach nList()
+            If nList()\Flags & #PNB_TYPE_NAME
+              If nList()\s = "All"
+                ForEach *PLIST()
+                  FreeMemory(*PLIST())
+                  DeleteMapElement(*PLIST())
+                Next
+              EndIf
+            ElseIf nList()\Flags & #PNB_TYPE_POINTER
+              FreeMemory(nList()\p)
+              If FindMapElement(*PLIST(), Str(nList()\p))
+                DeleteMapElement(*PLIST())
+                Else
+                ResetMap(Memory())
+                EndIf
+            EndIf
+            DeleteElement(nList())
+          Next
+          
+          ;---Poke
+        Case "Poke"
+          DeleteElement(nList())
+          If NextElement(nList())
+            If nList()\Flags & #PNB_TYPE_POINTER
+              *RPTR = nList()\p
+              DeleteElement(nList())
+              ForEach nList()
+                Select nListGetHighestType(nList()\Flags)
+                  Case #PNB_TYPE_NAME
+                    PokeS(*RPTR, nList()\s)
+                    *RPTR+StringByteLength(nList()\s)+SizeOf(Character)
+                  Case #PNB_TYPE_STRING
+                    PokeS(*RPTR, nList()\s)
+                    *RPTR+StringByteLength(nList()\s)+SizeOf(Character)
+                  Case #PNB_TYPE_POINTER
+                  Case #PNB_TYPE_DOUBLE
+                    PokeD(*RPTR, nList()\d)
+                    *RPTR+SizeOf(Double)
+                  Case #PNB_TYPE_FLOAT
+                    PokeF(*RPTR, nList()\f)
+                    *RPTR+SizeOf(Float)
+                  Case #PNB_TYPE_EPIC
+                    PokeQ(*RPTR, nList()\q)
+                    *RPTR+SizeOf(Quad)
+                  Case #PNB_TYPE_INTEGER
+                    PokeI(*RPTR, nList()\i)
+                    *RPTR+SizeOf(Integer)
+                  Case #PNB_TYPE_LONG
+                    PokeL(*RPTR, nList()\l)
+                    *RPTR+SizeOf(Long)
+                  Case #PNB_TYPE_WORD
+                    PokeW(*RPTR, nList()\w)
+                    *RPTR+SizeOf(Word)
+                  Case #PNB_TYPE_BYTE
+                    PokeB(*RPTR, nList()\b)
+                    *RPTR+SizeOf(Byte)
+                  Case #PNB_TYPE_UWORD
+                    PokeU(*RPTR, nList()\u)
+                    *RPTR+SizeOf(Unicode)
+                  Case #PNB_TYPE_CHARACTER
+                    PokeC(*RPTR, nList()\c)
+                    *RPTR+SizeOf(Character)
+                  Case #PNB_TYPE_UBYTE
+                    PokeA(*RPTR, nList()\a)
+                    *RPTR+SizeOf(Ascii)
+                EndSelect
+                DeleteElement(nList())
+              Next
+            Else
+              ClearList(nList())
+            EndIf
+          EndIf
+          *RPTR = 0
+          ;---Peek
+          Case "Peek"
+          DeleteElement(nList())
+          If NextElement(nList())
+            If nList()\Flags & #PNB_TYPE_POINTER
+              *RPTR = nList()\p
+              DeleteElement(nList())
+              ForEach nList()
+                Select nListGetHighestType(nList()\Flags)
+                  Case #PNB_TYPE_NAME
+                    Select nList()\s
+                      Case "Name"
+                        AddElement(cList1())
+                        cList1()\s = PeekS(*RPTR)
+                        *RPTR+StringByteLength(cList1()\s)+SizeOf(Character)
+                        cList1()\Flags | #PNB_TYPE_NAME
+                      Case "String"
+                        AddElement(cList1())
+                        cList1()\s = PeekS(*RPTR)
+                        *RPTR+StringByteLength(cList1()\s)+SizeOf(Character)
+                        cList1()\Flags | #PNB_TYPE_STRING
+                      Case "Double"
+                        AddElement(cList1())
+                        cList1()\d = PeekD(*RPTR)
+                        *RPTR+SizeOf(Double)
+                        cList1()\Flags | #PNB_TYPE_DOUBLE
+                      Case "Float"
+                        AddElement(cList1())
+                        cList1()\f = PeekF(*RPTR)
+                        *RPTR+SizeOf(Float)
+                        cList1()\Flags | #PNB_TYPE_FLOAT
+                      Case "Epic"
+                        AddElement(cList1())
+                        cList1()\q = PeekQ(*RPTR)
+                        *RPTR+SizeOf(Quad)
+                        cList1()\Flags | #PNB_TYPE_EPIC
+                      Case "Integer"
+                        AddElement(cList1())
+                        cList1()\i = PeekI(*RPTR)
+                        *RPTR+SizeOf(Integer)
+                        cList1()\Flags | #PNB_TYPE_INTEGER
+                      Case "Long"
+                        AddElement(cList1())
+                        cList1()\l = PeekL(*RPTR)
+                        *RPTR+SizeOf(Long)
+                        cList1()\Flags | #PNB_TYPE_LONG
+                      Case "Word"
+                        AddElement(cList1())
+                        cList1()\w = PeekW(*RPTR)
+                        *RPTR+SizeOf(Word)
+                        cList1()\Flags | #PNB_TYPE_WORD
+                      Case "Byte"
+                        AddElement(cList1())
+                        cList1()\b = PeekB(*RPTR)
+                        *RPTR+SizeOf(Byte)
+                        cList1()\Flags | #PNB_TYPE_BYTE
+                      Case "UWord"
+                        AddElement(cList1())
+                        cList1()\u = PeekU(*RPTR)
+                        *RPTR+SizeOf(Unicode)
+                        cList1()\Flags | #PNB_TYPE_UWORD
+                      Case "Character"
+                        AddElement(cList1())
+                        cList1()\c = PeekC(*RPTR)
+                        *RPTR+SizeOf(Character)
+                        cList1()\Flags | #PNB_TYPE_CHARACTER
+                      Case "UByte"
+                        AddElement(cList1())
+                        cList1()\a = PeekA(*RPTR)
+                        *RPTR+SizeOf(Ascii)
+                        cList1()\Flags | #PNB_TYPE_UBYTE
+                    EndSelect
+                EndSelect
+                DeleteElement(nList())
+              Next
+            Else
+              ClearList(nList())
+            EndIf
+          EndIf
+          
+          MergeLists(cList1(), nList())
+          *RPTR = 0
+          
           ;-#Functions
         Default
           CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
@@ -5596,31 +6219,82 @@ Procedure.i nListEval(List nList.nList())
           CompilerEndIf
           If FindMapElement(Lexicon(), CAR)
             DeleteElement(nList())
-            AddElement(cList1())
-            cList1() = Lexicon()
             If FindMapElement(Param(), CAR)
-              ForEach Param()\nList()
-                If NextElement(nList())
-                  nListReplace(cList1(), Param()\nList()\s, nList())
-                  
-                  
-                  DeleteElement(nList())
-                Else
-                  nListDelete(cList1(), Param()\nList()\s)
-                EndIf
-              Next
+              ResetList(Param()\nList())
+            Else
+              ResetMap(Param())
             EndIf
-            CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
-              UnlockMutex(MutexVarMap)
-            CompilerEndIf
-            ClearList(nList())
-            nListEval(cList1()\nList())
-            MergeLists(cList1()\nList(), nList(), #PB_List_After)
-          Else
-            CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
-              UnlockMutex(MutexVarMap)
-            CompilerEndIf
-          EndIf
+            If FindMapElement(ParamDefault(), CAR)
+              ResetList(ParamDefault()\nList())
+            Else
+              ResetMap(ParamDefault())
+            EndIf
+              
+            If ListSize(Param()\nList())
+              If ListSize(ParamDefault()\nList());plus default param
+                If ListSize(nList()) <= ListSize(Param()\nList())
+                  AddElement(cList1())
+                  cList1() = Lexicon()
+                  ForEach ParamDefault()\nList()
+                    NextElement(Param()\nList())
+                    If NextElement(nList())
+                      nListReplace(cList1(), Param()\nList()\s, nList())
+                      DeleteElement(nList())
+                    Else
+                      nListReplace(cList1(), Param()\nList()\s, ParamDefault()\nList())
+                    EndIf
+                  Next
+                  CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                    UnlockMutex(MutexVarMap)
+                  CompilerEndIf
+                  ClearList(nList())
+                  nListEval(cList1()\nList())
+                  MergeLists(cList1()\nList(), nList(), #PB_List_After)
+                Else
+                  CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                    UnlockMutex(MutexVarMap)
+                  CompilerEndIf
+                  ClearList(nList())
+                EndIf
+              Else ;param list
+                If ListSize(Param()\nList()) = ListSize(nList())
+                  AddElement(cList1())
+                  cList1() = Lexicon()
+                  ForEach Param()\nList()
+                    NextElement(nList())
+                    nListReplace(cList1(), Param()\nList()\s, nList())
+                    DeleteElement(nList())
+                  Next
+                  CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                    UnlockMutex(MutexVarMap)
+                  CompilerEndIf
+                  ClearList(nList())
+                  nListEval(cList1()\nList())
+                  MergeLists(cList1()\nList(), nList(), #PB_List_After)
+                Else
+                  CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                    UnlockMutex(MutexVarMap)
+                  CompilerEndIf
+                  ClearList(nList())
+                EndIf
+              EndIf
+              
+            Else
+              AddElement(cList1())
+              cList1() = Lexicon()  
+              CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                UnlockMutex(MutexVarMap)
+              CompilerEndIf
+              ClearList(nList())
+              nListEval(cList1()\nList())
+              MergeLists(cList1()\nList(), nList(), #PB_List_After)
+            EndIf
+            
+            Else
+              CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL
+                UnlockMutex(MutexVarMap)
+              CompilerEndIf
+            EndIf
       EndSelect
     Else
     EndIf

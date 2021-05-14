@@ -14,7 +14,6 @@ Procedure Dbg(List nList.nList(), a.i = 0)
 EndProcedure
 
 DisableExplicit
-
 Debug "#Test how many times this query can be called per second:"
 DisableDebugger
 a = 0
@@ -94,32 +93,52 @@ Debug "#Macro/As function parameter test: Should read 'Order is Reversed'."
 EvalString("Function (Testmacro) Do (+ ff [ ] ee [ ] dd) With (dd ee ff)")
 EvalString("Debug (Testmacro Reversed is Order)")
 
-Debug "#Beer song time!"
-CompilerSelect #PB_Compiler_Unicode
-  CompilerCase 1
-    EvalString(PeekS(?Beer, -1, #PB_UTF8))
-  CompilerDefault
-    EvalString(PeekS(?Beer, -1, #PB_Ascii))
-CompilerEndSelect
+Debug "#Macro/As function default parameter test: Should read 'Defined', 'Undefined'."
+EvalString("Function (Testmacro) Do (dd ee) With (dd ee) As (Undefined Undefined)")
+EvalString("Debug (Testmacro Defined)")
 
-Debug "#Fibonacci calculation! This may take a while."
-CompilerSelect #PB_Compiler_Unicode
-  CompilerCase 1
-    EvalString(PeekS(?Fibonacci, -1, #PB_UTF8))
-  CompilerDefault
-    EvalString(PeekS(?Fibonacci, -1, #PB_Ascii))
-CompilerEndSelect
+Debug "#Macro/As function parameter underload test: Should not be registered and return as list. Should read 'Testmacro', 'This'."
+EvalString("Function (Testmacro) Do (+ dd ee) With (dd ee) As (Undefined)")
+EvalString("Debug (Testmacro This)")
+
+Debug "#Memory test. Should read 'This is a string.', '33.3' or an approximation, '240'."
+EvalString("Set A (Allocate 100)")
+EvalString("Poke (Get A) [This is a string.] (UByte 0)")
+EvalString("Debug (Peek (Get A) String)")
+EvalString("Poke (Get A) 33.3")
+EvalString("Debug (Peek (Get A) Float)")
+EvalString("Poke (Get A) 240")
+EvalString("Debug (Peek (Get A) Integer)")
+EvalString("Free All")
+
+
+
+; Debug "#Beer song time!"
+; CompilerSelect #PB_Compiler_Unicode
+;   CompilerCase 1
+;     EvalString(PeekS(?Beer, -1, #PB_UTF8))
+;   CompilerDefault
+;     EvalString(PeekS(?Beer, -1, #PB_Ascii))
+; CompilerEndSelect
+; 
+; Debug "#Fibonacci calculation! This may take a while."
+; CompilerSelect #PB_Compiler_Unicode
+;   CompilerCase 1
+;     EvalString(PeekS(?Fibonacci, -1, #PB_UTF8))
+;   CompilerDefault
+;     EvalString(PeekS(?Fibonacci, -1, #PB_Ascii))
+; CompilerEndSelect
 
 End
-
-DataSection
-  Beer:
-  IncludeBinary "..\scripts\beer.pnb"
-  Data.c 0 ;Null terminator.
-EndDataSection
-
-DataSection
-  Fibonacci:
-  IncludeBinary "..\scripts\fibonacci.pnb"
-  Data.c 0 ;Null terminator.
-EndDataSection
+; 
+; DataSection
+;   Beer:
+;   IncludeBinary "..\scripts\beer.pnb"
+;   Data.c 0 ;Null terminator.
+; EndDataSection
+; 
+; DataSection
+;   Fibonacci:
+;   IncludeBinary "..\scripts\fibonacci.pnb"
+;   Data.c 0 ;Null terminator.
+; EndDataSection
