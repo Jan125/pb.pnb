@@ -20,7 +20,14 @@ Index:
     
 1.) Preamble
 PNB is supposed to be an easy to learn mix of a LISP like structure and BASIC commands.
+The precompiled DLLs expose two functions:
+Pointer->StringW(2 byte) EvalString(Pointer->StringW(2 byte))
+with an STDCALL (x86) or FASTCALL (x64) convention,
+and
+Pointer->StringW(2 byte) _EvalString(Pointer->StringW(2 byte))
+with an CDECL (x86) or FASTCALL (x64) convention.
 
+The standard AttachProcess and DetachProcess procedures are available and should be called automatically.
 
 2.) Syntax
 2.1 - Basic Structure
@@ -47,9 +54,9 @@ Lists are evaluated left to right, with the most parenthesized Expression being 
 As an example:
 (A (B (C)) ((D) E))
 Would resolve the List in the following order:
-(A (B C) ((D) E))
 (A B C ((D) E))
 (A B C (D E))
+(A (B C) ((D) E))
 (A B C D E)
 A B C D E
 
@@ -214,6 +221,16 @@ Discard
     
 3.1.3 - Type Manipulation
 These commands convert between types.
+    
+Split
+    Takes:      String0, String1, ..., StringN
+    Returns:    Character0, Character1, ..., CharacterN 
+    Combines a list of strings into character values.
+    
+Fuse
+    Takes:      Parameter0, Parameter1, ..., ParameterN
+    Returns:    String
+    Combines a list of parameters into a string.
     
 Type
     Takes:      Parameter0, Parameter1, ..., ParameterN
@@ -511,8 +528,11 @@ bNot, b~
     
     
 3.1.7 - Memory
-Comparisons and stuff.
-    
+This is for memory management.
+By design, there are no error handlers for memory functions.
+You can edit memory addresses passed from outside, but no bounds check is done.
+Using these functions improperly can lead to crashes.
+
 Allocate
     Takes:      Value0, Value1, ..., ValueN
     Returns:    Pointer1, Pointer1, ..., PointerN
