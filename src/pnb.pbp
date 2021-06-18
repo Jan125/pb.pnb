@@ -8,28 +8,32 @@
   <section name="data">
     <explorer view="C:\ProgramData\PureBasic\Examples\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2021-05-14 20:57" user="Dino" host="HUSKLET"/>
+    <lastopen date="2021-06-18 21:29" user="Dino" host="HUSKLET"/>
   </section>
   <section name="files">
+    <file name="dll.pb">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="631b4b3c21cbc870e997a89c0012f3a1"/>
+    </file>
     <file name="pnb.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="df04fc043cb2779da1794c2109b32f1a"/>
+      <fingerprint md5="4c712cc67404dc5207839b24329d5f03"/>
     </file>
     <file name="test.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="a3dbaf6828b67f1397e180dabc84189e"/>
+      <fingerprint md5="bb0500575f7d82b3b538b0bb559ddcde"/>
     </file>
   </section>
   <section name="targets">
     <target name="DLLw86" enabled="1" default="0">
-      <inputfile value="pnb.pbi"/>
+      <inputfile value="dll.pb"/>
       <outputfile value="..\pnb.dll"/>
       <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
       <executable value="..\pnb.dll"/>
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1045"/>
+      <buildcount enable="1" value="1059"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -47,14 +51,14 @@
       </versioninfo>
     </target>
     <target name="DLLw64" enabled="1" default="0">
-      <inputfile value="pnb.pbi"/>
+      <inputfile value="dll.pb"/>
       <outputfile value="..\pnb64.dll"/>
       <compiler version="PureBasic 5.46 LTS (Windows - x64)"/>
       <executable value="..\pnb64.dll"/>
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1045"/>
+      <buildcount enable="1" value="1059"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -77,7 +81,7 @@
       <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="console" cpu="0"/>
-      <compilecount enable="1" value="282"/>
+      <compilecount enable="1" value="311"/>
     </target>
   </section>
 </project>
