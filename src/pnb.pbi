@@ -1095,7 +1095,7 @@ Module PNB
     
   EndProcedure
   
-  Procedure.i nListPNBTonList(List nList.nList(), String$)
+  Procedure.i nListPNBTonList(List nList.nList(), String.s)
     Protected Start.i
     Protected Index.i
     Protected Depth.i
@@ -1104,63 +1104,63 @@ Module PNB
     Index = 1
     Depth = 0
     
-    While Index <= Len(String$)
+    While Index <= Len(String)
       
-      Select Asc(Mid(String$, Index, 1))
+      Select Asc(Mid(String, Index, 1))
         Case Asc(";") ;Block comments; will be ignored..
           Start = Index
           Repeat
             Index = Index+1
-          Until Asc(Mid(String$, Index, 1)) = Asc(";") Or Index > Len(String$)
+          Until Asc(Mid(String, Index, 1)) = Asc(";") Or Index > Len(String)
           
         Case Asc("'") ;'Apostrophed expressions' are counted as strings. Brackets will be ignored.
           Start = Index
           Repeat
             Index = Index+1
-          Until Asc(Mid(String$, Index, 1)) = Asc("'") Or Index > Len(String$)
+          Until Asc(Mid(String, Index, 1)) = Asc("'") Or Index > Len(String)
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
-          nList()\s = Mid(String$, Start+1, Index-Start-1)
+          nList()\s = Mid(String, Start+1, Index-Start-1)
           
         Case 34 ;"Quoted expressions" are counted as strings, too.
           Start = Index
           Repeat
             Index = Index+1
-          Until Asc(Mid(String$, Index, 1)) = 34 Or Index > Len(String$)
+          Until Asc(Mid(String, Index, 1)) = 34 Or Index > Len(String)
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
-          nList()\s = Mid(String$, Start+1, Index-Start-1)
+          nList()\s = Mid(String, Start+1, Index-Start-1)
           
         Case Asc("[") ;[Hard bracketed expressions] are an alternative to apostrophes and quotes.
           Start = Index
           Depth = Depth+1
           Repeat
             Index+1
-            Select Asc(Mid(String$, Index, 1))
+            Select Asc(Mid(String, Index, 1))
               Case Asc("[")
                 Depth = Depth+1
               Case Asc("]")
                 Depth = Depth-1
             EndSelect
-          Until Depth = 0 Or Index > Len(String$)
+          Until Depth = 0 Or Index > Len(String)
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
-          nList()\s = Mid(String$, Start+1, Index-Start-1)
+          nList()\s = Mid(String, Start+1, Index-Start-1)
           
         Case Asc("(") ;Find (bracketed expressions), pass them, get the return value, then evaluate again.
           Start = Index
           Depth = Depth+1
           Repeat
             Index = Index+1
-            Select Asc(Mid(String$, Index, 1))
+            Select Asc(Mid(String, Index, 1))
               Case Asc("(")
                 Depth = Depth+1
               Case Asc(")")
                 Depth = Depth-1
             EndSelect
-          Until Depth = 0 Or Index > Len(String$)
+          Until Depth = 0 Or Index > Len(String)
           AddElement(nList())
-          nListPNBtonList(nList()\nList(), Mid(String$, Start+1, Index-Start-1))
+          nListPNBtonList(nList()\nList(), Mid(String, Start+1, Index-Start-1))
           nList()\Flags | #PNB_TYPE_LIST
           
         Case Asc(" "), 9, 13, 10 ;Ignore spaces, tabs, carriage returns (CR), and line feeds (LF).
@@ -1169,10 +1169,10 @@ Module PNB
           Start = Index
           Repeat
             Index = Index+1
-          Until Asc(Mid(String$, Index, 1)) = Asc(" ") Or Asc(Mid(String$, Index, 1)) = 13 Or Asc(Mid(String$, Index, 1)) = 10 Or Asc(Mid(String$, Index, 1)) = 9 Or Asc(Mid(String$, Index, 1)) = Asc("(") Or Asc(Mid(String$, Index, 1)) = Asc(")") Or Index > Len(String$)
+          Until Asc(Mid(String, Index, 1)) = Asc(" ") Or Asc(Mid(String, Index, 1)) = 13 Or Asc(Mid(String, Index, 1)) = 10 Or Asc(Mid(String, Index, 1)) = 9 Or Asc(Mid(String, Index, 1)) = Asc("(") Or Asc(Mid(String, Index, 1)) = Asc(")") Or Index > Len(String)
           
           AddElement(nList())
-          nList()\s = Mid(String$, Start, Index-Start)
+          nList()\s = Mid(String, Start, Index-Start)
           
           Select Asc(nList()\s)
             Case 48 To 57, 43, 45, 46 ; Numbers, plus, minus, and decimal
