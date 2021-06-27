@@ -5,8 +5,23 @@ DeclareModule PNB
     Global MutexVarMap.i
   CompilerEndIf
   Declare.s nListEvalString(String.s)
+  Declare.i nListEnableBinaryFloat(Toggle.i)
 EndDeclareModule
 Module PNB
+  Global EnableBinaryFloat.i
+  Procedure.i nListEnableBinaryFloat(Toggle.i)
+    EnableBinaryFloat = Toggle
+  EndProcedure
+  
+  CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL Or #PB_Compiler_Thread = 1
+    Global MutexFuncMap.i
+    Global MutexVarMap.i
+  CompilerEndIf
+  
+  CompilerIf #PB_Compiler_ExecutableFormat <> #PB_Compiler_DLL And #PB_Compiler_Thread = 1
+    MutexFuncMap = CreateMutex()
+    MutexVarMap = CreateMutex()
+  CompilerEndIf
   EnumerationBinary PNB_TYPE 0
     #PNB_TYPE_NONE
     #PNB_TYPE_LIST = 1
@@ -1099,13 +1114,14 @@ Module PNB
     Protected Start.i
     Protected Index.i
     Protected Depth.i
+    Protected Amount.i
     
     Start = 1
     Index = 1
     Depth = 0
+    Amount = 0
     
     While Index <= Len(String)
-      
       Select Asc(Mid(String, Index, 1))
         Case Asc(";") ;Block comments; will be ignored..
           Start = Index
@@ -1144,6 +1160,7 @@ Module PNB
             EndSelect
           Until Depth = 0 Or Index > Len(String)
           AddElement(nList())
+          Amount+1
           nList()\Flags | #PNB_TYPE_STRING
           nList()\s = Mid(String, Start+1, Index-Start-1)
           
@@ -1160,7 +1177,7 @@ Module PNB
             EndSelect
           Until Depth = 0 Or Index > Len(String)
           AddElement(nList())
-          nListPNBtonList(nList()\nList(), Mid(String, Start+1, Index-Start-1))
+          Amount+nListPNBtonList(nList()\nList(), Mid(String, Start+1, Index-Start-1))
           nList()\Flags | #PNB_TYPE_LIST
           
         Case Asc(" "), 9, 13, 10 ;Ignore spaces, tabs, carriage returns (CR), and line feeds (LF).
@@ -1172,6 +1189,7 @@ Module PNB
           Until Asc(Mid(String, Index, 1)) = Asc(" ") Or Asc(Mid(String, Index, 1)) = 13 Or Asc(Mid(String, Index, 1)) = 10 Or Asc(Mid(String, Index, 1)) = 9 Or Asc(Mid(String, Index, 1)) = Asc("(") Or Asc(Mid(String, Index, 1)) = Asc(")") Or Index > Len(String)
           
           AddElement(nList())
+          Amount+1
           nList()\s = Mid(String, Start, Index-Start)
           
           Select Asc(nList()\s)
@@ -1218,6 +1236,26 @@ Module PNB
                     nList()\Flags | #PNB_TYPE_EPIC
                     nList()\s = ""
                   EndIf
+                ElseIf Mid(nList()\s, 1, 3) = "0fx"
+                  If Len(nList()\s) < 12
+                    nList()\l = Val("$"+Mid(nList()\s, 4))
+                    nList()\Flags | #PNB_TYPE_FLOAT
+                    nList()\s = ""
+                  Else
+                    nList()\q = Val("$"+Mid(nList()\s, 4))
+                    nList()\Flags | #PNB_TYPE_DOUBLE
+                    nList()\s = ""
+                  EndIf
+                ElseIf Mid(nList()\s, 1, 3) = "0fb"
+                  If Len(nList()\s) < 36
+                    nList()\l = Val("%"+Mid(nList()\s, 4))
+                    nList()\Flags | #PNB_TYPE_FLOAT
+                    nList()\s = ""
+                  Else
+                    nList()\q = Val("%"+Mid(nList()\s, 4))
+                    nList()\Flags | #PNB_TYPE_DOUBLE
+                    nList()\s = ""
+                  EndIf
                 Else
                   If Len(nList()\s) < 12
                     nList()\l = Val(nList()\s)
@@ -1247,105 +1285,56 @@ Module PNB
   EndProcedure
   
   
-  Procedure.s nListPNBToString(List nList.nList(), a.i = 0, PrettyPrint.i = 1)
+  Procedure.s nListPNBToString(List nList.nList(), BinaryFloat.i = 0)
     Protected String.s
     ForEach nList()
-      Select PrettyPrint
-        Case 1
-          If ListSize(nList()\nList())
-            String + Space(a*4)+"("+#CRLF$
-            String + nListPNBToString(nList()\nList(), a+1, PrettyPrint)+#CRLF$
-            String + Space(a*4)+")"+#CRLF$
-          Else
-            Select nListGetHighestType(nList()\Flags)
-              Case #PNB_TYPE_UBYTE
-                String + Space(a*4)+Str(nList()\a)+#CRLF$
-              Case #PNB_TYPE_BYTE
-                String + Space(a*4)+Str(nList()\b)+#CRLF$
-              Case #PNB_TYPE_CHARACTER
-                String + Space(a*4)+Str(nList()\c)+#CRLF$
-              Case #PNB_TYPE_DOUBLE
-                String + Space(a*4)+StrD(nList()\d, 19)+#CRLF$
-              Case #PNB_TYPE_FLOAT
-                String + Space(a*4)+StrF(nList()\f, 14)+#CRLF$
-              Case #PNB_TYPE_INTEGER
-                String + Space(a*4)+Str(nList()\i)+#CRLF$
-              Case #PNB_TYPE_LONG
-                String + Space(a*4)+Str(nList()\l)+#CRLF$
-              Case #PNB_TYPE_NAME
-                String + Space(a*4)+nList()\s+#CRLF$
-              Case #PNB_TYPE_POINTER
-                String + Space(a*4)+Str(nList()\p)+#CRLF$
-              Case #PNB_TYPE_EPIC
-                String + Space(a*4)+Str(nList()\q)+#CRLF$
-              Case #PNB_TYPE_STRING
-                String + Space(a*4)+"["+nList()\s+"]"+#CRLF$
-              Case #PNB_TYPE_UWORD
-                String + Space(a*4)+Str(nList()\u)+#CRLF$
-              Case #PNB_TYPE_WORD
-                String + Space(a*4)+Str(nList()\w)+#CRLF$
-            EndSelect
-            
-          EndIf
-        Default
-          If ListSize(nList()\nList())
-            String + "("+nListPNBToString(nList()\nList(), a+1, PrettyPrint)+") "
-          Else
-            Select nListGetHighestType(nList()\Flags)
-              Case #PNB_TYPE_UBYTE
-                String +Str(nList()\a)+" "
-              Case #PNB_TYPE_BYTE
-                String + Str(nList()\b)+" "
-              Case #PNB_TYPE_CHARACTER
-                String + Str(nList()\c)+" "
-              Case #PNB_TYPE_DOUBLE
-                String + StrD(nList()\d, 19)+" "
-              Case #PNB_TYPE_FLOAT
-                String + StrF(nList()\f, 14)+" "
-              Case #PNB_TYPE_INTEGER
-                String + Str(nList()\i)+" "
-              Case #PNB_TYPE_LONG
-                String + Str(nList()\l)+" "
-              Case #PNB_TYPE_NAME
-                String + nList()\s+" "
-              Case #PNB_TYPE_POINTER
-                String + Str(nList()\p)+" "
-              Case #PNB_TYPE_EPIC
-                String + Str(nList()\q)+" "
-              Case #PNB_TYPE_STRING
-                String + "["+nList()\s+"] "
-              Case #PNB_TYPE_UWORD
-                String + Str(nList()\u)+" "
-              Case #PNB_TYPE_WORD
-                String + Str(nList()\w)+" "
-            EndSelect
-          EndIf
-      EndSelect
+      If ListSize(nList()\nList())
+        String + "("+nListPNBToString(nList()\nList(), BinaryFloat)+") "
+      Else
+        Select nListGetHighestType(nList()\Flags)
+          Case #PNB_TYPE_UBYTE
+            String +Str(nList()\a)+" "
+          Case #PNB_TYPE_BYTE
+            String + Str(nList()\b)+" "
+          Case #PNB_TYPE_CHARACTER
+            String + Str(nList()\c)+" "
+          Case #PNB_TYPE_DOUBLE
+            If BinaryFloat
+              String + "0fx"+Hex(nList()\q, #PB_Quad)+" "
+            Else
+              String + StrD(nList()\d, 19)+" "
+            EndIf
+          Case #PNB_TYPE_FLOAT
+            If BinaryFloat
+              String + "0fx"+Hex(nList()\l, #PB_Long)+" "
+            Else
+              String + StrF(nList()\f, 14)+" "
+            EndIf
+          Case #PNB_TYPE_INTEGER
+            String + Str(nList()\i)+" "
+          Case #PNB_TYPE_LONG
+            String + Str(nList()\l)+" "
+          Case #PNB_TYPE_NAME
+            String + nList()\s+" "
+          Case #PNB_TYPE_POINTER
+            String + Str(nList()\p)+" "
+          Case #PNB_TYPE_EPIC
+            String + Str(nList()\q)+" "
+          Case #PNB_TYPE_STRING
+            String + "["+nList()\s+"] "
+          Case #PNB_TYPE_UWORD
+            String + Str(nList()\u)+" "
+          Case #PNB_TYPE_WORD
+            String + Str(nList()\w)+" "
+        EndSelect
+      EndIf
     Next
-    Select PrettyPrint
-      Case 1
-        If String
-          String = Left(String, Len(String)-2)
-        EndIf
-      Default
-        If String
-          String = Left(String, Len(String)-1)
-        EndIf
-    EndSelect
+    If String
+      String = Left(String, Len(String)-1)
+    EndIf
     
     ProcedureReturn String
   EndProcedure
-  
-  
-  CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL Or #PB_Compiler_Thread = 1
-    Global MutexFuncMap.i
-    Global MutexVarMap.i
-  CompilerEndIf
-  
-  CompilerIf #PB_Compiler_ExecutableFormat <> #PB_Compiler_DLL And #PB_Compiler_Thread = 1
-    MutexFuncMap = CreateMutex()
-    MutexVarMap = CreateMutex()
-  CompilerEndIf
   
   Procedure.i nListEval(List nList.nList())
     Static NewMap Lexicon.nList()
@@ -2501,10 +2490,59 @@ Module PNB
               ClearList(nList())
             EndIf
             
-            
             ;---Discard
           Case "Discard"
             ClearList(nList())
+            
+            ;---Size
+          Case "Size"
+            DeleteElement(nList())
+            RINT = ListSize(nList())
+            ClearList(nList())
+            AddElement(nList())
+            nList()\i = RINT
+            nList()\Flags | #PNB_TYPE_INTEGER
+            RINT = 0
+            
+            ;---Offset
+          Case "Offset"
+            DeleteElement(nList())
+            ForEach nList()
+              Select nListGetHighestType(nList()\Flags)
+                Case #PNB_TYPE_POINTER
+                  
+                Case #PNB_TYPE_STRING
+                  RINT+StringByteLength(nList()\s)
+                Case #PNB_TYPE_NAME
+                  Select nList()\s
+                    Case "Double"
+                      RINT+SizeOf(Double)
+                    Case "Float"
+                      RINT+SizeOf(Float)
+                    Case "Epic"
+                      RINT+SizeOf(Quad)
+                    Case "Integer"
+                      RINT+SizeOf(Integer)
+                    Case "Long"
+                      RINT+SizeOf(Long)
+                    Case "Word"
+                      RINT+SizeOf(Word)
+                    Case "Byte"
+                      RINT+SizeOf(Byte)
+                    Case "UWord"
+                      RINT+SizeOf(Unicode)
+                    Case "Character"
+                      RINT+SizeOf(Character)
+                    Case "UByte"
+                      RINT+SizeOf(Ascii)
+                  EndSelect
+              EndSelect
+              DeleteElement(nList())
+            Next
+            AddElement(nList())
+            nList()\i = RINT
+            nList()\Flags | #PNB_TYPE_INTEGER
+            RINT = 0
             
             
             ;-#Type manipulation
@@ -2521,6 +2559,7 @@ Module PNB
                       cList1()\Flags | #PNB_TYPE_CHARACTER
                     Next
                   EndIf
+                  DeleteElement(nList())
                 Case #PNB_TYPE_STRING
                   If Len(nList()\s)
                     For RCNT = 1 To Len(nList()\s)
@@ -2588,7 +2627,6 @@ Module PNB
               AddElement(nList())
               nList()\s = RSTR
               nList()\Flags | #PNB_TYPE_NAME
-              
             Next
             RSTR = ""
             
@@ -3135,6 +3173,37 @@ Module PNB
             Next
             MergeLists(cList1(), nList())
             
+            ;---Inspect
+          Case "Inspect"
+            DeleteElement(nList())
+            ForEach nList()
+              CompilerIf #PB_Compiler_Thread = 1
+                LockMutex(MutexVarMap)
+              CompilerEndIf
+              If nList()\Flags & #PNB_TYPE_NAME
+                If FindMapElement(Memory(), nList()\s)
+                  If LastElement(Memory()\nList())
+                    AddElement(cList1())
+                    cList1() = Memory()\nList()
+                  EndIf
+                Else
+                  ResetMap(Memory())
+                EndIf
+              Else
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexVarMap)
+                CompilerEndIf
+                ClearList(nList())
+                ClearList(cList1())
+                Break
+              EndIf
+              CompilerIf #PB_Compiler_Thread = 1
+                UnlockMutex(MutexVarMap)
+              CompilerEndIf
+              DeleteElement(nList())
+            Next
+            MergeLists(cList1(), nList())
+            
             
             ;---Bury
           Case "Bury"
@@ -3198,33 +3267,37 @@ Module PNB
             Next
             MergeLists(cList1(), nList())
             
-            
-            ;---Count
-          Case "Count"
+            ;---Detect
+          Case "Detect"
             DeleteElement(nList())
             ForEach nList()
+              CompilerIf #PB_Compiler_Thread = 1
+                LockMutex(MutexVarMap)
+              CompilerEndIf
               If nList()\Flags & #PNB_TYPE_NAME
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexVarMap)
-                CompilerEndIf
                 If FindMapElement(Memory(), nList()\s)
-                  AddElement(cList1())
-                  cList1()\i = ListSize(Memory()\nList())
-                  cList1()\Flags = #PNB_TYPE_INTEGER
+                  If FirstElement(Memory()\nList())
+                    AddElement(cList1())
+                    cList1() = Memory()\nList()
+                  EndIf
                 Else
                   ResetMap(Memory())
                 EndIf
+              Else
                 CompilerIf #PB_Compiler_Thread = 1
                   UnlockMutex(MutexVarMap)
                 CompilerEndIf
-                DeleteElement(nList())
-              Else
                 ClearList(nList())
                 ClearList(cList1())
                 Break
               EndIf
+              CompilerIf #PB_Compiler_Thread = 1
+                UnlockMutex(MutexVarMap)
+              CompilerEndIf
+              DeleteElement(nList())
             Next
             MergeLists(cList1(), nList())
+            
             
             ;-#Arithmetic
             ;---Add
@@ -6168,63 +6241,63 @@ Module PNB
                   *RPTR = AllocateMemory(nList()\d)
                   nList()\d = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
                 Case #PNB_TYPE_FLOAT
                   *RPTR = AllocateMemory(nList()\f)
                   nList()\f = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
                 Case #PNB_TYPE_EPIC
                   *RPTR = AllocateMemory(nList()\q)
                   nList()\q = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
                 Case #PNB_TYPE_INTEGER
                   *RPTR = AllocateMemory(nList()\i)
                   nList()\i = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
                 Case #PNB_TYPE_LONG
                   *RPTR = AllocateMemory(nList()\l)
                   nList()\l = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
                 Case #PNB_TYPE_WORD
                   *RPTR = AllocateMemory(nList()\w)
                   nList()\w = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
                 Case #PNB_TYPE_BYTE
                   *RPTR = AllocateMemory(nList()\b)
                   nList()\b = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
                 Case #PNB_TYPE_UWORD
                   *RPTR = AllocateMemory(nList()\u)
                   nList()\u = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
                 Case #PNB_TYPE_CHARACTER
                   *RPTR = AllocateMemory(nList()\c)
                   nList()\c = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
                 Case #PNB_TYPE_UBYTE
                   *RPTR = AllocateMemory(nList()\a)
                   nList()\a = 0
                   nList()\p = *RPTR
-                  *RPTR = 0
                   nList()\Flags | #PNB_TYPE_POINTER
               EndSelect
+              If *RPTR <> 0
+                If Not FindMapElement(*PLIST(), Str(*RPTR))
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                Else
+                  FreeMemory(*PLIST())
+                  AddMapElement(*PLIST(), Str(*RPTR))
+                EndIf
+                *PLIST() = *RPTR
+              EndIf
+              *RPTR = 0
             Next
             
             ;---Free
@@ -6234,6 +6307,7 @@ Module PNB
               If nList()\Flags & #PNB_TYPE_NAME
                 If nList()\s = "All"
                   ForEach *PLIST()
+                    Debug *PLIST()
                     FreeMemory(*PLIST())
                     DeleteMapElement(*PLIST())
                   Next
@@ -6303,6 +6377,7 @@ Module PNB
               EndIf
             EndIf
             *RPTR = 0
+            
             ;---Peek
           Case "Peek"
             DeleteElement(nList())
@@ -6481,7 +6556,7 @@ Module PNB
     Protected ReturnString.s
     nListPNBTonList(nList(), String)
     nListEval(nList())
-    ReturnString = nListPNBToString(nList(), 0, 0)
+    ReturnString = nListPNBToString(nList(), EnableBinaryFloat)
     nListClear(nList())
     ProcedureReturn ReturnString.s
   EndProcedure

@@ -30,3 +30,10 @@ ProcedureCDLL.s _EvalString(String.s)
   ReturnString = PNB::nListEvalString(String)
   ProcedureReturn ReturnString
 EndProcedure
+
+ProcedureDLL.i EnableBinaryFloat(Toggle.i)
+  PNB::nListEnableBinaryFloat(Toggle)
+EndProcedure
+ProcedureCDLL.i _EnableBinaryFloat(Toggle.i)
+  PNB::nListEnableBinaryFloat(Toggle)
+EndProcedure
