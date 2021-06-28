@@ -311,7 +311,7 @@ Remove
     Returns:    Nothing
     Removes variables. If Name is All, remove all variables.
     
-Remove
+Reverse
     Takes:      Name0, Name1, ..., NameN
     Returns:    Nothing
     Inverts variable lists. (1 2 3) will become (3 2 1).
