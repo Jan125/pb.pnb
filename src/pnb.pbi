@@ -1,8 +1,9 @@
 ﻿EnableExplicit
 DeclareModule PNB
   CompilerIf #PB_Compiler_Thread = 1
-    Global MutexFuncMap.i
+    Global MutexFunMap.i
     Global MutexVarMap.i
+    Global MutexMemMap.i
   CompilerEndIf
   Declare.s nListEvalString(String.s)
   Declare.i nListEnableBinaryFloat(Toggle.i)
@@ -14,13 +15,15 @@ Module PNB
   EndProcedure
   
   CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL Or #PB_Compiler_Thread = 1
-    Global MutexFuncMap.i
+    Global MutexFunMap.i
     Global MutexVarMap.i
+    Global MutexMemMap.i
   CompilerEndIf
   
   CompilerIf #PB_Compiler_ExecutableFormat <> #PB_Compiler_DLL And #PB_Compiler_Thread = 1
-    MutexFuncMap = CreateMutex()
+    MutexFunMap = CreateMutex()
     MutexVarMap = CreateMutex()
+    MutexMemMap = CreateMutex()
   CompilerEndIf
   EnumerationBinary PNB_TYPE 0
     #PNB_TYPE_NONE
@@ -387,73 +390,145 @@ Module PNB
               Case #PNB_TYPE_NAME
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\s = PeekS(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_NAME
               Case #PNB_TYPE_STRING
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\s = PeekS(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_STRING
               Case #PNB_TYPE_DOUBLE
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\d = PeekD(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_DOUBLE
               Case #PNB_TYPE_FLOAT
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\f = PeekF(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_FLOAT
               Case #PNB_TYPE_EPIC
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\q = PeekQ(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_EPIC
               Case #PNB_TYPE_INTEGER
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\i = PeekI(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_INTEGER
               Case #PNB_TYPE_LONG
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\l = PeekL(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_LONG
               Case #PNB_TYPE_WORD
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\w = PeekW(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_WORD
               Case #PNB_TYPE_BYTE
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\b = PeekB(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_BYTE
               Case #PNB_TYPE_UWORD
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\u = PeekU(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_UWORD
               Case #PNB_TYPE_CHARACTER
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\c = PeekC(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_CHARACTER
               Case #PNB_TYPE_UBYTE
                 *PTR = nList()\p
                 nList()\p = 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 nList()\a = PeekA(*PTR)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
                 *PTR = 0
                 nlist()\Flags = #PNB_TYPE_UBYTE
             EndSelect
@@ -1997,13 +2072,13 @@ Module PNB
                                     If cList2()\nList()\Flags & #PNB_TYPE_NAME
                                       If cList2()\nList()\s = "Clear"
                                         CompilerIf #PB_Compiler_Thread = 1
-                                          LockMutex(MutexFuncMap)
+                                          LockMutex(MutexFunMap)
                                         CompilerEndIf
                                         ClearMap(Lexicon())
                                         ClearMap(Param())
                                         ClearMap(ParamDefault())
                                         CompilerIf #PB_Compiler_Thread = 1
-                                          UnlockMutex(MutexFuncMap)
+                                          UnlockMutex(MutexFunMap)
                                         CompilerEndIf
                                         Break
                                       Else
@@ -2017,7 +2092,7 @@ Module PNB
                                   EndIf
                                 Else ;normal function declaration
                                   CompilerIf #PB_Compiler_Thread = 1
-                                    LockMutex(MutexFuncMap)
+                                    LockMutex(MutexFunMap)
                                   CompilerEndIf
                                   AddMapElement(Lexicon(), cList1()\nList()\s)
                                   AddMapElement(Param(), cList1()\nList()\s)
@@ -2072,7 +2147,7 @@ Module PNB
                                     DeleteMapElement(ParamDefault())
                                   EndIf
                                   CompilerIf #PB_Compiler_Thread = 1
-                                    UnlockMutex(MutexFuncMap)
+                                    UnlockMutex(MutexFunMap)
                                   CompilerEndIf
                                 EndIf
                               EndIf
@@ -2646,6 +2721,9 @@ Module PNB
           Case "Pointer"
             DeleteElement(nList())
             ForEach nList()
+              CompilerIf #PB_Compiler_Thread = 1
+                LockMutex(MutexMemMap)
+              CompilerEndIf
               Select nListGetHighestType(nList()\Flags)
                 Case #PNB_TYPE_NAME
                   *RPTR = AllocateMemory(StringByteLength(nList()\s)+SizeOf(Character))
@@ -2816,6 +2894,9 @@ Module PNB
                   *RPTR = 0
                   nList()\Flags = #PNB_TYPE_POINTER
               EndSelect
+              CompilerIf #PB_Compiler_Thread = 1
+                UnlockMutex(MutexMemMap)
+              CompilerEndIf
             Next
             
             
@@ -3110,9 +3191,93 @@ Module PNB
             Next
             MergeLists(cList2(), nList())
             
+            ;---Take
+          Case "Take"
+            DeleteElement(nList())
+            ForEach nList()
+              If nList()\Flags & #PNB_TYPE_NAME
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexVarMap)
+                CompilerEndIf
+                If FindMapElement(Memory(), nList()\s)
+                  MergeLists(Memory()\nList(), cList1())
+                  DeleteMapElement(Memory())
+                Else
+                  ResetMap(Memory())
+                EndIf
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexVarMap)
+                CompilerEndIf
+                DeleteElement(nList())
+              EndIf
+            Next
+            MergeLists(cList1(), nList())
             
-            ;---Push
-          Case "Push"
+            ;---Remove
+          Case "Remove"
+            DeleteElement(nList())
+            ForEach nList()
+              If nList()\Flags & #PNB_TYPE_NAME
+                If nList()\s = "All"
+                  CompilerIf #PB_Compiler_Thread = 1
+                    LockMutex(MutexVarMap)
+                  CompilerEndIf
+                  ClearMap(Memory())
+                  ClearList(nList())
+                  CompilerIf #PB_Compiler_Thread = 1
+                    UnlockMutex(MutexVarMap)
+                  CompilerEndIf
+                Else
+                  CompilerIf #PB_Compiler_Thread = 1
+                    LockMutex(MutexVarMap)
+                  CompilerEndIf
+                  If FindMapElement(Memory(), nList()\s)
+                    DeleteMapElement(Memory())
+                  Else
+                    ResetMap(Memory())
+                  EndIf
+                  CompilerIf #PB_Compiler_Thread = 1
+                    UnlockMutex(MutexVarMap)
+                  CompilerEndIf
+                EndIf
+                DeleteElement(nList())
+              EndIf
+            Next
+            
+            ;---Cycle
+          Case "Cycle"
+            DeleteElement(nList())
+            ForEach nList()
+              CompilerIf #PB_Compiler_Thread = 1
+                LockMutex(MutexVarMap)
+              CompilerEndIf
+              If nList()\Flags & #PNB_TYPE_NAME
+                If FindMapElement(Memory(), nList()\s)
+                  If FirstElement(Memory()\nList())
+                    AddElement(cList1())
+                    cList1() = Memory()\nList()
+                    MoveElement(Memory()\nList(), #PB_List_Last)
+                  EndIf
+                Else
+                  ResetMap(Memory())
+                EndIf
+              Else
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexVarMap)
+                CompilerEndIf
+                ClearList(nList())
+                ClearList(cList1())
+                Break
+              EndIf
+              CompilerIf #PB_Compiler_Thread = 1
+                UnlockMutex(MutexVarMap)
+              CompilerEndIf
+              DeleteElement(nList())
+            Next
+            MergeLists(cList1(), nList())
+            
+            ;---Bury
+          Case "Bury"
             DeleteElement(nList())
             If NextElement(nList())
               If nList()\Flags & #PNB_TYPE_NAME
@@ -3138,100 +3303,6 @@ Module PNB
             EndIf
             
             
-            ;---Pop
-          Case "Pop"
-            DeleteElement(nList())
-            ForEach nList()
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexVarMap)
-              CompilerEndIf
-              If nList()\Flags & #PNB_TYPE_NAME
-                If FindMapElement(Memory(), nList()\s)
-                  If LastElement(Memory()\nList())
-                    AddElement(cList1())
-                    cList1() = Memory()\nList()
-                    DeleteElement(Memory()\nList())
-                    If Not ListSize(Memory()\nList())
-                      DeleteMapElement(Memory())
-                    EndIf
-                  EndIf
-                Else
-                  ResetMap(Memory())
-                EndIf
-              Else
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(nList())
-                ClearList(cList1())
-                Break
-              EndIf
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
-              CompilerEndIf
-              DeleteElement(nList())
-            Next
-            MergeLists(cList1(), nList())
-            
-            ;---Inspect
-          Case "Inspect"
-            DeleteElement(nList())
-            ForEach nList()
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexVarMap)
-              CompilerEndIf
-              If nList()\Flags & #PNB_TYPE_NAME
-                If FindMapElement(Memory(), nList()\s)
-                  If LastElement(Memory()\nList())
-                    AddElement(cList1())
-                    cList1() = Memory()\nList()
-                  EndIf
-                Else
-                  ResetMap(Memory())
-                EndIf
-              Else
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(nList())
-                ClearList(cList1())
-                Break
-              EndIf
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
-              CompilerEndIf
-              DeleteElement(nList())
-            Next
-            MergeLists(cList1(), nList())
-            
-            
-            ;---Bury
-          Case "Bury"
-            DeleteElement(nList())
-            If NextElement(nList())
-              If nList()\Flags & #PNB_TYPE_NAME
-                AddElement(cList1())
-                cList1() = nList()
-                DeleteElement(nList())
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexVarMap)
-                CompilerEndIf
-                If Not FindMapElement(Memory(), cList1()\s)
-                  AddMapElement(Memory(), cList1()\s)
-                EndIf
-                MergeLists(nList(), Memory()\nList(), #PB_List_First)
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(cList1())
-              Else
-                ClearList(nList())
-              EndIf
-            Else
-              ClearList(nList())
-            EndIf
-            
-            
             ;---Dig
           Case "Dig"
             DeleteElement(nList())
@@ -3241,7 +3312,7 @@ Module PNB
               CompilerEndIf
               If nList()\Flags & #PNB_TYPE_NAME
                 If FindMapElement(Memory(), nList()\s)
-                  If FirstElement(Memory()\nList())
+                  If LastElement(Memory()\nList())
                     AddElement(cList1())
                     cList1() = Memory()\nList()
                     DeleteElement(Memory()\nList())
@@ -3276,6 +3347,100 @@ Module PNB
               CompilerEndIf
               If nList()\Flags & #PNB_TYPE_NAME
                 If FindMapElement(Memory(), nList()\s)
+                  If LastElement(Memory()\nList())
+                    AddElement(cList1())
+                    cList1() = Memory()\nList()
+                  EndIf
+                Else
+                  ResetMap(Memory())
+                EndIf
+              Else
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexVarMap)
+                CompilerEndIf
+                ClearList(nList())
+                ClearList(cList1())
+                Break
+              EndIf
+              CompilerIf #PB_Compiler_Thread = 1
+                UnlockMutex(MutexVarMap)
+              CompilerEndIf
+              DeleteElement(nList())
+            Next
+            MergeLists(cList1(), nList())
+            
+            
+            ;---Push
+          Case "Push"
+            DeleteElement(nList())
+            If NextElement(nList())
+              If nList()\Flags & #PNB_TYPE_NAME
+                AddElement(cList1())
+                cList1() = nList()
+                DeleteElement(nList())
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexVarMap)
+                CompilerEndIf
+                If Not FindMapElement(Memory(), cList1()\s)
+                  AddMapElement(Memory(), cList1()\s)
+                EndIf
+                MergeLists(nList(), Memory()\nList(), #PB_List_First)
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexVarMap)
+                CompilerEndIf
+                ClearList(cList1())
+              Else
+                ClearList(nList())
+              EndIf
+            Else
+              ClearList(nList())
+            EndIf
+            
+            
+            ;---Pop
+          Case "Pop"
+            DeleteElement(nList())
+            ForEach nList()
+              CompilerIf #PB_Compiler_Thread = 1
+                LockMutex(MutexVarMap)
+              CompilerEndIf
+              If nList()\Flags & #PNB_TYPE_NAME
+                If FindMapElement(Memory(), nList()\s)
+                  If FirstElement(Memory()\nList())
+                    AddElement(cList1())
+                    cList1() = Memory()\nList()
+                    DeleteElement(Memory()\nList())
+                    If Not ListSize(Memory()\nList())
+                      DeleteMapElement(Memory())
+                    EndIf
+                  EndIf
+                Else
+                  ResetMap(Memory())
+                EndIf
+              Else
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexVarMap)
+                CompilerEndIf
+                ClearList(nList())
+                ClearList(cList1())
+                Break
+              EndIf
+              CompilerIf #PB_Compiler_Thread = 1
+                UnlockMutex(MutexVarMap)
+              CompilerEndIf
+              DeleteElement(nList())
+            Next
+            MergeLists(cList1(), nList())
+            
+            ;---Inspect
+          Case "Inspect"
+            DeleteElement(nList())
+            ForEach nList()
+              CompilerIf #PB_Compiler_Thread = 1
+                LockMutex(MutexVarMap)
+              CompilerEndIf
+              If nList()\Flags & #PNB_TYPE_NAME
+                If FindMapElement(Memory(), nList()\s)
                   If FirstElement(Memory()\nList())
                     AddElement(cList1())
                     cList1() = Memory()\nList()
@@ -3297,6 +3462,38 @@ Module PNB
               DeleteElement(nList())
             Next
             MergeLists(cList1(), nList())
+            
+            ;---Reverse
+          Case "Reverse"
+            DeleteElement(nList())
+            ForEach nList()
+              CompilerIf #PB_Compiler_Thread = 1
+                LockMutex(MutexVarMap)
+              CompilerEndIf
+              If nList()\Flags & #PNB_TYPE_NAME
+                If FindMapElement(Memory(), nList()\s)
+                  ForEach Memory()\nList()
+                    InsertElement(cList1())
+                    cList1() = Memory()\nList()
+                  Next
+                  ClearList(Memory()\nList())
+                  MergeLists(cList1(), Memory()\nList())
+                Else
+                  ResetMap(Memory())
+                EndIf
+              Else
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexVarMap)
+                CompilerEndIf
+                ClearList(nList())
+                ClearList(cList1())
+                Break
+              EndIf
+              CompilerIf #PB_Compiler_Thread = 1
+                UnlockMutex(MutexVarMap)
+              CompilerEndIf
+              DeleteElement(nList())
+            Next
             
             
             ;-#Arithmetic
@@ -6225,6 +6422,7 @@ Module PNB
                   nList()\a = ~nList()\a
               EndSelect
             Next
+            
             ;-#Memory
             ;---Allocate
           Case "Allocate"
@@ -6289,6 +6487,9 @@ Module PNB
                   nList()\Flags | #PNB_TYPE_POINTER
               EndSelect
               If *RPTR <> 0
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 If Not FindMapElement(*PLIST(), Str(*RPTR))
                   AddMapElement(*PLIST(), Str(*RPTR))
                 Else
@@ -6296,6 +6497,9 @@ Module PNB
                   AddMapElement(*PLIST(), Str(*RPTR))
                 EndIf
                 *PLIST() = *RPTR
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
               EndIf
               *RPTR = 0
             Next
@@ -6306,19 +6510,66 @@ Module PNB
             ForEach nList()
               If nList()\Flags & #PNB_TYPE_NAME
                 If nList()\s = "All"
+                  CompilerIf #PB_Compiler_Thread = 1
+                    LockMutex(MutexMemMap)
+                  CompilerEndIf
                   ForEach *PLIST()
-                    Debug *PLIST()
                     FreeMemory(*PLIST())
                     DeleteMapElement(*PLIST())
                   Next
+                  CompilerIf #PB_Compiler_Thread = 1
+                    UnlockMutex(MutexMemMap)
+                  CompilerEndIf
                 EndIf
               ElseIf nList()\Flags & #PNB_TYPE_POINTER
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
                 If FindMapElement(*PLIST(), Str(nList()\p))
                   FreeMemory(nList()\p)
                   DeleteMapElement(*PLIST())
                 Else
-                  ResetMap(Memory())
+                  ResetMap(*PLIST())
                 EndIf
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexMemMap)
+                CompilerEndIf
+              EndIf
+              DeleteElement(nList())
+            Next
+            
+            ;---Assert
+          Case "Assert"
+            DeleteElement(nList())
+            ForEach nList()
+              If nList()\Flags & #PNB_TYPE_POINTER
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
+                AddMapElement(*PLIST(), Str(nList()\p))
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
+              EndIf
+              DeleteElement(nList())
+            Next
+            
+            ;---Relinquish
+          Case "Relinquish"
+            DeleteElement(nList())
+            ForEach nList()
+              If nList()\Flags & #PNB_TYPE_POINTER
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
+                If FindMapElement(*PLIST(), Str(nList()\p))
+                  DeleteMapElement(*PLIST())
+                Else
+                  ResetMap(*PLIST())
+                EndIf
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexMemMap)
+                CompilerEndIf
               EndIf
               DeleteElement(nList())
             Next
@@ -6333,41 +6584,114 @@ Module PNB
                 ForEach nList()
                   Select nListGetHighestType(nList()\Flags)
                     Case #PNB_TYPE_NAME
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeS(*RPTR, nList()\s)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+StringByteLength(nList()\s)+SizeOf(Character)
                     Case #PNB_TYPE_STRING
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeS(*RPTR, nList()\s)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+StringByteLength(nList()\s)+SizeOf(Character)
                     Case #PNB_TYPE_POINTER
+                      ;---add pointer writing
                     Case #PNB_TYPE_DOUBLE
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeD(*RPTR, nList()\d)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Double)
                     Case #PNB_TYPE_FLOAT
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeF(*RPTR, nList()\f)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Float)
                     Case #PNB_TYPE_EPIC
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeQ(*RPTR, nList()\q)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Quad)
                     Case #PNB_TYPE_INTEGER
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeI(*RPTR, nList()\i)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Integer)
                     Case #PNB_TYPE_LONG
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeL(*RPTR, nList()\l)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Long)
                     Case #PNB_TYPE_WORD
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeW(*RPTR, nList()\w)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Word)
                     Case #PNB_TYPE_BYTE
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeB(*RPTR, nList()\b)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Byte)
                     Case #PNB_TYPE_UWORD
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeU(*RPTR, nList()\u)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Unicode)
                     Case #PNB_TYPE_CHARACTER
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeC(*RPTR, nList()\c)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Character)
                     Case #PNB_TYPE_UBYTE
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
                       PokeA(*RPTR, nList()\a)
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                       *RPTR+SizeOf(Ascii)
                   EndSelect
                   DeleteElement(nList())
@@ -6391,62 +6715,134 @@ Module PNB
                       Select nList()\s
                         Case "Name"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\s = PeekS(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+StringByteLength(cList1()\s)+SizeOf(Character)
                           cList1()\Flags | #PNB_TYPE_NAME
                         Case "String"
                           AddElement(cList1())
                           cList1()\s = PeekS(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+StringByteLength(cList1()\s)+SizeOf(Character)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\Flags | #PNB_TYPE_STRING
                         Case "Double"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\d = PeekD(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Double)
                           cList1()\Flags | #PNB_TYPE_DOUBLE
                         Case "Float"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\f = PeekF(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Float)
                           cList1()\Flags | #PNB_TYPE_FLOAT
                         Case "Epic"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\q = PeekQ(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Quad)
                           cList1()\Flags | #PNB_TYPE_EPIC
                         Case "Integer"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\i = PeekI(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Integer)
                           cList1()\Flags | #PNB_TYPE_INTEGER
                         Case "Long"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\l = PeekL(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Long)
                           cList1()\Flags | #PNB_TYPE_LONG
                         Case "Word"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\w = PeekW(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Word)
                           cList1()\Flags | #PNB_TYPE_WORD
                         Case "Byte"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\b = PeekB(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Byte)
                           cList1()\Flags | #PNB_TYPE_BYTE
                         Case "UWord"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\u = PeekU(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Unicode)
                           cList1()\Flags | #PNB_TYPE_UWORD
                         Case "Character"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\c = PeekC(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Character)
                           cList1()\Flags | #PNB_TYPE_CHARACTER
                         Case "UByte"
                           AddElement(cList1())
+                          CompilerIf #PB_Compiler_Thread = 1
+                            LockMutex(MutexMemMap)
+                          CompilerEndIf
                           cList1()\a = PeekA(*RPTR)
+                          CompilerIf #PB_Compiler_Thread = 1
+                            UnlockMutex(MutexMemMap)
+                          CompilerEndIf
                           *RPTR+SizeOf(Ascii)
                           cList1()\Flags | #PNB_TYPE_UBYTE
                       EndSelect

@@ -2,13 +2,15 @@
 
 CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL And #PB_Compiler_Thread = 1
   ProcedureDLL AttachProcess(Instance)
-    PNB::MutexFuncMap = CreateMutex()
+    PNB::MutexFunMap = CreateMutex()
     PNB::MutexVarMap = CreateMutex()
+    PNB::MutexMemMap = CreateMutex()
   EndProcedure
   
   ProcedureDLL DetachProcess(Instance)
-    FreeMutex(PNB::MutexFuncMap)
+    FreeMutex(PNB::MutexFunMap)
     FreeMutex(PNB::MutexVarMap)
+    FreeMutex(PNB::MutexMemMap)
   EndProcedure
 CompilerEndIf
 
