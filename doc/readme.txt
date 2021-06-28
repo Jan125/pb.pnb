@@ -245,7 +245,7 @@ Size
 Offset
     Takes:      Everything
     Returns:    Integer
-    Returns total memory offset of all variables.
+    Returns total memory offset of all variables. Names return the length of their types instead.
     
     
 3.1.3 - Type Manipulation
@@ -287,7 +287,7 @@ Force<Type>
 These commands enable variable declarations.
     
 Set
-    Takes:      Name, Parameter0, Parameter1, ..., ParameterN
+    Takes:      Name, Parameter0, Parameter1, ..., ParameterN OR Name, Name=Clear OR Name=All, Name=Clear
     Returns:    Nothing
     Creates a new variable entry under the given name.
     This variable entry is a value snapshot of the rest of the list.
@@ -306,35 +306,55 @@ Get
     Returns:    List snapshot under given names.
     Creates a new list entry and gets the list snapshot under the given names, in order.
     
-Push
-    Takes:      Name, Parameter0, Parameter1, ..., ParameterN
+Remove
+    Takes:      Name0, Name1, ..., NameN Or Name=All
     Returns:    Nothing
-    Appends parameters to end of variable.
+    Removes variables. If Name is All, remove all variables.
     
-Pop
+Remove
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Nothing
+    Inverts variable lists. (1 2 3) will become (3 2 1).
+    
+Take
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    List snapshot under given names.
+    Creates a new list entry and gets the list snapshot under the given names, in order. Removes variable.
+    
+Cycle
     Takes:      Name0, Name1, ..., NameN
     Returns:    Parameter0, Parameter1, ..., ParameterN
-    Removes parameters from end of variables and returns them.
+    Copies parameters from beginning of variables and returns them. Puts the first element of variable to end of variable.
     
-Inspect
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    Parameter0, Parameter1, ..., ParameterN
-    Copies parameters from end of variables and returns them.
-    
-Bury
+Push
     Takes:      Name, Parameter0, Parameter1, ..., ParameterN
     Returns:    Nothing
     Appends parameters to beginning of variable.
     
+Pop
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Parameter0, Parameter1, ..., ParameterN
+    Removes parameters from beginning of variables and returns them.
+    
+Inspect
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Parameter0, Parameter1, ..., ParameterN
+    Copies parameters from beginning of variables and returns them.
+    
+Bury
+    Takes:      Name, Parameter0, Parameter1, ..., ParameterN
+    Returns:    Nothing
+    Appends parameters to end of variable.
+    
 Dig
     Takes:      Name0, Name1, ..., NameN
     Returns:    Parameter0, Parameter1, ..., ParameterN
-    Removes parameters from start of variables and returns them.
+    Removes parameters from end of variables and returns them.
     
 Detect
     Takes:      Name0, Name1, ..., NameN
     Returns:    Parameter0, Parameter1, ..., ParameterN
-    Copies parameters from start of variables and returns them.
+    Copies parameters from end of variables and returns them.
     
     
 3.1.5 - Arithmetic
@@ -579,6 +599,16 @@ Free
     Frees specific memory areas, OR frees all memory areas defined by the program.
     Externally passed memory is not freed with All.
     Freeing externally passed memory may result in problems.
+    
+Assert
+    Takes:      Pointer0, Pointer1, ..., PointerN
+    Returns:    None
+    Adds pointers to the auto-free list.
+    
+Relinquish
+    Takes:      Pointer0, Pointer1, ..., PointerN
+    Returns:    None
+    Removes pointers from the auto-free list.
     
 Poke
     Takes:      Pointer, Parameter0, Parameter1, ..., ParameterN
