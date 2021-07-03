@@ -6,12 +6,12 @@ DeclareModule PNB
     Global MutexMemMap.i
   CompilerEndIf
   Declare.s nListEvalString(String.s)
-  Declare.i nListEnableBinaryFloat(Toggle.i)
+  Declare.i nListEnableBinary(Toggle.i)
 EndDeclareModule
 Module PNB
-  Global EnableBinaryFloat.i
-  Procedure.i nListEnableBinaryFloat(Toggle.i)
-    EnableBinaryFloat = Toggle
+  Global EnableBinary.i
+  Procedure.i nListEnableBinary(Toggle.i)
+    EnableBinary = Toggle
   EndProcedure
   
   CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL Or #PB_Compiler_Thread = 1
@@ -133,20 +133,38 @@ Module PNB
                 nList()\s = Mid(nList()\s, 2)
               Wend
               If Left(nList()\s, 2) = "0x"
-                nList()\p = Val("$"+nList()\s)
+                nList()\p = Val("$"+Mid(nList()\s, 2))
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\p = Val("$"+nList()\s)
+                nList()\p = Val("%"+Mid(nList()\s, 2))
               Else
                 nList()\p = Val(nList()\s)
               EndIf
               nList()\s = ""
               nList()\Flags = #PNB_TYPE_POINTER
             Case #PNB_TYPE_DOUBLE
-              nList()\d = ValD(nList()\s)
+              While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+                nList()\s = Mid(nList()\s, 2)
+              Wend
+              If Left(nList()\s, 2) = "0x"
+                nList()\q = Val("$"+Mid(nList()\s, 2))
+              ElseIf Left(nList()\s, 2) = "0b"
+                nList()\q = Val("%"+Mid(nList()\s, 2))
+              Else
+                nList()\d = ValD(nList()\s)
+              EndIf
               nList()\s = ""
               nList()\Flags = #PNB_TYPE_DOUBLE
             Case #PNB_TYPE_FLOAT
-              nList()\f = ValF(nList()\s)
+              While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+                nList()\s = Mid(nList()\s, 2)
+              Wend
+              If Left(nList()\s, 2) = "0x"
+                nList()\l = Val("$"+Mid(nList()\s, 2))
+              ElseIf Left(nList()\s, 2) = "0b"
+                nList()\l = Val("%"+Mid(nList()\s, 2))
+              Else
+                nList()\f = ValF(nList()\s)
+              EndIf
               nList()\s = ""
               nList()\Flags = #PNB_TYPE_FLOAT
             Case #PNB_TYPE_EPIC
@@ -154,9 +172,9 @@ Module PNB
                 nList()\s = Mid(nList()\s, 2)
               Wend
               If Left(nList()\s, 2) = "0x"
-                nList()\q = Val("$"+nList()\s)
+                nList()\q = Val("$"+Mid(nList()\s, 2))
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\q = Val("$"+nList()\s)
+                nList()\q = Val("%"+Mid(nList()\s, 2))
               Else
                 nList()\q = Val(nList()\s)
               EndIf
@@ -169,7 +187,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\i = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\i = Val("$"+nList()\s)
+                nList()\i = Val("%"+nList()\s)
               Else
                 nList()\i = Val(nList()\s)
               EndIf
@@ -182,7 +200,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\l = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\l = Val("$"+nList()\s)
+                nList()\l = Val("%"+nList()\s)
               Else
                 nList()\l = Val(nList()\s)
               EndIf
@@ -195,7 +213,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\w = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\w = Val("$"+nList()\s)
+                nList()\w = Val("%"+nList()\s)
               Else
                 nList()\w = Val(nList()\s)
               EndIf
@@ -208,7 +226,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\b = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\b = Val("$"+nList()\s)
+                nList()\b = Val("%"+nList()\s)
               Else
                 nList()\b = Val(nList()\s)
               EndIf
@@ -221,7 +239,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\u = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\u = Val("$"+nList()\s)
+                nList()\u = Val("%"+nList()\s)
               Else
                 nList()\u = Val(nList()\s)
               EndIf
@@ -234,7 +252,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\c = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\c = Val("$"+nList()\s)
+                nList()\c = Val("%"+nList()\s)
               Else
                 nList()\c = Val(nList()\s)
               EndIf
@@ -247,7 +265,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\a = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\a = Val("$"+nList()\s)
+                nList()\a = Val("%"+nList()\s)
               Else
                 nList()\a = Val(nList()\s)
               EndIf
@@ -263,20 +281,38 @@ Module PNB
                 nList()\s = Mid(nList()\s, 2)
               Wend
               If Left(nList()\s, 2) = "0x"
-                nList()\p = Val("$"+nList()\s)
+                nList()\p = Val("$"+Mid(nList()\s, 2))
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\p = Val("$"+nList()\s)
+                nList()\p = Val("%"+Mid(nList()\s, 2))
               Else
                 nList()\p = Val(nList()\s)
               EndIf
               nList()\s = ""
               nList()\Flags = #PNB_TYPE_POINTER
             Case #PNB_TYPE_DOUBLE
-              nList()\d = ValD(nList()\s)
+              While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+                nList()\s = Mid(nList()\s, 2)
+              Wend
+              If Left(nList()\s, 2) = "0x"
+                nList()\q = Val("$"+Mid(nList()\s, 2))
+              ElseIf Left(nList()\s, 2) = "0b"
+                nList()\q = Val("%"+Mid(nList()\s, 2))
+              Else
+                nList()\d = ValD(nList()\s)
+              EndIf
               nList()\s = ""
               nList()\Flags = #PNB_TYPE_DOUBLE
             Case #PNB_TYPE_FLOAT
-              nList()\f = ValF(nList()\s)
+              While Left(nList()\s, 1) = "$" Or Left(nList()\s, 1) = "%"
+                nList()\s = Mid(nList()\s, 2)
+              Wend
+              If Left(nList()\s, 2) = "0x"
+                nList()\l = Val("$"+Mid(nList()\s, 2))
+              ElseIf Left(nList()\s, 2) = "0b"
+                nList()\l = Val("%"+Mid(nList()\s, 2))
+              Else
+                nList()\f = ValF(nList()\s)
+              EndIf
               nList()\s = ""
               nList()\Flags = #PNB_TYPE_FLOAT
             Case #PNB_TYPE_EPIC
@@ -284,9 +320,9 @@ Module PNB
                 nList()\s = Mid(nList()\s, 2)
               Wend
               If Left(nList()\s, 2) = "0x"
-                nList()\q = Val("$"+nList()\s)
+                nList()\q = Val("$"+Mid(nList()\s, 2))
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\q = Val("$"+nList()\s)
+                nList()\q = Val("%"+Mid(nList()\s, 2))
               Else
                 nList()\q = Val(nList()\s)
               EndIf
@@ -299,7 +335,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\i = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\i = Val("$"+nList()\s)
+                nList()\i = Val("%"+nList()\s)
               Else
                 nList()\i = Val(nList()\s)
               EndIf
@@ -312,7 +348,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\l = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\l = Val("$"+nList()\s)
+                nList()\l = Val("%"+nList()\s)
               Else
                 nList()\l = Val(nList()\s)
               EndIf
@@ -325,7 +361,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\w = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\w = Val("$"+nList()\s)
+                nList()\w = Val("%"+nList()\s)
               Else
                 nList()\w = Val(nList()\s)
               EndIf
@@ -338,7 +374,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\b = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\b = Val("$"+nList()\s)
+                nList()\b = Val("%"+nList()\s)
               Else
                 nList()\b = Val(nList()\s)
               EndIf
@@ -351,7 +387,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\u = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\u = Val("$"+nList()\s)
+                nList()\u = Val("%"+nList()\s)
               Else
                 nList()\u = Val(nList()\s)
               EndIf
@@ -364,7 +400,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\c = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\c = Val("$"+nList()\s)
+                nList()\c = Val("%"+nList()\s)
               Else
                 nList()\c = Val(nList()\s)
               EndIf
@@ -377,7 +413,7 @@ Module PNB
               If Left(nList()\s, 2) = "0x"
                 nList()\a = Val("$"+nList()\s)
               ElseIf Left(nList()\s, 2) = "0b"
-                nList()\a = Val("$"+nList()\s)
+                nList()\a = Val("%"+nList()\s)
               Else
                 nList()\a = Val(nList()\s)
               EndIf
@@ -1311,26 +1347,6 @@ Module PNB
                     nList()\Flags | #PNB_TYPE_EPIC
                     nList()\s = ""
                   EndIf
-                ElseIf Mid(nList()\s, 1, 3) = "0fx"
-                  If Len(nList()\s) < 12
-                    nList()\l = Val("$"+Mid(nList()\s, 4))
-                    nList()\Flags | #PNB_TYPE_FLOAT
-                    nList()\s = ""
-                  Else
-                    nList()\q = Val("$"+Mid(nList()\s, 4))
-                    nList()\Flags | #PNB_TYPE_DOUBLE
-                    nList()\s = ""
-                  EndIf
-                ElseIf Mid(nList()\s, 1, 3) = "0fb"
-                  If Len(nList()\s) < 36
-                    nList()\l = Val("%"+Mid(nList()\s, 4))
-                    nList()\Flags | #PNB_TYPE_FLOAT
-                    nList()\s = ""
-                  Else
-                    nList()\q = Val("%"+Mid(nList()\s, 4))
-                    nList()\Flags | #PNB_TYPE_DOUBLE
-                    nList()\s = ""
-                  EndIf
                 Else
                   If Len(nList()\s) < 12
                     nList()\l = Val(nList()\s)
@@ -1360,47 +1376,95 @@ Module PNB
   EndProcedure
   
   
-  Procedure.s nListPNBToString(List nList.nList(), BinaryFloat.i = 0)
+  Procedure.s nListPNBToString(List nList.nList(), Binary.i = 0)
     Protected String.s
     ForEach nList()
       If ListSize(nList()\nList())
-        String + "("+nListPNBToString(nList()\nList(), BinaryFloat)+") "
+        String + "("+nListPNBToString(nList()\nList(), Binary)+") "
       Else
         Select nListGetHighestType(nList()\Flags)
           Case #PNB_TYPE_UBYTE
-            String +Str(nList()\a)+" "
+            If Binary
+              String + "(ForceUByte 0x"+Hex(nList()\a, #PB_Ascii)+") "
+            Else
+              String + Str(nList()\b)+" "
+            EndIf
           Case #PNB_TYPE_BYTE
-            String + Str(nList()\b)+" "
+            If Binary
+              String + "(ForceByte 0x"+Hex(nList()\b, #PB_Byte)+") "
+            Else
+              String + Str(nList()\b)+" "
+            EndIf
           Case #PNB_TYPE_CHARACTER
-            String + Str(nList()\c)+" "
+            If Binary
+              CompilerIf #PB_Compiler_Unicode
+                String + "(ForceCharacter 0x"+Hex(nList()\c, #PB_Unicode)+") "
+              CompilerElse
+                String + "(ForceCharacter 0x"+Hex(nList()\c, #PB_Ascii)+") "
+              CompilerEndIf
+            Else
+              String + Str(nList()\c)+" "
+            EndIf
           Case #PNB_TYPE_DOUBLE
-            If BinaryFloat
-              String + "0fx"+Hex(nList()\q, #PB_Quad)+" "
+            If Binary
+              String + "(ForceDouble 0x"+Hex(nList()\q, #PB_Quad)+") "
             Else
               String + StrD(nList()\d, 19)+" "
             EndIf
           Case #PNB_TYPE_FLOAT
-            If BinaryFloat
-              String + "0fx"+Hex(nList()\l, #PB_Long)+" "
+            If Binary
+              String + "(ForceFloat 0x"+Hex(nList()\l, #PB_Long)+") "
             Else
               String + StrF(nList()\f, 14)+" "
             EndIf
           Case #PNB_TYPE_INTEGER
-            String + Str(nList()\i)+" "
+            If Binary
+              CompilerIf #PB_Compiler_Processor = #PB_Processor_x64
+                String + "(ForceInteger 0x"+Hex(nList()\q, #PB_Quad)+") "
+              CompilerElse
+                String + "(ForceInteger 0x"+Hex(nList()\l, #PB_Long)+") "
+              CompilerEndIf
+            Else
+              String + Str(nList()\i)+" "
+            EndIf
           Case #PNB_TYPE_LONG
-            String + Str(nList()\l)+" "
+            If Binary
+              String + "(ForceLong 0x"+Hex(nList()\l, #PB_Long)+") "
+            Else
+              String + Str(nList()\l)+" "
+            EndIf
           Case #PNB_TYPE_NAME
             String + nList()\s+" "
           Case #PNB_TYPE_POINTER
-            String + Str(nList()\p)+" "
+            If Binary
+              CompilerIf #PB_Compiler_Processor = #PB_Processor_x64
+                String + "(ForcePointer 0x"+Hex(nList()\p, #PB_Quad)+") "
+              CompilerElse
+                String + "(ForcePointer 0x"+Hex(nList()\p, #PB_Long)+") "
+              CompilerEndIf
+            Else
+              String + Str(nList()\p)+" "
+            EndIf
           Case #PNB_TYPE_EPIC
-            String + Str(nList()\q)+" "
+            If Binary
+              String + "(ForceQuad 0x"+Hex(nList()\q, #PB_Quad)+") "
+            Else
+              String + Str(nList()\q)+" "
+            EndIf
           Case #PNB_TYPE_STRING
             String + "["+nList()\s+"] "
           Case #PNB_TYPE_UWORD
-            String + Str(nList()\u)+" "
+            If Binary
+              String + "(ForceUWord 0x"+Hex(nList()\u, #PB_Unicode)+") "
+            Else
+              String + Str(nList()\u)+" "
+            EndIf
           Case #PNB_TYPE_WORD
-            String + Str(nList()\w)+" "
+            If Binary
+              String + "(ForceWord 0x"+Hex(nList()\w, #PB_Word)+") "
+            Else
+              String + Str(nList()\w)+" "
+            EndIf
         EndSelect
       EndIf
     Next
@@ -2568,6 +2632,16 @@ Module PNB
             ;---Discard
           Case "Discard"
             ClearList(nList())
+            
+            ;---Invert
+          Case "Invert"
+            DeleteElement(nList())
+            ForEach nList()
+              InsertElement(cList1())
+              cList1() = nList()
+            Next
+            ClearList(nList())
+            MergeLists(cList1(), nList())
             
             ;---Size
           Case "Size"
@@ -6602,7 +6676,18 @@ Module PNB
                       CompilerEndIf
                       *RPTR+StringByteLength(nList()\s)+SizeOf(Character)
                     Case #PNB_TYPE_POINTER
-                      ;---add pointer writing
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
+                      If FindMapElement(*PLIST(), Str(nList()\p))
+                        MoveMemory(*PLIST(), *RPTR, MemorySize(*PLIST()))
+                        *RPTR+MemorySize(*PLIST())
+                      Else
+                        ResetMap(*PLIST())
+                      EndIf
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                     Case #PNB_TYPE_DOUBLE
                       CompilerIf #PB_Compiler_Thread = 1
                         LockMutex(MutexMemMap)
@@ -6711,6 +6796,19 @@ Module PNB
                 DeleteElement(nList())
                 ForEach nList()
                   Select nListGetHighestType(nList()\Flags)
+                    Case #PNB_TYPE_POINTER
+                      CompilerIf #PB_Compiler_Thread = 1
+                        LockMutex(MutexMemMap)
+                      CompilerEndIf
+                      If FindMapElement(*PLIST(), Str(nList()\p))
+                        CopyMemory(*RPTR, *PLIST(), MemorySize(*PLIST()))
+                        *RPTR+MemorySize(*PLIST())
+                      Else
+                        ResetMap(*PLIST())
+                      EndIf
+                      CompilerIf #PB_Compiler_Thread = 1
+                        UnlockMutex(MutexMemMap)
+                      CompilerEndIf
                     Case #PNB_TYPE_NAME
                       Select nList()\s
                         Case "Name"
@@ -6952,7 +7050,7 @@ Module PNB
     Protected ReturnString.s
     nListPNBTonList(nList(), String)
     nListEval(nList())
-    ReturnString = nListPNBToString(nList(), EnableBinaryFloat)
+    ReturnString = nListPNBToString(nList(), EnableBinary)
     nListClear(nList())
     ProcedureReturn ReturnString.s
   EndProcedure

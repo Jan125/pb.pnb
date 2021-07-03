@@ -33,9 +33,9 @@ ProcedureCDLL.s _EvalString(String.s)
   ProcedureReturn ReturnString
 EndProcedure
 
-ProcedureDLL.i EnableBinaryFloat(Toggle.i)
-  PNB::nListEnableBinaryFloat(Toggle)
+ProcedureDLL.i EnableBinary(Toggle.i)
+  PNB::nListEnableBinary(Toggle)
 EndProcedure
-ProcedureCDLL.i _EnableBinaryFloat(Toggle.i)
-  PNB::nListEnableBinaryFloat(Toggle)
+ProcedureCDLL.i _EnableBinary(Toggle.i)
+  PNB::nListEnableBinary(Toggle)
 EndProcedure
