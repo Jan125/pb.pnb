@@ -28,10 +28,10 @@ Pointer->StringW(2 byte) _EvalString(Pointer->StringW(2 byte))
 with an CDECL (x86) or FASTCALL (x64) convention.
 
 Added to that are two functions to toggle binary float returns:
-Int32->Void EnableBinaryPointer(Int32)
+Int32->Void EnableBinary(Int32)
 with an STDCALL (x86) or FASTCALL (x64) convention,
 and
-Int64->Void _EnableBinaryPointer(Int64)
+Int64->Void _EnableBinary(Int64)
 with an CDECL (x86) or FASTCALL (x64) convention.
 
 The standard AttachProcess and DetachProcess procedures are available and should be called automatically.
@@ -80,7 +80,7 @@ PNB has the following types:
 -Epic (64 bit signed integer, used when integer input is 11 characters or longer, or 0x hex input is 11 characters or longer, or 0b binary input is 35 characters or longer)
 -Pointer (32/64 bit signed integer, depending on compiler bitness)
 -Float (32 bit single precision floating point number)
--Double (64 bit single precision floating point number, used when float input is 12 characters or longer, or 0fx hex input is 12 characters or longer, or 0fb binary input is 36 characters or longer)
+-Double (64 bit single precision floating point number, used when float input is 12 characters or longer)
 -String (8/16 bit character strings, depending on compiler Unicode switch)
 
 Internal types that are used for program flow:
@@ -91,7 +91,7 @@ Internal types that are used for program flow:
 The lexer searches for the following elements:
 -List           = Everything in (Parentheses) will create a List type element. This does not apply to parentheses inside Strings.
 -Integer/Epic   = Everything starting with numbers, +, and -, without any decimal . in them. Hex input via 0x and binary input via 0b are supported.
--Float/Double   = Everything starting with numbers, +, -, and decimal . . The decimal is only allowed to exist once. Hex input via 0fx and binary input via 0fb are supported.
+-Float/Double   = Everything starting with numbers, +, -, and decimal . . The decimal is only allowed to exist once.
 -String         = Everything encased in 'quotes', "double quotes", and [square brackets].
 -Command        = Everything that does not fit other criteria, but is the first element. These elements also get the Name type.
 -Name           = Everything that does not fit any other criteria.
@@ -237,6 +237,12 @@ Discard
     This command discards every value in the list.
     Sublists are still evaluated before they are discarded.
     
+Invert
+    Takes:      Parameter0, Parameter1, ..., ParameterN
+    Returns:    ParameterN, ..., Parameter1, Parameter0
+    Inverts order of list elements.
+    (Invert 1 2 3) will become (3 2 1).
+    
 Size
     Takes:      Everything
     Returns:    Integer
@@ -314,7 +320,7 @@ Remove
 Reverse
     Takes:      Name0, Name1, ..., NameN
     Returns:    Nothing
-    Inverts variable lists. (1 2 3) will become (3 2 1).
+    Inverts variables. (1 2 3) will become (3 2 1).
     
 Take
     Takes:      Name0, Name1, ..., NameN
@@ -611,17 +617,19 @@ Relinquish
     Removes pointers from the auto-free list.
     
 Poke
-    Takes:      Pointer, Parameter0, Parameter1, ..., ParameterN
+    Takes:      Pointer, Parameter0 OR Pointer0, Parameter1 OR Pointer1, ..., ParameterN OR PointerN
     Returns:    None
     Writes parameters of their respective types into the address at pointer, incrementing the address with each entry by the size of the type.
     Strings are pushed as 16bit per character in unicode mode, 8bit otherwise.
     Strings are null-terminated.
+    If a Pointer is specified as write object, it will write the whole block size from the address. This only works for managed Pointer blocks.
     
 Peek
-    Takes:      Pointer, Name0=<Type>, Name1=<Type>, ..., NameN=<Type>
+    Takes:      Pointer, Name0=<Type> OR Pointer0, Name1=<Type> OR Pointer1, ..., NameN=<Type> OR PointerN
     Returns:    <Type>0, <Type>1, ..., <TypeN>
     Reads parameters of their respective types, incrementing the address with each entry by the size of the type.
     Strings are read as 16bit per character in unicode mode, 8bit otherwise.
     Strings must be null-terminated.
+    If a Pointer is specified as read object, it will read the whole block size from the address. This only works for managed Pointer blocks.
     
     
