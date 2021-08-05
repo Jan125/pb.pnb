@@ -211,13 +211,27 @@ Debug
 3.1.2 - List Manipulation
 These commands manipulate the state of the list.
 
+Fork
+    Takes:      List0, List1, ..., ListN
+    Returns:    Nothing
+    All Lists are handled in their own thread.
+    Return values are not handled.
+    Execution of subsequent commands does not halt.
+    
+Fetch
+    Takes:      List0, List1, ..., ListN
+    Returns:    List0, List1, ..., ListN
+    All Lists are handled in their own thread.
+    Return values are returned to their original position.
+    Execution of subsequent commands is suspended until all Lists have been evaluated.
+    
 Command
     Takes:      Command, Parameter0, Parameter1, ..., ParameterN
     Returns:    Everything that the command would return.
     This command takes the first element of the list and treats it as a command.
     It is executed like a normal command, with the rest of the list being used as parameters.
     This command is by design unsafe.
-
+    
 List
     Takes:      Everything
     Returns:    Everything

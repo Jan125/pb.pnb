@@ -9,6 +9,35 @@ DeclareModule PNB
   Declare.i nListEnableBinary(Toggle.i)
 EndDeclareModule
 Module PNB
+  
+  Structure nList
+    List nList.nList()
+    Flags.i
+    StructureUnion
+      a.a
+      c.c
+      u.u
+      b.b
+      w.w
+      l.l
+      i.i
+      q.q
+      f.f
+      d.d
+      *p
+    EndStructureUnion
+    s.s
+  EndStructure
+  
+  Structure nListThread
+    List nList.nList()
+  EndStructure
+  
+  Declare.s nListEvalString(String.s)
+  Declare.i nListEvalThread(*nList.nListThread)
+  Declare.i nListEvalThreadFork(*nList.nListThread)
+  Declare.i nListEnableBinary(Toggle.i)
+  
   Global EnableBinary.i
   Procedure.i nListEnableBinary(Toggle.i)
     EnableBinary = Toggle
@@ -50,25 +79,6 @@ Module PNB
     #PNB_TYPE_NAME
   EndEnumeration
   
-  
-  Structure nList
-    List nList.nList()
-    Flags.i
-    StructureUnion
-      a.a
-      c.c
-      u.u
-      b.b
-      w.w
-      l.l
-      i.i
-      q.q
-      f.f
-      d.d
-      *p
-    EndStructureUnion
-    s.s
-  EndStructure
   
   
   Procedure.i nListGetHighestType(Flags.i)
@@ -1502,6 +1512,8 @@ Module PNB
     Protected RUNI.u
     Protected *RPTR
     
+    Protected *TPTR.nListThread
+    
     Protected NewList cList1.nList()
     Protected NewList cList2.nList()
     Protected NewList cList3.nList()
@@ -2253,6 +2265,42 @@ Module PNB
               DeleteElement(nList())
               ProcedureReturn
               
+              
+            Case "Fork";--Fork
+              DeleteElement(nList())
+              ForEach nList()
+                If nList()\Flags & #PNB_TYPE_LIST
+                *TPTR = AllocateStructure(nListThread)
+                CopyList(nList()\nList(), *TPTR\nList())
+                  CreateThread(@nListEvalThreadFork(), *TPTR)
+                  DeleteElement(nList())
+                Else
+                  DeleteElement(nList())
+                EndIf
+              Next
+              ProcedureReturn
+              
+            Case "Fetch";--Fetch
+              DeleteElement(nList())
+              ForEach nList()
+                If nList()\Flags & #PNB_TYPE_LIST
+                  AddElement(cList1())
+                  cList1()\p = CreateThread(@nListEvalThread(), @nList())
+                Else
+                  DeleteElement(nList())
+                EndIf
+              Next
+              ForEach cList1()
+                WaitThread(cList1()\p)
+                DeleteElement(cList1())
+              Next
+              ForEach nList()
+                If ListSize(nList()\nList()) = 0
+                  DeleteElement(nList())
+                EndIf
+              Next
+              ProcedureReturn
+              
             Case "Command"
               DeleteElement(nList())
               If NextElement(nList()) 
@@ -2569,6 +2617,10 @@ Module PNB
             Next
             
             ;-#List Manipilation
+            ;---Fork
+            ;Case "Fork" is already implemented in a different format in the preprocessing stage.
+            ;---Fetch
+            ;Case "Fetch" is already implemented in a different format in the preprocessing stage.
             ;---Command
             ;Case "Command" is already implemented in a different format in the preprocessing stage.
             ;---List
@@ -7054,4 +7106,15 @@ Module PNB
     nListClear(nList())
     ProcedureReturn ReturnString.s
   EndProcedure
+  
+  Procedure.i nListEvalThread(*nList.nListThread)
+    nListEval(*nList\nList())
+  EndProcedure
+  
+  Procedure.i nListEvalThreadFork(*nList.nListThread)
+    nListEval(*nList\nList())
+    ClearStructure(*nList, nListThread)
+    FreeMemory(*nList)
+  EndProcedure
+  
 EndModule
