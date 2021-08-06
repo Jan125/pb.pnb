@@ -1105,22 +1105,6 @@ Module PNB
   EndProcedure
   
   
-  Procedure.i nListClear(List nList.nList(), Type.i = #PB_List_First) ;PB clears list elements automatically.
-    Protected a.i
-    If Type = #PB_List_First Or Type = #PB_List_Last
-      ResetList(nList())
-      a = #PB_List_After
-    Else
-      a = Type
-    EndIf
-    
-    While NextElement(nList())
-      If ListSize(nList()\nList())
-        nListClear(nList())
-      EndIf
-      DeleteElement(nList())
-    Wend
-  EndProcedure
   
   Procedure.i nListCompare(List nList1.nList(), List nList2.nList())
     PushListPosition(nList1())
@@ -2295,10 +2279,12 @@ Module PNB
                 DeleteElement(cList1())
               Next
               ForEach nList()
-                If ListSize(nList()\nList()) = 0
+                If nList()\Flags & #PNB_TYPE_LIST
+                  MergeLists(nList()\nList(), nList(), #PB_List_After)
                   DeleteElement(nList())
                 EndIf
               Next
+              
               ProcedureReturn
               
             Case "Command"
@@ -7103,7 +7089,6 @@ Module PNB
     nListPNBTonList(nList(), String)
     nListEval(nList())
     ReturnString = nListPNBToString(nList(), EnableBinary)
-    nListClear(nList())
     ProcedureReturn ReturnString.s
   EndProcedure
   

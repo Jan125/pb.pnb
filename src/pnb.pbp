@@ -8,7 +8,7 @@
   <section name="data">
     <explorer view="C:\ProgramData\PureBasic\Examples\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2021-08-05 20:18" user="Dino" host="HUSKLET"/>
+    <lastopen date="2021-08-06 16:03" user="Dino" host="HUSKLET"/>
   </section>
   <section name="files">
     <file name="dll.pb">
@@ -17,7 +17,7 @@
     </file>
     <file name="pnb.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="dde1386e575fcd8991b74c9f9591bfc1"/>
+      <fingerprint md5="e417ac6aae2b05ac023bff389c1638af"/>
     </file>
     <file name="test.pb">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
@@ -33,7 +33,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1114"/>
+      <buildcount enable="1" value="1121"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -58,7 +58,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1114"/>
+      <buildcount enable="1" value="1121"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -81,7 +81,7 @@
       <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="console" cpu="0"/>
-      <compilecount enable="1" value="431"/>
+      <compilecount enable="1" value="442"/>
     </target>
   </section>
 </project>
