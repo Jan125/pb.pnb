@@ -183,25 +183,25 @@ This is the minimum required feature set for PNB.
 3.1.1 - Basic
 These commands provide basic functionality that does not fit anywhere else.
 
-Eval
+Eval, Evaluate
     Takes:      String0, String1, ..., StringN
     Returns:    None
     This command executes every PNB query in the input strings.
     This command is code injecting and thus vulnerable to attacks by design.
     
-Output
+Out, Output
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    None
     This command discards every input if run outside of the debug environment.
     Otherwise, it returns each parameter in the debug window.
     
-Error
+Err, Error
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    None
     This command discards every input if run outside of the debug environment.
     Otherwise, it returns each parameter in the debug window.
     
-Debug
+Dbg, Debug
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    None
     This command discards every input if run outside of the debug environment.
@@ -239,11 +239,10 @@ List
     Everything after it will not be evaluated and is returned as is.
     
 Element
-    Takes:      Integer, Parameter0, Parameter1, ..., ParameterN
+    Takes:      Integer, Parameter0, Parameter1, ..., ParameterN OR Name = All, Parameter0, Parameter1, ..., ParameterN
     Returns:    Parameter[Integer] OR everything
     This command returns the list element at the place that the integer defines.
-    The first element index is 0.
-    If the index is less than 0, everything is returned.
+    The first element index is 1.
     
 Discard
     Takes:      Everything
@@ -291,7 +290,7 @@ Type
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    <Type>0, <Type>1, ..., <Type>N
     Everything is converted to <Type>.
-    Accepted names are Name, String, Pointer, Double, Float, Epic, Integer, Long, Word, Byte, UWord, Character, UByte.
+    Accepted types are Name, String, Pointer, Double, Float, Epic, Integer, Long, Word, Byte, UWord, Character, UByte.
     Note that if <Type> is Pointer, everything is allocated to a memory address. This memory address must be freed with Free to stop memory leaks.
     If a Parameter is a Pointer, the program will read the memory from the pointer's address. Memory is not freed after usage.
     
@@ -300,7 +299,7 @@ Force<Type>
     Returns:    <Type>0, <Type>1, ..., <Type>N
     Everything is cast to <Type>.
     No conversion is done. You can treat Float as Long with this.
-    Accepted names are Name, String, Pointer, Double, Float, Epic, Integer, Long, Word, Byte, UWord, Character, UByte.
+    Accepted types are Name, String, Pointer, Double, Float, Epic, Integer, Long, Word, Byte, UWord, Character, UByte.
     
     
 3.1.4 - Variables
@@ -326,6 +325,11 @@ Get
     Returns:    List snapshot under given names.
     Creates a new list entry and gets the list snapshot under the given names, in order.
     
+Take
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    List snapshot under given names.
+    Creates a new list entry and gets the list snapshot under the given names, in order. Removes variable.
+    
 Remove
     Takes:      Name0, Name1, ..., NameN Or Name=All
     Returns:    Nothing
@@ -335,11 +339,6 @@ Reverse
     Takes:      Name0, Name1, ..., NameN
     Returns:    Nothing
     Inverts variables. (1 2 3) will become (3 2 1).
-    
-Take
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    List snapshot under given names.
-    Creates a new list entry and gets the list snapshot under the given names, in order. Removes variable.
     
 Cycle
     Takes:      Name0, Name1, ..., NameN
@@ -438,12 +437,12 @@ Abs, _
     Return the absolute value of every float as float.
     Return the absolute value of every integer as integer.
     
-Asr, >>
+ASR, >>
     Takes:      Integer0, Integer1, ..., IntegerN
     Returns:    Integer
     Performs arithmetic shift right operations on the first integer, for every integer.
     
-Asl, <<
+ASL, <<
     Takes:      Integer0, Integer1, ..., IntegerN
     Returns:    Integer
     Performs arithmetic shift left operations on the first integer, for every integer.
@@ -453,7 +452,7 @@ Sin
     Returns:    Float0, Float1, ..., FloatN
     Calculates the sine for each value in degrees.
     
-ASin
+ASn, ASin
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    Float0, Float1, ..., FloatN
     Calculates the arcsine for each value in degrees.
@@ -463,7 +462,7 @@ Cos
     Returns:    Float0, Float1, ..., FloatN
     Calculates the cosine for each value in degrees.
     
-ACos
+ACs, ACos
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    Float0, Float1, ..., FloatN
     Calculates the arccosine for each value in degrees.
@@ -473,28 +472,28 @@ Tan
     Returns:    Float0, Float1, ..., FloatN
     Calculates the tangens for each value in degrees.
     
-ATan
+ATn, ATan
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    Float0, Float1, ..., FloatN
     Calculates the arcustangens for each value in degrees.
     
-Up
+RUp, RoundUp
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    Float0, Float1, ..., FloatN
     Rounds the given value up.
     
-Down
+RDn, RoundDown
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    Float0, Float1, ..., FloatN [Double if Parameter is Double]
     Rounds the given value down.
     
-Round
+RNr, RoundNearest
     Takes:      Parameter0, Parameter1, ..., ParameterN
     Returns:    Float0, Float1, ..., FloatN [Double if Parameter is Double]
     Rounds the given value to the nearest full value.
     
     
-Ran, Rand
+Ran, Random
     Takes:      Nothing OR IntegerRange OR IntegerRange0, IntegerRange1
     Returns:    Integer
     Returns a random integer.
