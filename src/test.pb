@@ -1,6 +1,290 @@
 ﻿XIncludeFile "pnb.pbi"
-
 DisableExplicit
+
+String.s = ""
+
+;-General test cases
+String = PNB::nListEvalString("(First Second Third Fourth Fifth)")
+If String <> "First Second Third Fourth Fifth"
+  Debug "Unit Test Failed: Parameter return"
+  Debug "Should be: First Second Third Fourth Fifth"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(First (Second Third) (Fourth (Fifth)))")
+If String <> "First Second Third Fourth Fifth"
+  Debug "Unit Test Failed: Parameter return with nested lists"
+  Debug "Should be: First Second Third Fourth Fifth"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("([Σιγμα!])")
+If String <> "[Σιγμα!]"
+  Debug "Unit Test Failed: Parameter return with unicode string"
+  Debug "Should be: [Σιγμα!]"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("()")
+If String <> ""
+  Debug "Unit Test Failed: Nothing return"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+;-Element test cases
+String = PNB::nListEvalString("(Element 3 First Second Third Fourth Fifth)")
+If String <> "Third"
+  Debug "Unit Test Failed: Element selection"
+  Debug "Should be: Third"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Element -2 First Second Third Fourth Fifth)")
+If String <> ""
+  Debug "Unit Test Failed: Element selection underflow"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Element 7 First Second Third Fourth Fifth)")
+If String <> ""
+  Debug "Unit Test Failed: Element selection overflow"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Element All First Second Third Fourth Fifth)")
+If String <> "First Second Third Fourth Fifth"
+  Debug "Unit Test Failed: Element selection all returned"
+  Debug "Should be: First Second Third Fourth Fifth"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Element)")
+If String <> ""
+  Debug "Unit Test Failed: Element selection no parameters"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Element All)")
+If String <> ""
+  Debug "Unit Test Failed: Element selection no parameters with all returned"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Element 0)")
+If String <> ""
+  Debug "Unit Test Failed: Element selection no parameters with index 0 returned"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+;-Discard test cases
+String = PNB::nListEvalString("(Discard First Second Third Fourth Fifth)")
+If String <> ""
+  Debug "Unit Test Failed: Discard with parameters"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Discard)")
+If String <> ""
+  Debug "Unit Test Failed: Discard without parameters"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+;-Invert test cases
+String = PNB::nListEvalString("(Invert First Second Third Fourth Fifth)")
+If String <> "Fifth Fourth Third Second First"
+  Debug "Unit Test Failed: Invert with parameters"
+  Debug "Should be: Fifth Fourth Third Second First"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Invert)")
+If String <> ""
+  Debug "Unit Test Failed: Invert with parameters"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+;-Size test cases
+String = PNB::nListEvalString("(Size First Second Third Fourth Fifth)")
+If String <> "5"
+  Debug "Unit Test Failed: Size without parameters"
+  Debug "Should be: 0"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Size)")
+If String <> "0"
+  Debug "Unit Test Failed: Size without parameters"
+  Debug "Should be: 0"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+;-Offset test cases
+String = PNB::nListEvalString("(Offset 2 3)")
+CompilerSelect #PB_Compiler_Processor
+  CompilerCase #PB_Processor_x64
+    If String <> "16"
+      Debug "Unit Test Failed: Offset with word and integer 64 bit"
+      Debug "Should be: 16"
+      Debug "Is: "+String
+      CallDebugger
+    EndIf
+  CompilerDefault
+    If String <> "8"
+      Debug "Unit Test Failed: Offset with word and integer 32 bit"
+      Debug "Should be: 8"
+      Debug "Is: "+String
+      CallDebugger
+    EndIf
+CompilerEndSelect
+String = ""
+
+String = PNB::nListEvalString("(Offset [This])")
+CompilerSelect #PB_Compiler_Unicode
+  CompilerCase 1
+    If String <> "8"
+      Debug "Unit Test Failed: Offset with string - unicode"
+      Debug "Should be: 8"
+      Debug "Is: "+String
+      CallDebugger
+    EndIf
+  CompilerDefault
+    If String <> "4"
+      Debug "Unit Test Failed: Offset with string - ascii"
+      Debug "Should be: 4"
+      Debug "Is: "+String
+      CallDebugger
+    EndIf
+CompilerEndSelect
+String = ""
+
+String = PNB::nListEvalString("(Offset)")
+If String <> "0"
+  Debug "Unit Test Failed: Offset without parameters"
+  Debug "Should be: 0"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+;-Split test cases
+String = PNB::nListEvalString("(Split [This should be split.])")
+If String <> "84 104 105 115 32 115 104 111 117 108 100 32 98 101 32 115 112 108 105 116 46"
+  Debug "Unit Test Failed: Split with string"
+  Debug "Should be: 84 104 105 115 32 115 104 111 117 108 100 32 98 101 32 115 112 108 105 116 46"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Split [1] [2])")
+If String <> "49 50"
+  Debug "Unit Test Failed: Split with multiple strings"
+  Debug "Should be: 49 50"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Split 55.5)")
+If String <> ""
+  Debug "Unit Test Failed: Split with non-supported type"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Split)")
+If String <> ""
+  Debug "Unit Test Failed: Split without parameters"
+  Debug "Should be: (None)"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+;-Fuse test cases
+String = PNB::nListEvalString("(Fuse 84 104 105 115 32 115 104 111 117 108 100 32 98 101 32 115 112 108 105 116 46)")
+If String <> "[This should be split.]"
+  Debug "Unit Test Failed: Fuse with parameters"
+  Debug "Should be: [This should be split.]"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Fuse 55.5)")
+If String <> "[8]"
+  Debug "Unit Test Failed: Fuse with non-supported type (number)"
+  Debug "Should be: [8]"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Fuse [Test.])")
+If String <> "[]"
+  Debug "Unit Test Failed: Fuse with non-supported type (string)"
+  Debug "Should be: []"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("(Fuse)")
+If String <> "[]"
+  Debug "Unit Test Failed: Fuse without parameters"
+  Debug "Should be: []"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+;
+;-Stress test
 Debug "#Test how many times this query can be called per second:"
 DisableDebugger
 a = 0
@@ -13,11 +297,6 @@ Until EndTime_Stress-StartTime_Stress > 1000
 EnableDebugger
 PNB::nListEvalString("Debug (+ [Your PC has called the single thread stress test ] ["+Str(a-1)+" ] [times in one second!])")
 
-Debug "#Test if UNICODE works correctly. Should read 'Sigma!' in Greek letters, or, if UNICODE is not supported, '?????!'."
-PNB::nListEvalString("Debug [Σιγμα!]")
-
-Debug "#Test multiple parameter returns: Should read 'First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh'."
-PNB::nListEvalString("Debug ([First] [Second]) ([Third] [Fourth] [Fifth]) [Sixth] ([Seventh])")
 
 Debug "#Test if everything is dissolved in order: Should read 'oh no it is spaghetticode D:'."
 PNB::nListEvalString("Debug (+ (+ 'oh no it ' 'is ') (+ 'spaghetticode ' 'D:'))")
@@ -99,33 +378,4 @@ PNB::nListEvalString("Debug (Peek (Get A) Integer)")
 PNB::nListEvalString("Free All")
 
 
-
-; Debug "#Beer song time!"
-; CompilerSelect #PB_Compiler_Unicode
-;   CompilerCase 1
-;     PNB::nListEvalString(PeekS(?Beer, -1, #PB_UTF8))
-;   CompilerDefault
-;     PNB::nListEvalString(PeekS(?Beer, -1, #PB_Ascii))
-; CompilerEndSelect
-; 
-; Debug "#Fibonacci calculation! This may take a while."
-; CompilerSelect #PB_Compiler_Unicode
-;   CompilerCase 1
-;     PNB::nListEvalString(PeekS(?Fibonacci, -1, #PB_UTF8))
-;   CompilerDefault
-;     PNB::nListEvalString(PeekS(?Fibonacci, -1, #PB_Ascii))
-; CompilerEndSelect
-
 End
-; 
-; DataSection
-;   Beer:
-;   IncludeBinary "..\scripts\beer.pnb"
-;   Data.c 0 ;Null terminator.
-; EndDataSection
-; 
-; DataSection
-;   Fibonacci:
-;   IncludeBinary "..\scripts\fibonacci.pnb"
-;   Data.c 0 ;Null terminator.
-; EndDataSection

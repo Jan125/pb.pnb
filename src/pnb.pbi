@@ -5,11 +5,11 @@ DeclareModule PNB
     Global MutexVarMap.i
     Global MutexMemMap.i
   CompilerEndIf
+  Global NewMap *PLIST()
   Declare.s nListEvalString(String.s)
   Declare.i nListEnableBinary(Toggle.i)
 EndDeclareModule
 Module PNB
-  
   Structure nList
     List nList.nList()
     Flags.i
@@ -33,6 +33,8 @@ Module PNB
     List nList.nList()
   EndStructure
   
+  Declare.i nListEval(List nList.nList())
+  
   Declare.s nListEvalString(String.s)
   Declare.i nListEvalThread(*nList.nListThread)
   Declare.i nListEvalThreadFork(*nList.nListThread)
@@ -54,6 +56,12 @@ Module PNB
     MutexVarMap = CreateMutex()
     MutexMemMap = CreateMutex()
   CompilerEndIf
+  
+  Global NewMap Lexicon.nList()
+  Global NewMap Param.nList()
+  Global NewMap ParamDefault.nList()
+  Global NewMap Memory.nList()
+  
   EnumerationBinary PNB_TYPE 0
     #PNB_TYPE_NONE
     #PNB_TYPE_LIST = 1
@@ -1469,12 +1477,16 @@ Module PNB
     ProcedureReturn String
   EndProcedure
   
+  ;-PNB::Include Files
+  XIncludeFile "functions\pnb_basic.pbi"
+  XIncludeFile "functions\pnb_listmanipulation.pbi"
+  XIncludeFile "functions\pnb_typemanipulation.pbi"
+  XIncludeFile "functions\pnb_variables.pbi"
+  XIncludeFile "functions\pnb_arithmetic.pbi"
+  XIncludeFile "functions\pnb_logic.pbi"
+  XIncludeFile "functions\pnb_memory.pbi"
+  
   Procedure.i nListEval(List nList.nList())
-    Static NewMap Lexicon.nList()
-    Static NewMap Param.nList()
-    Static NewMap ParamDefault.nList()
-    Static NewMap Memory.nList()
-    Static NewMap *PLIST()
     Protected CAR.s
     Protected a.i
     Protected b.i
@@ -2254,8 +2266,8 @@ Module PNB
               DeleteElement(nList())
               ForEach nList()
                 If nList()\Flags & #PNB_TYPE_LIST
-                *TPTR = AllocateStructure(nListThread)
-                CopyList(nList()\nList(), *TPTR\nList())
+                  *TPTR = AllocateStructure(nListThread)
+                  CopyList(nList()\nList(), *TPTR\nList())
                   CreateThread(@nListEvalThreadFork(), *TPTR)
                   DeleteElement(nList())
                 Else
@@ -2346,4652 +2358,491 @@ Module PNB
             ;-Basic Set
             ;-#Basic
             ;---Eval
-          Case "Eval"
+          Case "Eval", "Evaluate"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_STRING
-                  nListPNBTonList(cList1(), nList()\s)
-                  DeleteElement(nList())
-                  nListEval(cList1())
-                  MergeLists(cList1(), cList2())
-                  ClearList(cList1())
-                Default
-                  DeleteElement(nList())
-              EndSelect
-            Next
-            ClearList(nList())
-            MergeLists(cList2(), nList())
-            ClearList(cList2())
+            PNB_Eval(nList())
             
             ;---Wait
           Case "Wait"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_UBYTE
-                  Delay(nList()\a)
-                Case #PNB_TYPE_BYTE
-                  Delay(nList()\b)
-                Case #PNB_TYPE_CHARACTER
-                  Delay(nList()\c)
-                Case #PNB_TYPE_DOUBLE
-                  Delay(nList()\d)
-                Case #PNB_TYPE_FLOAT
-                  Delay(nList()\f)
-                Case #PNB_TYPE_INTEGER
-                  Delay(nList()\i)
-                Case #PNB_TYPE_LONG
-                  Delay(nList()\l)
-                Case #PNB_TYPE_EPIC
-                  Delay(nList()\q)
-                Case #PNB_TYPE_UWORD
-                  Delay(nList()\u)
-                Case #PNB_TYPE_WORD
-                  Delay(nList()\w)
-              EndSelect
-              DeleteElement(nList())
-            Next
+            PNB_Wait(nList())
             
             ;---Output
-          Case "Output"
+          Case "Out", "Output"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_UBYTE
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), Str(nList()\a)+#CRLF$, Len(Str(nList()\a)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_BYTE
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), Str(nList()\b)+#CRLF$, Len(Str(nList()\b)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_CHARACTER
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), Str(nList()\c)+#CRLF$, Len(Str(nList()\c)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_DOUBLE
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), StrD(nList()\d, 19)+#CRLF$, Len(StrD(nList()\d, 19)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_FLOAT
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), StrF(nList()\f, 14)+#CRLF$, Len(StrF(nList()\f, 14)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_INTEGER
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), Str(nList()\i)+#CRLF$, Len(Str(nList()\i)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_LONG
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), Str(nList()\l)+#CRLF$, Len(Str(nList()\l)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_NAME
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), nList()\s+#CRLF$, Len(nList()\s+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_POINTER
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), Str(nList()\p)+#CRLF$, Len(Str(nList()\p)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_EPIC
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), Str(nList()\q)+#CRLF$, Len(Str(nList()\q)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_STRING
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), nList()\s+#CRLF$, Len(nList()\s+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_UWORD
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), Str(nList()\u)+#CRLF$, Len(Str(nList()\u)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_WORD
-                  If GetStdHandle_(#STD_OUTPUT_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_OUTPUT_HANDLE), Str(nList()\w)+#CRLF$, Len(Str(nList()\w)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-              EndSelect
-              DeleteElement(nList())
-            Next
+            PNB_Out(nList())
             
             ;---Error
-          Case "Error"
+          Case "Err", "Error"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_UBYTE
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\a)+#CRLF$, Len(Str(nList()\a)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_BYTE
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\b)+#CRLF$, Len(Str(nList()\b)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_CHARACTER
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\c)+#CRLF$, Len(Str(nList()\c)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_DOUBLE
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrD(nList()\d, 19)+#CRLF$, Len(StrD(nList()\d, 19)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_FLOAT
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), StrF(nList()\f, 14)+#CRLF$, Len(StrF(nList()\f, 14)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_INTEGER
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\i)+#CRLF$, Len(Str(nList()\i)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_LONG
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\l)+#CRLF$, Len(Str(nList()\l)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_NAME
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), nList()\s+#CRLF$, Len(nList()\s+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_POINTER
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\p)+#CRLF$, Len(Str(nList()\p)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_EPIC
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\q)+#CRLF$, Len(Str(nList()\q)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_STRING
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), nList()\s+#CRLF$, Len(nList()\s+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_UWORD
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\u)+#CRLF$, Len(Str(nList()\u)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-                Case #PNB_TYPE_WORD
-                  If GetStdHandle_(#STD_ERROR_HANDLE)
-                    WriteConsole_(GetStdHandle_(#STD_ERROR_HANDLE), Str(nList()\w)+#CRLF$, Len(Str(nList()\w)+#CRLF$), @RINT, 0)
-                    RINT = 0
-                  EndIf
-              EndSelect
-              DeleteElement(nList())
-            Next
+            PNB_Err(nList())
             
             ;---Debug
-          Case "Debug"
+          Case "Dbg", "Debug"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_UBYTE
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\a
-                  CompilerEndIf
-                Case #PNB_TYPE_BYTE
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\b
-                  CompilerEndIf
-                Case #PNB_TYPE_CHARACTER
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\c
-                  CompilerEndIf
-                Case #PNB_TYPE_DOUBLE
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\d
-                  CompilerEndIf
-                Case #PNB_TYPE_FLOAT
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\f
-                  CompilerEndIf
-                Case #PNB_TYPE_INTEGER
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\i
-                  CompilerEndIf
-                Case #PNB_TYPE_LONG
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\l
-                  CompilerEndIf
-                Case #PNB_TYPE_NAME
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\s
-                  CompilerEndIf
-                Case #PNB_TYPE_POINTER
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\p
-                  CompilerEndIf
-                Case #PNB_TYPE_EPIC
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\q
-                  CompilerEndIf
-                Case #PNB_TYPE_STRING
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\s
-                  CompilerEndIf
-                Case #PNB_TYPE_UWORD
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\u
-                  CompilerEndIf
-                Case #PNB_TYPE_WORD
-                  CompilerIf #PB_Compiler_Debugger
-                    Debug nList()\w
-                  CompilerEndIf
-              EndSelect
-              DeleteElement(nList())
-            Next
+            PNB_Dbg(nList())
+            
             
             ;-#List Manipilation
             ;---Fork
             ;Case "Fork" is already implemented in a different format in the preprocessing stage.
+            
             ;---Fetch
             ;Case "Fetch" is already implemented in a different format in the preprocessing stage.
+            
             ;---Command
             ;Case "Command" is already implemented in a different format in the preprocessing stage.
+            
             ;---List
             ;Case "List" is already implemented in a different format in the preprocessing stage.
+            
             ;---Element
           Case "Element"
             DeleteElement(nList())
-            If NextElement(nList())
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_UBYTE
-                  RBOL = 1
-                  RINT = nList()\a
-                Case #PNB_TYPE_BYTE
-                  RBOL = 1
-                  RINT = nList()\b
-                Case #PNB_TYPE_CHARACTER
-                  RBOL = 1
-                  RINT = nList()\c
-                Case #PNB_TYPE_DOUBLE
-                  RBOL = 1
-                  RINT = nList()\d
-                Case #PNB_TYPE_FLOAT
-                  RBOL = 1
-                  RINT = nList()\f
-                Case #PNB_TYPE_INTEGER
-                  RBOL = 1
-                  RINT = nList()\i
-                Case #PNB_TYPE_LONG
-                  RBOL = 1
-                  RINT = nList()\l
-                Case #PNB_TYPE_EPIC
-                  RBOL = 1
-                  RINT = nList()\q
-                Case #PNB_TYPE_UWORD
-                  RBOL = 1
-                  RINT = nList()\u
-                Case #PNB_TYPE_WORD
-                  RBOL = 1
-                  RINT = nList()\w
-              EndSelect
-              DeleteElement(nList())
-              If RBOL
-                If SelectElement(nList(), RINT)
-                  AddElement(cList1())
-                  cList1() = nList()
-                  ClearList(nList())
-                  MergeLists(cList1(), nList())
-                  ClearList(cList1())
-                Else
-                  ClearList(nList())
-                EndIf
-              Else
-                ClearList(nList())
-              EndIf
-              RBOL = 0
-              RINT = 0
-            Else
-              ClearList(nList())
-            EndIf
+            PNB_Element(nList())
             
             ;---Discard
           Case "Discard"
-            ClearList(nList())
+            DeleteElement(nList())
+            PNB_Discard(nList())
             
             ;---Invert
           Case "Invert"
             DeleteElement(nList())
-            ForEach nList()
-              InsertElement(cList1())
-              cList1() = nList()
-            Next
-            ClearList(nList())
-            MergeLists(cList1(), nList())
+            PNB_Invert(nList())
             
             ;---Size
           Case "Size"
             DeleteElement(nList())
-            RINT = ListSize(nList())
-            ClearList(nList())
-            AddElement(nList())
-            nList()\i = RINT
-            nList()\Flags | #PNB_TYPE_INTEGER
-            RINT = 0
+            PNB_Size(nList())
             
             ;---Offset
           Case "Offset"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_POINTER
-                  
-                Case #PNB_TYPE_STRING
-                  RINT+StringByteLength(nList()\s)
-                Case #PNB_TYPE_NAME
-                  Select nList()\s
-                    Case "Double"
-                      RINT+SizeOf(Double)
-                    Case "Float"
-                      RINT+SizeOf(Float)
-                    Case "Epic"
-                      RINT+SizeOf(Quad)
-                    Case "Integer"
-                      RINT+SizeOf(Integer)
-                    Case "Long"
-                      RINT+SizeOf(Long)
-                    Case "Word"
-                      RINT+SizeOf(Word)
-                    Case "Byte"
-                      RINT+SizeOf(Byte)
-                    Case "UWord"
-                      RINT+SizeOf(Unicode)
-                    Case "Character"
-                      RINT+SizeOf(Character)
-                    Case "UByte"
-                      RINT+SizeOf(Ascii)
-                  EndSelect
-              EndSelect
-              DeleteElement(nList())
-            Next
-            AddElement(nList())
-            nList()\i = RINT
-            nList()\Flags | #PNB_TYPE_INTEGER
-            RINT = 0
+            PNB_Offset(nList())
             
             
             ;-#Type manipulation
             ;---Split
           Case "Split"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  If Len(nList()\s)
-                    For RCNT = 1 To Len(nList()\s)
-                      AddElement(cList1())
-                      cList1()\c = Asc(Mid(nList()\s, RCNT))
-                      cList1()\Flags | #PNB_TYPE_CHARACTER
-                    Next
-                  EndIf
-                  DeleteElement(nList())
-                Case #PNB_TYPE_STRING
-                  If Len(nList()\s)
-                    For RCNT = 1 To Len(nList()\s)
-                      AddElement(cList1())
-                      cList1()\c = Asc(Mid(nList()\s, RCNT))
-                      cList1()\Flags | #PNB_TYPE_CHARACTER
-                    Next
-                  EndIf
-                  DeleteElement(nList())
-                Default
-                  DeleteElement(nList())
-              EndSelect
-            Next
-            MergeLists(cList1(), nList())
-            RCNT = 0
+            PNB_Split(nList())
             
             ;---Fuse
           Case "Fuse"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_CHARACTER)
-            ForEach nList()
-              RSTR+Chr(nList()\c)
-              DeleteElement(nList())
-            Next
-            AddElement(nList())
-            nList()\s = RSTR
-            nList()\Flags | #PNB_TYPE_STRING
-            RSTR = ""
+            PNB_Fuse(nList())
             
             ;---Type
           Case "Type"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_LIST
-                  RSTR = "List"
-                Case #PNB_TYPE_UBYTE
-                  RSTR = "UByte"
-                Case #PNB_TYPE_BYTE
-                  RSTR = "Byte"
-                Case #PNB_TYPE_CHARACTER
-                  RSTR = "Character"
-                Case #PNB_TYPE_DOUBLE
-                  RSTR = "Double"
-                Case #PNB_TYPE_FLOAT
-                  RSTR = "Float"
-                Case #PNB_TYPE_INTEGER
-                  RSTR = "Integer"
-                Case #PNB_TYPE_LONG
-                  RSTR = "Long"
-                Case #PNB_TYPE_NAME
-                  RSTR = "Name"
-                Case #PNB_TYPE_POINTER
-                  RSTR = "Pointer"
-                Case #PNB_TYPE_EPIC
-                  RSTR = "Epic"
-                Case #PNB_TYPE_STRING
-                  RSTR = "String"
-                Case #PNB_TYPE_UWORD
-                  RSTR = "UWord"
-                Case #PNB_TYPE_WORD
-                  RSTR = "Word"
-              EndSelect
-              DeleteElement(nList())
-              AddElement(nList())
-              nList()\s = RSTR
-              nList()\Flags | #PNB_TYPE_NAME
-            Next
-            RSTR = ""
+            PNB_Type(nList())
             
             ;---Name
           Case "Name"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_NAME, 1)
-            
+            PNB_Name(nList())
             
             ;---String
           Case "String"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_STRING, 1)
-            
+            PNB_String(nList())
             
             ;---Pointer
           Case "Pointer"
             DeleteElement(nList())
-            ForEach nList()
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexMemMap)
-              CompilerEndIf
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  *RPTR = AllocateMemory(StringByteLength(nList()\s)+SizeOf(Character))
-                  PokeS(*RPTR, nList()\s)
-                  nList()\s = ""
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_STRING
-                  *RPTR = AllocateMemory(StringByteLength(nList()\s)+SizeOf(Character))
-                  PokeS(*RPTR, nList()\s)
-                  nList()\s = ""
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_DOUBLE
-                  *RPTR = AllocateMemory(SizeOf(Double))
-                  PokeD(*RPTR, nList()\d)
-                  nList()\d = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_FLOAT
-                  *RPTR = AllocateMemory(SizeOf(Float))
-                  PokeF(*RPTR, nList()\f)
-                  nList()\f = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_EPIC
-                  *RPTR = AllocateMemory(SizeOf(Quad))
-                  PokeQ(*RPTR, nList()\q)
-                  nList()\q = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_INTEGER
-                  *RPTR = AllocateMemory(SizeOf(Integer))
-                  PokeI(*RPTR, nList()\i)
-                  nList()\i = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_LONG
-                  *RPTR = AllocateMemory(SizeOf(Long))
-                  PokeL(*RPTR, nList()\l)
-                  nList()\l = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_WORD
-                  *RPTR = AllocateMemory(SizeOf(Word))
-                  PokeW(*RPTR, nList()\w)
-                  nList()\w = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_BYTE
-                  *RPTR = AllocateMemory(SizeOf(Byte))
-                  PokeB(*RPTR, nList()\b)
-                  nList()\b = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_UWORD
-                  *RPTR = AllocateMemory(SizeOf(Unicode))
-                  PokeU(*RPTR, nList()\u)
-                  nList()\u = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_CHARACTER
-                  *RPTR = AllocateMemory(SizeOf(Character))
-                  PokeC(*RPTR, nList()\c)
-                  nList()\c = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-                Case #PNB_TYPE_UBYTE
-                  *RPTR = AllocateMemory(SizeOf(Ascii))
-                  PokeA(*RPTR, nList()\a)
-                  nList()\a = 0
-                  nList()\p = *RPTR
-                  If Not FindMapElement(*PLIST(), Str(*RPTR))
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  Else
-                    FreeMemory(*PLIST())
-                    AddMapElement(*PLIST(), Str(*RPTR))
-                  EndIf
-                  *PLIST() = *RPTR
-                  *RPTR = 0
-                  nList()\Flags = #PNB_TYPE_POINTER
-              EndSelect
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexMemMap)
-              CompilerEndIf
-            Next
-            
+            PNB_Pointer(nList())
             
             ;---Double
           Case "Double"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_DOUBLE, 1)
-            
+            PNB_Double(nList())
             
             ;---Float
           Case "Float"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_FLOAT, 1)
-            
+            PNB_Float(nList())
             
             ;---Epic
           Case "Epic"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_EPIC, 1)
-            
+            PNB_Epic(nList())
             
             ;---Integer
           Case "Integer"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_INTEGER, 1)
-            
+            PNB_Integer(nList())
             
             ;---Long
           Case "Long"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_LONG, 1)
-            
+            PNB_Long(nList())
             
             ;---Word
           Case "Word"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_WORD, 1)
-            
+            PNB_Word(nList())
             
             ;---Byte
           Case "Byte"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_BYTE, 1)
-            
+            PNB_Byte(nList())
             
             ;---UWord
           Case "UWord"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_UWORD, 1)
-            
+            PNB_UWord(nList())
             
             ;---Character
           Case "Character"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_CHARACTER, 1)
-            
+            PNB_Character(nList())
             
             ;---UByte
           Case "UByte"
             DeleteElement(nList())
-            nListConvert(nList(), #PNB_TYPE_UBYTE, 1)
-            
+            PNB_UByte(nList())
             
             ;---ForceName
           Case "ForceName"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_NAME
-              nList()\q = 0
-            Next
-            
+            PNB_ForceName(nList())
             
             ;---ForceString
           Case "ForceString"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_STRING
-              nList()\q = 0
-            Next
-            
+            PNB_ForceString(nList())
             
             ;---ForcePointer
           Case "ForcePointer"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_POINTER
-              *RPTR = nList()\p
-              nList()\q = 0
-              nList()\p = *RPTR
-              *RPTR = 0
-            Next
-            
+            PNB_ForcePointer(nList())
             
             ;---ForceDouble
           Case "ForceDouble"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_DOUBLE
-              RDBL = nList()\d
-              nList()\q = 0
-              nList()\d = RDBL
-              RDBL = 0.0
-            Next
-            
+            PNB_ForceDouble(nList())
             
             ;---ForceFloat
           Case "ForceFloat"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_FLOAT
-              RFLT = nList()\f
-              nList()\q = 0
-              nList()\f = RFLT
-              RFLT = 0.0
-            Next
-            
+            PNB_ForceFloat(nList())
             
             ;---ForceEpic
           Case "ForceEpic"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_EPIC
-            Next
-            
+            PNB_ForceEpic(nList())
             
             ;---ForceInteger
           Case "ForceInteger"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_INTEGER
-              RINT = nList()\i
-              nList()\q = 0
-              nList()\i = RINT
-              RINT = 0
-            Next
-            
+            PNB_ForceInteger(nList())
             
             ;---ForceLong
           Case "ForceLong"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_LONG
-              RLNG = nList()\l
-              nList()\q = 0
-              nList()\l = RLNG
-              RLNG = 0
-            Next
-            
+            PNB_ForceLong(nList())
             
             ;---ForceWord
           Case "ForceWord"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_WORD
-              RWRD = nList()\w
-              nList()\q = 0
-              nList()\w = RWRD
-              RWRD = 0
-            Next
-            
+            PNB_ForceWord(nList())
             
             ;---ForceByte
           Case "ForceByte"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_BYTE
-              RBYT = nList()\b
-              nList()\q = 0
-              nList()\b = RBYT
-              RBYT = 0
-            Next
-            
+            PNB_ForceByte(nList())
             
             ;---ForceUWord
           Case "ForceUWord"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_UWORD
-              RUNI = nList()\u
-              nList()\q = 0
-              nList()\u = RUNI
-              RUNI = 0
-            Next
-            
+            PNB_ForceUWord(nList())
             
             ;---ForceCharacter
           Case "ForceCharacter"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_CHARACTER
-              RCHR = nList()\c
-              nList()\q = 0
-              nList()\c = RCHR
-              RCHR = 0
-            Next
-            
+            PNB_ForceCharacter(nList())
             
             ;---ForceUByte
           Case "ForceUByte"
             DeleteElement(nList())
-            ForEach nList()
-              nList()\Flags = #PNB_TYPE_UBYTE
-              RASC = nList()\a
-              nList()\q = 0
-              nList()\a = RASC
-              RASC = 0
-            Next
-            
+            PNB_ForceUByte(nList())
             
             ;-#Variables
             ;---Set
           Case "Set"
             DeleteElement(nList())
-            If NextElement(nList())
-              If nList()\Flags & #PNB_TYPE_NAME
-                RSTR = nList()\s
-                DeleteElement(nList())
-                If RSTR = "All"
-                  If NextElement(nList())
-                    If nList()\Flags & #PNB_TYPE_NAME
-                      If nList()\s = "Clear"
-                        CompilerIf #PB_Compiler_Thread = 1
-                          LockMutex(MutexVarMap)
-                        CompilerEndIf
-                        ClearMap(Memory())
-                        ClearList(nList())
-                        CompilerIf #PB_Compiler_Thread = 1
-                          UnlockMutex(MutexVarMap)
-                        CompilerEndIf
-                      EndIf
-                    EndIf
-                  Else
-                    CompilerIf #PB_Compiler_Thread = 1
-                      LockMutex(MutexVarMap)
-                    CompilerEndIf
-                    ClearMap(Memory())
-                    ClearList(nList())
-                    CompilerIf #PB_Compiler_Thread = 1
-                      UnlockMutex(MutexVarMap)
-                    CompilerEndIf
-                  EndIf
-                Else
-                  CompilerIf #PB_Compiler_Thread = 1
-                    LockMutex(MutexVarMap)
-                  CompilerEndIf
-                  AddMapElement(Memory(), RSTR)
-                  If ListSize(nList())
-                    ForEach nList()
-                      AddElement(Memory()\nList())
-                      Memory()\nList() = nList()
-                      DeleteElement(nList())
-                    Next
-                    
-                  Else
-                    DeleteMapElement(Memory(), RSTR)
-                    ClearList(nList())
-                  EndIf
-                  CompilerIf #PB_Compiler_Thread = 1
-                    UnlockMutex(MutexVarMap)
-                  CompilerEndIf
-                EndIf
-              Else
-                ClearList(nList())
-              EndIf
-            Else
-              ClearList(nList())
-            EndIf
-            RSTR = ""
-            
+            PNB_Set(nList())
             
             ;---Get
           Case "Get"
             DeleteElement(nList())
-            ForEach nList()
-              If nList()\Flags & #PNB_TYPE_NAME
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexVarMap)
-                CompilerEndIf
-                If FindMapElement(Memory(), nList()\s)
-                  CopyList(Memory()\nList(), cList1())
-                  MergeLists(cList1(), cList2())
-                Else
-                  ResetMap(Memory())
-                EndIf
-                DeleteElement(nList())
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-              Else
-                ClearList(nList())
-              EndIf
-            Next
-            MergeLists(cList2(), nList())
+            PNB_Get(nList())
             
             ;---Take
           Case "Take"
             DeleteElement(nList())
-            ForEach nList()
-              If nList()\Flags & #PNB_TYPE_NAME
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexVarMap)
-                CompilerEndIf
-                If FindMapElement(Memory(), nList()\s)
-                  MergeLists(Memory()\nList(), cList1())
-                  DeleteMapElement(Memory())
-                Else
-                  ResetMap(Memory())
-                EndIf
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                DeleteElement(nList())
-              EndIf
-            Next
-            MergeLists(cList1(), nList())
+            PNB_Take(nList())
             
             ;---Remove
           Case "Remove"
             DeleteElement(nList())
-            ForEach nList()
-              If nList()\Flags & #PNB_TYPE_NAME
-                If nList()\s = "All"
-                  CompilerIf #PB_Compiler_Thread = 1
-                    LockMutex(MutexVarMap)
-                  CompilerEndIf
-                  ClearMap(Memory())
-                  ClearList(nList())
-                  CompilerIf #PB_Compiler_Thread = 1
-                    UnlockMutex(MutexVarMap)
-                  CompilerEndIf
-                Else
-                  CompilerIf #PB_Compiler_Thread = 1
-                    LockMutex(MutexVarMap)
-                  CompilerEndIf
-                  If FindMapElement(Memory(), nList()\s)
-                    DeleteMapElement(Memory())
-                  Else
-                    ResetMap(Memory())
-                  EndIf
-                  CompilerIf #PB_Compiler_Thread = 1
-                    UnlockMutex(MutexVarMap)
-                  CompilerEndIf
-                EndIf
-                DeleteElement(nList())
-              EndIf
-            Next
+            PNB_Remove(nList())
             
             ;---Cycle
           Case "Cycle"
             DeleteElement(nList())
-            ForEach nList()
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexVarMap)
-              CompilerEndIf
-              If nList()\Flags & #PNB_TYPE_NAME
-                If FindMapElement(Memory(), nList()\s)
-                  If FirstElement(Memory()\nList())
-                    AddElement(cList1())
-                    cList1() = Memory()\nList()
-                    MoveElement(Memory()\nList(), #PB_List_Last)
-                  EndIf
-                Else
-                  ResetMap(Memory())
-                EndIf
-              Else
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(nList())
-                ClearList(cList1())
-                Break
-              EndIf
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
-              CompilerEndIf
-              DeleteElement(nList())
-            Next
-            MergeLists(cList1(), nList())
+            PNB_Cycle(nList())
             
             ;---Bury
           Case "Bury"
             DeleteElement(nList())
-            If NextElement(nList())
-              If nList()\Flags & #PNB_TYPE_NAME
-                AddElement(cList1())
-                cList1() = nList()
-                DeleteElement(nList())
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexVarMap)
-                CompilerEndIf
-                If Not FindMapElement(Memory(), cList1()\s)
-                  AddMapElement(Memory(), cList1()\s)
-                EndIf
-                MergeLists(nList(), Memory()\nList())
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(cList1())
-              Else
-                ClearList(nList())
-              EndIf
-            Else
-              ClearList(nList())
-            EndIf
-            
+            PNB_Bury(nList())
             
             ;---Dig
           Case "Dig"
             DeleteElement(nList())
-            ForEach nList()
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexVarMap)
-              CompilerEndIf
-              If nList()\Flags & #PNB_TYPE_NAME
-                If FindMapElement(Memory(), nList()\s)
-                  If LastElement(Memory()\nList())
-                    AddElement(cList1())
-                    cList1() = Memory()\nList()
-                    DeleteElement(Memory()\nList())
-                    If Not ListSize(Memory()\nList())
-                      DeleteMapElement(Memory())
-                    EndIf
-                  EndIf
-                Else
-                  ResetMap(Memory())
-                EndIf
-              Else
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(nList())
-                ClearList(cList1())
-                Break
-              EndIf
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
-              CompilerEndIf
-              DeleteElement(nList())
-            Next
-            MergeLists(cList1(), nList())
+            PNB_Dig(nList())
             
             ;---Detect
           Case "Detect"
             DeleteElement(nList())
-            ForEach nList()
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexVarMap)
-              CompilerEndIf
-              If nList()\Flags & #PNB_TYPE_NAME
-                If FindMapElement(Memory(), nList()\s)
-                  If LastElement(Memory()\nList())
-                    AddElement(cList1())
-                    cList1() = Memory()\nList()
-                  EndIf
-                Else
-                  ResetMap(Memory())
-                EndIf
-              Else
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(nList())
-                ClearList(cList1())
-                Break
-              EndIf
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
-              CompilerEndIf
-              DeleteElement(nList())
-            Next
-            MergeLists(cList1(), nList())
-            
+            PNB_Detect(nList())
             
             ;---Push
           Case "Push"
             DeleteElement(nList())
-            If NextElement(nList())
-              If nList()\Flags & #PNB_TYPE_NAME
-                AddElement(cList1())
-                cList1() = nList()
-                DeleteElement(nList())
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexVarMap)
-                CompilerEndIf
-                If Not FindMapElement(Memory(), cList1()\s)
-                  AddMapElement(Memory(), cList1()\s)
-                EndIf
-                MergeLists(nList(), Memory()\nList(), #PB_List_First)
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(cList1())
-              Else
-                ClearList(nList())
-              EndIf
-            Else
-              ClearList(nList())
-            EndIf
-            
+            PNB_Push(nList())
             
             ;---Pop
           Case "Pop"
             DeleteElement(nList())
-            ForEach nList()
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexVarMap)
-              CompilerEndIf
-              If nList()\Flags & #PNB_TYPE_NAME
-                If FindMapElement(Memory(), nList()\s)
-                  If FirstElement(Memory()\nList())
-                    AddElement(cList1())
-                    cList1() = Memory()\nList()
-                    DeleteElement(Memory()\nList())
-                    If Not ListSize(Memory()\nList())
-                      DeleteMapElement(Memory())
-                    EndIf
-                  EndIf
-                Else
-                  ResetMap(Memory())
-                EndIf
-              Else
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(nList())
-                ClearList(cList1())
-                Break
-              EndIf
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
-              CompilerEndIf
-              DeleteElement(nList())
-            Next
-            MergeLists(cList1(), nList())
+            PNB_Pop(nList())
             
             ;---Inspect
           Case "Inspect"
             DeleteElement(nList())
-            ForEach nList()
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexVarMap)
-              CompilerEndIf
-              If nList()\Flags & #PNB_TYPE_NAME
-                If FindMapElement(Memory(), nList()\s)
-                  If FirstElement(Memory()\nList())
-                    AddElement(cList1())
-                    cList1() = Memory()\nList()
-                  EndIf
-                Else
-                  ResetMap(Memory())
-                EndIf
-              Else
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(nList())
-                ClearList(cList1())
-                Break
-              EndIf
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
-              CompilerEndIf
-              DeleteElement(nList())
-            Next
-            MergeLists(cList1(), nList())
+            PNB_Inspect(nList())
             
             ;---Reverse
           Case "Reverse"
             DeleteElement(nList())
-            ForEach nList()
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexVarMap)
-              CompilerEndIf
-              If nList()\Flags & #PNB_TYPE_NAME
-                If FindMapElement(Memory(), nList()\s)
-                  ForEach Memory()\nList()
-                    InsertElement(cList1())
-                    cList1() = Memory()\nList()
-                  Next
-                  ClearList(Memory()\nList())
-                  MergeLists(cList1(), Memory()\nList())
-                Else
-                  ResetMap(Memory())
-                EndIf
-              Else
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
-                CompilerEndIf
-                ClearList(nList())
-                ClearList(cList1())
-                Break
-              EndIf
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
-              CompilerEndIf
-              DeleteElement(nList())
-            Next
+            PNB_Reverse(nList())
             
             
             ;-#Arithmetic
             ;---Add
           Case "+", "Add"
             DeleteElement(nList())
-            RTYP = nListTypeFromList(nList())
-            nListConvert(nList(), nListGetHighestType(RTYP))
-            Select nListGetHighestType(RTYP)
-              Case #PNB_TYPE_NAME
-                NextElement(nList())
-                RSTR = nList()\s
-                DeleteElement(nList())
-                ForEach nList()
-                  RSTR+nList()\s
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\s = RSTR
-                nList()\Flags | #PNB_TYPE_NAME
-                
-                RSTR = ""
-              Case #PNB_TYPE_STRING
-                NextElement(nList())
-                RSTR = nList()\s
-                DeleteElement(nList())
-                ForEach nList()
-                  RSTR+nList()\s
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\s = RSTR
-                nList()\Flags | #PNB_TYPE_STRING
-                
-                RSTR = ""
-              Case #PNB_TYPE_POINTER
-                NextElement(nList())
-                *RPTR = nList()\p
-                DeleteElement(nList())
-                ForEach nList()
-                  *RPTR+nList()\p
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\p = *RPTR
-                nList()\Flags | #PNB_TYPE_POINTER
-                
-                *RPTR = 0
-              Case #PNB_TYPE_DOUBLE
-                NextElement(nList())
-                RDBL = nList()\d
-                DeleteElement(nList())
-                ForEach nList()
-                  RDBL+nList()\d
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\d = RDBL
-                nList()\Flags | #PNB_TYPE_DOUBLE
-                
-                RDBL = 0.0
-              Case #PNB_TYPE_FLOAT
-                NextElement(nList())
-                RFLT = nList()\f
-                DeleteElement(nList())
-                ForEach nList()
-                  RFLT+nList()\f
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\f = RFLT
-                nList()\Flags | #PNB_TYPE_FLOAT
-                
-                RFLT = 0.0
-              Case #PNB_TYPE_EPIC
-                NextElement(nList())
-                RQUD = nList()\q
-                DeleteElement(nList())
-                ForEach nList()
-                  RQUD+nList()\q
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\q = RQUD
-                nList()\Flags | #PNB_TYPE_EPIC
-                
-                RQUD = 0
-              Case #PNB_TYPE_INTEGER
-                NextElement(nList())
-                RINT = nList()\i
-                DeleteElement(nList())
-                ForEach nList()
-                  RINT+nList()\i
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\i = RINT
-                nList()\Flags | #PNB_TYPE_INTEGER
-                
-                RINT = 0
-              Case #PNB_TYPE_LONG
-                NextElement(nList())
-                RLNG = nList()\l
-                DeleteElement(nList())
-                ForEach nList()
-                  RLNG+nList()\l
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\l = RLNG
-                nList()\Flags | #PNB_TYPE_LONG
-                
-                RLNG = 0
-              Case #PNB_TYPE_WORD
-                NextElement(nList())
-                RWRD = nList()\w
-                DeleteElement(nList())
-                ForEach nList()
-                  RWRD+nList()\w
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\w = RWRD
-                nList()\Flags | #PNB_TYPE_WORD
-                
-                RWRD = 0
-              Case #PNB_TYPE_BYTE
-                NextElement(nList())
-                RBYT = nList()\b
-                DeleteElement(nList())
-                ForEach nList()
-                  RBYT+nList()\b
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\b = RBYT
-                nList()\Flags | #PNB_TYPE_BYTE
-                
-                RBYT = 0
-              Case #PNB_TYPE_UWORD
-                NextElement(nList())
-                RUNI = nList()\u
-                DeleteElement(nList())
-                ForEach nList()
-                  RUNI+nList()\u
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\u = RUNI
-                nList()\Flags | #PNB_TYPE_UWORD
-                
-                RUNI = 0
-              Case #PNB_TYPE_CHARACTER
-                NextElement(nList())
-                RCHR = nList()\c
-                DeleteElement(nList())
-                ForEach nList()
-                  RCHR+nList()\c
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\c = RCHR
-                nList()\Flags | #PNB_TYPE_CHARACTER
-                
-                RCHR = 0
-              Case #PNB_TYPE_UBYTE
-                NextElement(nList())
-                RASC = nList()\a
-                DeleteElement(nList())
-                ForEach nList()
-                  RASC+nList()\a
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\a = RASC
-                nList()\Flags | #PNB_TYPE_UBYTE
-                
-                RASC = 0
-            EndSelect
-            RTYP = 0
+            PNB_Add(nList())
+            
             ;---Sub
           Case "-", "Sub"
             DeleteElement(nList())
-            RTYP = nListTypeFromList(nList())
-            nListConvert(nList(), nListGetHighestType(RTYP))
-            Select nListGetHighestType(RTYP)
-              Case #PNB_TYPE_NAME
-                NextElement(nList())
-                RSTR = nList()\s
-                DeleteElement(nList())
-                ForEach nList()
-                  RSTR = RemoveString(RSTR, nList()\s)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\s = RSTR
-                nList()\Flags | #PNB_TYPE_NAME
-                
-                RSTR = ""
-              Case #PNB_TYPE_STRING
-                NextElement(nList())
-                RSTR = nList()\s
-                DeleteElement(nList())
-                ForEach nList()
-                  RSTR = RemoveString(RSTR, nList()\s)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\s = RSTR
-                nList()\Flags | #PNB_TYPE_STRING
-                
-                RSTR = ""
-              Case #PNB_TYPE_POINTER
-                NextElement(nList())
-                *RPTR = nList()\p
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    *RPTR = -*RPTR
-                  Default
-                    ForEach nList()
-                      *RPTR-nList()\p
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\p = *RPTR
-                nList()\Flags | #PNB_TYPE_POINTER
-                
-                *RPTR = 0
-              Case #PNB_TYPE_DOUBLE
-                NextElement(nList())
-                RDBL = nList()\d
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RDBL = -RDBL
-                  Default
-                    ForEach nList()
-                      RDBL-nList()\d
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\d = RDBL
-                nList()\Flags | #PNB_TYPE_DOUBLE
-                
-                RDBL = 0.0
-              Case #PNB_TYPE_FLOAT
-                NextElement(nList())
-                RFLT = nList()\f
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RFLT = -RFLT
-                  Default
-                    ForEach nList()
-                      RFLT-nList()\f
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\f = RFLT
-                nList()\Flags | #PNB_TYPE_FLOAT
-                
-                RFLT = 0.0
-              Case #PNB_TYPE_EPIC
-                NextElement(nList())
-                RQUD = nList()\q
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RQUD = -RQUD
-                  Default
-                    ForEach nList()
-                      RQUD-nList()\q
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\q = RQUD
-                nList()\Flags | #PNB_TYPE_EPIC
-                
-                RQUD = 0
-              Case #PNB_TYPE_INTEGER
-                NextElement(nList())
-                RINT = nList()\i
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RINT = -RINT
-                  Default
-                    ForEach nList()
-                      RINT-nList()\i
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\i = RINT
-                nList()\Flags | #PNB_TYPE_INTEGER
-                
-                RINT = 0
-              Case #PNB_TYPE_LONG
-                NextElement(nList())
-                RLNG = nList()\l
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RLNG = -RLNG
-                  Default
-                    ForEach nList()
-                      RLNG-nList()\l
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\l = RLNG
-                nList()\Flags | #PNB_TYPE_LONG
-                
-                RLNG = 0
-              Case #PNB_TYPE_WORD
-                NextElement(nList())
-                RWRD = nList()\w
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RWRD = -RWRD
-                  Default
-                    ForEach nList()
-                      RWRD-nList()\w
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\w = RWRD
-                nList()\Flags | #PNB_TYPE_WORD
-                
-                RWRD = 0
-              Case #PNB_TYPE_BYTE
-                NextElement(nList())
-                RBYT = nList()\b
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RBYT = -RBYT
-                  Default
-                    ForEach nList()
-                      RBYT-nList()\b
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\b = RBYT
-                nList()\Flags | #PNB_TYPE_BYTE
-                
-                RBYT = 0
-              Case #PNB_TYPE_UWORD
-                NextElement(nList())
-                RUNI = nList()\u
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RUNI = -RUNI
-                  Default
-                    ForEach nList()
-                      RUNI-nList()\u
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\u = RUNI
-                nList()\Flags | #PNB_TYPE_UWORD
-                
-                RUNI = 0
-              Case #PNB_TYPE_CHARACTER
-                NextElement(nList())
-                RCHR = nList()\c
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RCHR = -RCHR
-                  Default
-                    ForEach nList()
-                      RCHR-nList()\c
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\c = RCHR
-                nList()\Flags | #PNB_TYPE_CHARACTER
-                
-                RCHR = 0
-              Case #PNB_TYPE_UBYTE
-                NextElement(nList())
-                RASC = nList()\a
-                DeleteElement(nList())
-                Select ListSize(nList())
-                  Case 0
-                    RASC = -RASC
-                  Default
-                    ForEach nList()
-                      RASC-nList()\a
-                      DeleteElement(nList())
-                    Next
-                EndSelect
-                AddElement(nList())
-                nList()\a = RASC
-                nList()\Flags | #PNB_TYPE_UBYTE
-                
-                RASC = 0
-            EndSelect
-            RTYP = 0
+            PNB_Sub(nList())
+            
             ;---Mul
           Case "*", "Mul"
             DeleteElement(nList())
-            RTYP = nListTypeFromList(nList())
-            nListConvert(nList(), nListGetHighestType(RTYP))
-            Select nListGetHighestType(RTYP)
-              Case #PNB_TYPE_NAME
-                ClearList(nList())
-              Case #PNB_TYPE_STRING
-                ClearList(nList())
-              Case #PNB_TYPE_POINTER
-                NextElement(nList())
-                *RPTR = nList()\p
-                DeleteElement(nList())
-                ForEach nList()
-                  *RPTR*nList()\p
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\p = *RPTR
-                nList()\Flags | #PNB_TYPE_POINTER
-                
-                *RPTR = 0
-              Case #PNB_TYPE_DOUBLE
-                NextElement(nList())
-                RDBL = nList()\d
-                DeleteElement(nList())
-                ForEach nList()
-                  RDBL*nList()\d
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\d = RDBL
-                nList()\Flags | #PNB_TYPE_DOUBLE
-                
-                RDBL = 0.0
-              Case #PNB_TYPE_FLOAT
-                NextElement(nList())
-                RFLT = nList()\f
-                DeleteElement(nList())
-                ForEach nList()
-                  RFLT*nList()\f
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\f = RFLT
-                nList()\Flags | #PNB_TYPE_FLOAT
-                
-                RFLT = 0.0
-              Case #PNB_TYPE_EPIC
-                NextElement(nList())
-                RQUD = nList()\q
-                DeleteElement(nList())
-                ForEach nList()
-                  RQUD*nList()\q
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\q = RQUD
-                nList()\Flags | #PNB_TYPE_EPIC
-                
-                RQUD = 0
-              Case #PNB_TYPE_INTEGER
-                NextElement(nList())
-                RINT = nList()\i
-                DeleteElement(nList())
-                ForEach nList()
-                  RINT*nList()\i
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\i = RINT
-                nList()\Flags | #PNB_TYPE_INTEGER
-                
-                RINT = 0
-              Case #PNB_TYPE_LONG
-                NextElement(nList())
-                RLNG = nList()\l
-                DeleteElement(nList())
-                ForEach nList()
-                  RLNG*nList()\l
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\l = RLNG
-                nList()\Flags | #PNB_TYPE_LONG
-                
-                RLNG = 0
-              Case #PNB_TYPE_WORD
-                NextElement(nList())
-                RWRD = nList()\w
-                DeleteElement(nList())
-                ForEach nList()
-                  RWRD*nList()\w
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\w = RWRD
-                nList()\Flags | #PNB_TYPE_WORD
-                
-                RWRD = 0
-              Case #PNB_TYPE_BYTE
-                NextElement(nList())
-                RBYT = nList()\b
-                DeleteElement(nList())
-                ForEach nList()
-                  RBYT*nList()\b
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\b = RBYT
-                nList()\Flags | #PNB_TYPE_BYTE
-                
-                RBYT = 0
-              Case #PNB_TYPE_UWORD
-                NextElement(nList())
-                RUNI = nList()\u
-                DeleteElement(nList())
-                ForEach nList()
-                  RUNI*nList()\u
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\u = RUNI
-                nList()\Flags | #PNB_TYPE_UWORD
-                
-                RUNI = 0
-              Case #PNB_TYPE_CHARACTER
-                NextElement(nList())
-                RCHR = nList()\c
-                DeleteElement(nList())
-                ForEach nList()
-                  RCHR*nList()\c
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\c = RCHR
-                nList()\Flags | #PNB_TYPE_CHARACTER
-                
-                RCHR = 0
-              Case #PNB_TYPE_UBYTE
-                NextElement(nList())
-                RASC = nList()\a
-                DeleteElement(nList())
-                ForEach nList()
-                  RASC*nList()\a
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\a = RASC
-                nList()\Flags | #PNB_TYPE_UBYTE
-                
-                RASC = 0
-            EndSelect
-            RTYP = 0
+            PNB_Mul(nList())
+            
             ;---Div
           Case "/", "Div"
             DeleteElement(nList())
-            RTYP = nListTypeFromList(nList())
-            nListConvert(nList(), nListGetHighestType(RTYP))
-            Select nListGetHighestType(RTYP)
-              Case #PNB_TYPE_NAME
-                ClearList(nList())
-              Case #PNB_TYPE_STRING
-                ClearList(nList())
-              Case #PNB_TYPE_POINTER
-                NextElement(nList())
-                *RPTR = nList()\p
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\p = 0
-                    *RPTR = 0
-                    ClearList(nList())
-                  Else
-                    *RPTR/nList()\p
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\p = *RPTR
-                nList()\Flags | #PNB_TYPE_POINTER
-                
-                *RPTR = 0
-              Case #PNB_TYPE_DOUBLE
-                NextElement(nList())
-                RDBL = nList()\d
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\d = 0.0
-                    RDBL = 0.0
-                    ClearList(nList())
-                  Else
-                    RDBL/nList()\d
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\d = RDBL
-                nList()\Flags | #PNB_TYPE_DOUBLE
-                
-                RDBL = 0.0
-              Case #PNB_TYPE_FLOAT
-                NextElement(nList())
-                RFLT = nList()\f
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\f = 0.0
-                    RFLT = 0.0
-                    ClearList(nList())
-                  Else
-                    RFLT/nList()\f
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\f = RFLT
-                nList()\Flags | #PNB_TYPE_FLOAT
-                
-                RFLT = 0.0
-              Case #PNB_TYPE_EPIC
-                NextElement(nList())
-                RQUD = nList()\q
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\q = 0
-                    RQUD = 0
-                    ClearList(nList())
-                  Else
-                    RQUD/nList()\q
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\q = RQUD
-                nList()\Flags | #PNB_TYPE_EPIC
-                
-                RQUD = 0
-              Case #PNB_TYPE_INTEGER
-                NextElement(nList())
-                RINT = nList()\i
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\i = 0
-                    RINT = 0
-                    ClearList(nList())
-                  Else
-                    RINT/nList()\i
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\i = RINT
-                nList()\Flags | #PNB_TYPE_INTEGER
-                
-                RINT = 0
-              Case #PNB_TYPE_LONG
-                NextElement(nList())
-                RLNG = nList()\l
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\l = 0
-                    RLNG = 0
-                    ClearList(nList())
-                  Else
-                    RLNG/nList()\l
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\l = RLNG
-                nList()\Flags | #PNB_TYPE_LONG
-                
-                RLNG = 0
-              Case #PNB_TYPE_WORD
-                NextElement(nList())
-                RWRD = nList()\w
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\w = 0
-                    RWRD = 0
-                    ClearList(nList())
-                  Else
-                    RWRD/nList()\w
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\w = RWRD
-                nList()\Flags | #PNB_TYPE_WORD
-                
-                RWRD = 0
-              Case #PNB_TYPE_BYTE
-                NextElement(nList())
-                RBYT = nList()\b
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\b = 0
-                    RBYT = 0
-                    ClearList(nList())
-                  Else
-                    RBYT/nList()\b
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\b = RBYT
-                nList()\Flags | #PNB_TYPE_BYTE
-                
-                RBYT = 0
-              Case #PNB_TYPE_UWORD
-                NextElement(nList())
-                RUNI = nList()\u
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\u = 0
-                    RUNI = 0
-                    ClearList(nList())
-                  Else
-                    RUNI/nList()\u
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\u = RUNI
-                nList()\Flags | #PNB_TYPE_UWORD
-                
-                RUNI = 0
-              Case #PNB_TYPE_CHARACTER
-                NextElement(nList())
-                RCHR = nList()\c
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\c = 0
-                    RCHR = 0
-                    ClearList(nList())
-                  Else
-                    RCHR/nList()\c
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\c = RCHR
-                nList()\Flags | #PNB_TYPE_CHARACTER
-                
-                RCHR = 0
-              Case #PNB_TYPE_UBYTE
-                NextElement(nList())
-                RASC = nList()\a
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\a = 0
-                    RASC = 0
-                    ClearList(nList())
-                  Else
-                    RASC/nList()\a
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\a = RASC
-                nList()\Flags | #PNB_TYPE_UBYTE
-                
-                RASC = 0
-            EndSelect
-            RTYP = 0
+            PNB_Div(nList())
             
             ;---Pow
           Case "^", "Pow"
             DeleteElement(nList())
-            RTYP = nListTypeFromList(nList())
-            nListConvert(nList(), nListGetHighestType(RTYP))
-            Select nListGetHighestType(RTYP)
-              Case #PNB_TYPE_NAME
-                ClearList(nList())
-              Case #PNB_TYPE_STRING
-                ClearList(nList())
-              Case #PNB_TYPE_POINTER
-                NextElement(nList())
-                *RPTR = nList()\p
-                DeleteElement(nList())
-                ForEach nList()
-                  *RPTR = Pow(*RPTR, nList()\p)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\p = *RPTR
-                nList()\Flags | #PNB_TYPE_POINTER
-                
-                *RPTR = 0
-              Case #PNB_TYPE_DOUBLE
-                NextElement(nList())
-                RDBL = nList()\d
-                DeleteElement(nList())
-                ForEach nList()
-                  RDBL = Pow(RDBL, nList()\d)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\d = RDBL
-                nList()\Flags | #PNB_TYPE_DOUBLE
-                
-                RDBL = 0.0
-              Case #PNB_TYPE_FLOAT
-                NextElement(nList())
-                RFLT = nList()\f
-                DeleteElement(nList())
-                ForEach nList()
-                  RFLT = Pow(RFLT, nList()\f)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\f = RFLT
-                nList()\Flags | #PNB_TYPE_FLOAT
-                
-                RFLT = 0.0
-              Case #PNB_TYPE_EPIC
-                NextElement(nList())
-                RQUD = nList()\q
-                DeleteElement(nList())
-                ForEach nList()
-                  RQUD = Pow(RQUD, nList()\q)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\q = RQUD
-                nList()\Flags | #PNB_TYPE_EPIC
-                
-                RQUD = 0
-              Case #PNB_TYPE_INTEGER
-                NextElement(nList())
-                RINT = nList()\i
-                DeleteElement(nList())
-                ForEach nList()
-                  RINT = Pow(RINT, nList()\i)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\i = RINT
-                nList()\Flags | #PNB_TYPE_INTEGER
-                
-                RINT = 0
-              Case #PNB_TYPE_LONG
-                NextElement(nList())
-                RLNG = nList()\l
-                DeleteElement(nList())
-                ForEach nList()
-                  RLNG = Pow(RLNG, nList()\l)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\l = RLNG
-                nList()\Flags | #PNB_TYPE_LONG
-                
-                RLNG = 0
-              Case #PNB_TYPE_WORD
-                NextElement(nList())
-                RWRD = nList()\w
-                DeleteElement(nList())
-                ForEach nList()
-                  RWRD = Pow(RWRD, nList()\w)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\w = RWRD
-                nList()\Flags | #PNB_TYPE_WORD
-                
-                RWRD = 0
-              Case #PNB_TYPE_BYTE
-                NextElement(nList())
-                RBYT = nList()\b
-                DeleteElement(nList())
-                ForEach nList()
-                  RBYT = Pow(RBYT, nList()\b)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\b = RBYT
-                nList()\Flags | #PNB_TYPE_BYTE
-                
-                RBYT = 0
-              Case #PNB_TYPE_UWORD
-                NextElement(nList())
-                RUNI = nList()\u
-                DeleteElement(nList())
-                ForEach nList()
-                  RUNI = Pow(RUNI, nList()\u)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\u = RUNI
-                nList()\Flags | #PNB_TYPE_UWORD
-                
-                RUNI = 0
-              Case #PNB_TYPE_CHARACTER
-                NextElement(nList())
-                RCHR = nList()\c
-                DeleteElement(nList())
-                ForEach nList()
-                  RCHR = Pow(RCHR, nList()\c)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\c = RCHR
-                nList()\Flags | #PNB_TYPE_CHARACTER
-                
-                RCHR = 0
-              Case #PNB_TYPE_UBYTE
-                NextElement(nList())
-                RASC = nList()\a
-                DeleteElement(nList())
-                ForEach nList()
-                  RASC = Pow(RASC, nList()\a)
-                  DeleteElement(nList())
-                Next
-                AddElement(nList())
-                nList()\a = RASC
-                nList()\Flags | #PNB_TYPE_UBYTE
-                
-                RASC = 0
-            EndSelect
-            RTYP = 0
+            PNB_Pow(nList())
+            
             ;---Mod
           Case "%", "Mod"
             DeleteElement(nList())
-            RTYP = nListTypeFromList(nList())
-            nListConvert(nList(), nListGetHighestType(RTYP))
-            Select nListGetHighestType(RTYP)
-              Case #PNB_TYPE_NAME
-                ForEach nList()
-                  DeleteElement(nList())
-                Next
-              Case #PNB_TYPE_STRING
-                ForEach nList()
-                  DeleteElement(nList())
-                Next
-              Case #PNB_TYPE_POINTER
-                NextElement(nList())
-                *RPTR = nList()\p
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\p = 0
-                    *RPTR = 0
-                    ClearList(nList())
-                  Else
-                    *RPTR%nList()\p
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\p = *RPTR
-                nList()\Flags | #PNB_TYPE_POINTER
-                
-                *RPTR = 0
-              Case #PNB_TYPE_DOUBLE
-                NextElement(nList())
-                RDBL = nList()\d
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\d = 0.0
-                    RDBL = 0.0
-                    ClearList(nList())
-                  Else
-                    RINT = RDBL/nList()\d
-                    RDBL-nList()\d*RINT
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\d = RDBL
-                nList()\Flags | #PNB_TYPE_DOUBLE
-                
-                RDBL = 0.0
-              Case #PNB_TYPE_FLOAT
-                NextElement(nList())
-                RFLT = nList()\f
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\f = 0.0
-                    RFLT = 0.0
-                    ClearList(nList())
-                  Else
-                    RINT = RFLT/nList()\f
-                    RFLT-nList()\f*RINT
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\f = RFLT
-                nList()\Flags | #PNB_TYPE_FLOAT
-                
-                RFLT = 0.0
-              Case #PNB_TYPE_EPIC
-                NextElement(nList())
-                RQUD = nList()\q
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\q = 0
-                    RQUD = 0
-                    ClearList(nList())
-                  Else
-                    RQUD%nList()\q
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\q = RQUD
-                nList()\Flags | #PNB_TYPE_EPIC
-                
-                RQUD = 0
-              Case #PNB_TYPE_INTEGER
-                NextElement(nList())
-                RINT = nList()\i
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\i = 0
-                    RINT = 0
-                    ClearList(nList())
-                  Else
-                    RINT%nList()\i
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\i = RINT
-                nList()\Flags | #PNB_TYPE_INTEGER
-                
-                RINT = 0
-              Case #PNB_TYPE_LONG
-                NextElement(nList())
-                RLNG = nList()\l
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\l = 0
-                    RLNG = 0
-                    ClearList(nList())
-                  Else
-                    RLNG%nList()\l
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\l = RLNG
-                nList()\Flags | #PNB_TYPE_LONG
-                
-                RLNG = 0
-              Case #PNB_TYPE_WORD
-                NextElement(nList())
-                RWRD = nList()\w
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\w = 0
-                    RWRD = 0
-                    ClearList(nList())
-                  Else
-                    RWRD%nList()\w
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\w = RWRD
-                nList()\Flags | #PNB_TYPE_WORD
-                
-                RWRD = 0
-              Case #PNB_TYPE_BYTE
-                NextElement(nList())
-                RBYT = nList()\b
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\b = 0
-                    RBYT = 0
-                    ClearList(nList())
-                  Else
-                    RBYT%nList()\b
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\b = RBYT
-                nList()\Flags | #PNB_TYPE_BYTE
-                
-                RBYT = 0
-              Case #PNB_TYPE_UWORD
-                NextElement(nList())
-                RUNI = nList()\u
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\u = 0
-                    RUNI = 0
-                    ClearList(nList())
-                  Else
-                    RUNI%nList()\u
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\u = RUNI
-                nList()\Flags | #PNB_TYPE_UWORD
-                
-                RUNI = 0
-              Case #PNB_TYPE_CHARACTER
-                NextElement(nList())
-                RCHR = nList()\c
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\c = 0
-                    RCHR = 0
-                    ClearList(nList())
-                  Else
-                    RCHR%nList()\c
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\c = RCHR
-                nList()\Flags | #PNB_TYPE_CHARACTER
-                
-                RCHR = 0
-              Case #PNB_TYPE_UBYTE
-                NextElement(nList())
-                RASC = nList()\a
-                DeleteElement(nList())
-                ForEach nList()
-                  If nList()\a = 0
-                    RASC = 0
-                    ClearList(nList())
-                  Else
-                    RASC%nList()\a
-                    DeleteElement(nList())
-                  EndIf
-                Next
-                AddElement(nList())
-                nList()\a = RASC
-                nList()\Flags | #PNB_TYPE_UBYTE
-                
-                RASC = 0
-            EndSelect
-            RTYP = 0
+            PNB_Mod(nList())
             
             ;---Sign
           Case "+-", "-+", "Sign"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                Case #PNB_TYPE_POINTER
-                  nList()\p = Sign(nList()\p)
-                Case #PNB_TYPE_DOUBLE
-                  nList()\d = Sign(nList()\d)
-                Case #PNB_TYPE_FLOAT
-                  nList()\f = Sign(nList()\p)
-                Case #PNB_TYPE_EPIC
-                  nList()\q = Sign(nList()\q)
-                Case #PNB_TYPE_INTEGER
-                  nList()\i = Sign(nList()\i)
-                Case #PNB_TYPE_LONG
-                  nList()\l = Sign(nList()\l)
-                Case #PNB_TYPE_WORD
-                  nList()\w = Sign(nList()\w)
-                Case #PNB_TYPE_BYTE
-                  nList()\b = Sign(nList()\b)
-                Case #PNB_TYPE_UWORD
-                  nList()\u = Sign(nList()\u)
-                Case #PNB_TYPE_CHARACTER
-                  nList()\c = Sign(nList()\c)
-                Case #PNB_TYPE_UBYTE
-                  nList()\a = Sign(nList()\a)
-              EndSelect
-            Next
+            PNB_Sign(nList())
             
             ;---Abs
           Case "_", "Abs"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                Case #PNB_TYPE_POINTER
-                  nList()\p = (nList()\p)
-                Case #PNB_TYPE_DOUBLE
-                  nList()\d = Abs(nList()\d)
-                Case #PNB_TYPE_FLOAT
-                  nList()\f = Abs(nList()\p)
-                Case #PNB_TYPE_EPIC
-                  If nList()\q > 0
-                    nList()\q = nList()\q
-                  EndIf
-                Case #PNB_TYPE_INTEGER
-                  If nList()\i > 0
-                    nList()\i = nList()\i
-                  EndIf
-                Case #PNB_TYPE_LONG
-                  If nList()\l > 0
-                    nList()\l = nList()\l
-                  EndIf
-                Case #PNB_TYPE_WORD
-                  If nList()\w > 0
-                    nList()\w = nList()\w
-                  EndIf
-                Case #PNB_TYPE_BYTE
-                  If nList()\b > 0
-                    nList()\b = nList()\b
-                  EndIf
-              EndSelect
-            Next
+            PNB_Abs(nList())
             
-            ;---Asl
-          Case "<<", "Asl"
+            ;---ASL
+          Case "<<", "ASL"
             DeleteElement(nList())
-            NextElement(nList())
-            RTYP = nListGetHighestType(nList()\Flags)
-            Select RTYP
-              Case #PNB_TYPE_NAME
-                RSTR = nList()\s
-                DeleteElement(nList())
-              Case #PNB_TYPE_STRING
-                RSTR = nList()\s
-                DeleteElement(nList())
-              Case #PNB_TYPE_POINTER
-                *RPTR = nList()\p
-                DeleteElement(nList())
-              Case #PNB_TYPE_DOUBLE
-                RQUD = nList()\q
-                DeleteElement(nList())
-              Case #PNB_TYPE_FLOAT
-                RLNG = nList()\l
-                DeleteElement(nList())
-              Case #PNB_TYPE_EPIC
-                RQUD = nList()\q
-                DeleteElement(nList())
-              Case #PNB_TYPE_INTEGER
-                RINT = nList()\i
-                DeleteElement(nList())
-              Case #PNB_TYPE_LONG
-                RLNG = nList()\l
-                DeleteElement(nList())
-              Case #PNB_TYPE_WORD
-                RWRD = nList()\w
-                DeleteElement(nList())
-              Case #PNB_TYPE_BYTE
-                RBYT = nList()\b
-                DeleteElement(nList())
-              Case #PNB_TYPE_UWORD
-                RUNI = nList()\u
-                DeleteElement(nList())
-              Case #PNB_TYPE_CHARACTER
-                RCHR = nList()\c
-                DeleteElement(nList())
-              Case #PNB_TYPE_UBYTE
-                RASC = nList()\a
-                DeleteElement(nList())
-            EndSelect
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                  RCNT = 0
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                  RCNT = 0
-                Case #PNB_TYPE_POINTER
-                  RCNT = nList()\p
-                  DeleteElement(nList())
-                Case #PNB_TYPE_DOUBLE
-                  RCNT = nList()\d
-                  DeleteElement(nList())
-                Case #PNB_TYPE_FLOAT
-                  RCNT = nList()\f
-                  DeleteElement(nList())
-                Case #PNB_TYPE_EPIC
-                  RCNT = nList()\q
-                  DeleteElement(nList())
-                Case #PNB_TYPE_INTEGER
-                  RCNT = nList()\i
-                  DeleteElement(nList())
-                Case #PNB_TYPE_LONG
-                  RCNT = nList()\p
-                  DeleteElement(nList())
-                Case #PNB_TYPE_WORD
-                  RCNT = nList()\w
-                  DeleteElement(nList())
-                Case #PNB_TYPE_BYTE
-                  RCNT = nList()\b
-                  DeleteElement(nList())
-                Case #PNB_TYPE_UWORD
-                  RCNT = nList()\u
-                  DeleteElement(nList())
-                Case #PNB_TYPE_CHARACTER
-                  RCNT = nList()\c
-                  DeleteElement(nList())
-                Case #PNB_TYPE_UBYTE
-                  RCNT = nList()\a
-                  DeleteElement(nList())
-              EndSelect
-              Select RTYP
-                Case #PNB_TYPE_NAME
-                  If RCNT > 0
-                    While RCNT > Len(RSTR)
-                      RCNT-Len(RSTR)
-                    Wend
-                    RSTR = Mid(RSTR, RCNT+1)+Left(RSTR, RCNT)
-                  ElseIf RCNT < 0
-                    While -RCNT > Len(RSTR)
-                      RCNT+Len(RSTR)
-                    Wend
-                    RSTR = Right(RSTR, -RCNT)+Mid(RSTR, 1, Len(RSTR)+RCNT)
-                  EndIf
-                Case #PNB_TYPE_STRING
-                  If RCNT > 0
-                    While RCNT > Len(RSTR)
-                      RCNT-Len(RSTR)
-                    Wend
-                    RSTR = Mid(RSTR, RCNT+1)+Left(RSTR, RCNT)
-                  ElseIf RCNT < 0
-                    While -RCNT > Len(RSTR)
-                      RCNT+Len(RSTR)
-                    Wend
-                    RSTR = Right(RSTR, -RCNT)+Mid(RSTR, 1, Len(RSTR)+RCNT)
-                  EndIf
-                Case #PNB_TYPE_POINTER
-                  If RCNT > 0
-                    *RPTR<<RCNT
-                  Else
-                    *RPTR>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_DOUBLE
-                  If RCNT > 0
-                    RQUD<<RCNT
-                  Else
-                    RQUD>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_FLOAT
-                  If RCNT > 0
-                    RLNG<<RCNT
-                  Else
-                    RLNG>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_EPIC
-                  If RCNT > 0
-                    RQUD<<RCNT
-                  Else
-                    RQUD>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_INTEGER
-                  If RCNT > 0
-                    RINT<<RCNT
-                  Else
-                    RINT>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_LONG
-                  If RCNT > 0
-                    RLNG<<RCNT
-                  Else
-                    RLNG>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_WORD
-                  If RCNT > 0
-                    RWRD<<RCNT
-                  Else
-                    RWRD>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_BYTE
-                  If RCNT > 0
-                    RBYT<<RCNT
-                  Else
-                    RBYT>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_UWORD
-                  If RCNT > 0
-                    RUNI<<RCNT
-                  Else
-                    RUNI>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_CHARACTER
-                  If RCNT > 0
-                    RCHR<<RCNT
-                  Else
-                    RCHR>>(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_UBYTE
-                  If RCNT > 0
-                    RASC<<RCNT
-                  Else
-                    RASC>>(-RCNT)
-                  EndIf
-              EndSelect
-            Next
+            PNB_ASL(nList())
             
-            AddElement(nList())
-            Select RTYP
-              Case #PNB_TYPE_NAME
-                nList()\s = RSTR
-              Case #PNB_TYPE_STRING
-                nList()\s = RSTR
-              Case #PNB_TYPE_POINTER
-                nList()\p = *RPTR
-              Case #PNB_TYPE_DOUBLE
-                nList()\q = RQUD
-              Case #PNB_TYPE_FLOAT
-                nList()\l = RLNG
-              Case #PNB_TYPE_EPIC
-                nList()\q = RQUD
-              Case #PNB_TYPE_INTEGER
-                nList()\i = RINT
-              Case #PNB_TYPE_LONG
-                nList()\l = RLNG
-              Case #PNB_TYPE_WORD
-                nList()\w = RWRD
-              Case #PNB_TYPE_BYTE
-                nList()\b = RBYT
-              Case #PNB_TYPE_UWORD
-                nList()\u = RUNI
-              Case #PNB_TYPE_CHARACTER
-                nList()\c = RCHR
-              Case #PNB_TYPE_UBYTE
-                nList()\a = RASC
-            EndSelect
-            nList()\Flags = RTYP
-            
-            RSTR = ""
-            RCNT = 0
-            RINT = 0
-            RTYP = 0
-            RASC = 0
-            RBYT = 0
-            RCHR = 0
-            RLNG = 0
-            RQUD = 0
-            RWRD = 0
-            RUNI = 0
-            *RPTR = 0
-            
-            ;---Asr
-          Case ">>", "Asr"
+            ;---ASR
+          Case ">>", "ASR"
             DeleteElement(nList())
-            NextElement(nList())
-            RTYP = nListGetHighestType(nList()\Flags)
-            Select RTYP
-              Case #PNB_TYPE_NAME
-                RSTR = nList()\s
-                DeleteElement(nList())
-              Case #PNB_TYPE_STRING
-                RSTR = nList()\s
-                DeleteElement(nList())
-              Case #PNB_TYPE_POINTER
-                *RPTR = nList()\p
-                DeleteElement(nList())
-              Case #PNB_TYPE_DOUBLE
-                RQUD = nList()\q
-                DeleteElement(nList())
-              Case #PNB_TYPE_FLOAT
-                RLNG = nList()\l
-                DeleteElement(nList())
-              Case #PNB_TYPE_EPIC
-                RQUD = nList()\q
-                DeleteElement(nList())
-              Case #PNB_TYPE_INTEGER
-                RINT = nList()\i
-                DeleteElement(nList())
-              Case #PNB_TYPE_LONG
-                RLNG = nList()\l
-                DeleteElement(nList())
-              Case #PNB_TYPE_WORD
-                RWRD = nList()\w
-                DeleteElement(nList())
-              Case #PNB_TYPE_BYTE
-                RBYT = nList()\b
-                DeleteElement(nList())
-              Case #PNB_TYPE_UWORD
-                RUNI = nList()\u
-                DeleteElement(nList())
-              Case #PNB_TYPE_CHARACTER
-                RCHR = nList()\c
-                DeleteElement(nList())
-              Case #PNB_TYPE_UBYTE
-                RASC = nList()\a
-                DeleteElement(nList())
-            EndSelect
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                  RCNT = 0
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                  RCNT = 0
-                Case #PNB_TYPE_POINTER
-                  RCNT = nList()\p
-                  DeleteElement(nList())
-                Case #PNB_TYPE_DOUBLE
-                  RCNT = nList()\d
-                  DeleteElement(nList())
-                Case #PNB_TYPE_FLOAT
-                  RCNT = nList()\f
-                  DeleteElement(nList())
-                Case #PNB_TYPE_EPIC
-                  RCNT = nList()\q
-                  DeleteElement(nList())
-                Case #PNB_TYPE_INTEGER
-                  RCNT = nList()\i
-                  DeleteElement(nList())
-                Case #PNB_TYPE_LONG
-                  RCNT = nList()\p
-                  DeleteElement(nList())
-                Case #PNB_TYPE_WORD
-                  RCNT = nList()\w
-                  DeleteElement(nList())
-                Case #PNB_TYPE_BYTE
-                  RCNT = nList()\b
-                  DeleteElement(nList())
-                Case #PNB_TYPE_UWORD
-                  RCNT = nList()\u
-                  DeleteElement(nList())
-                Case #PNB_TYPE_CHARACTER
-                  RCNT = nList()\c
-                  DeleteElement(nList())
-                Case #PNB_TYPE_UBYTE
-                  RCNT = nList()\a
-                  DeleteElement(nList())
-              EndSelect
-              Select RTYP
-                Case #PNB_TYPE_NAME
-                  If RCNT > 0
-                    While RCNT > Len(RSTR)
-                      RCNT-Len(RSTR)
-                    Wend
-                    RSTR = Right(RSTR, RCNT)+Mid(RSTR, 1, Len(RSTR)-RCNT)
-                  ElseIf RCNT < 0
-                    While -RCNT > Len(RSTR)
-                      RCNT+Len(RSTR)
-                    Wend
-                    RSTR = Mid(RSTR, -RCNT+1)+Left(RSTR, -RCNT)
-                  EndIf
-                Case #PNB_TYPE_STRING
-                  If RCNT > 0
-                    While RCNT > Len(RSTR)
-                      RCNT-Len(RSTR)
-                    Wend
-                    RSTR = Right(RSTR, RCNT)+Mid(RSTR, 1, Len(RSTR)-RCNT)
-                  ElseIf RCNT < 0
-                    While -RCNT > Len(RSTR)
-                      RCNT+Len(RSTR)
-                    Wend
-                    RSTR = Mid(RSTR, -RCNT+1)+Left(RSTR, -RCNT)
-                  EndIf
-                Case #PNB_TYPE_POINTER
-                  If RCNT > 0
-                    *RPTR>>RCNT
-                  Else
-                    *RPTR<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_DOUBLE
-                  If RCNT > 0
-                    RQUD>>RCNT
-                  Else
-                    RQUD<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_FLOAT
-                  If RCNT > 0
-                    RLNG>>RCNT
-                  Else
-                    RLNG<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_EPIC
-                  If RCNT > 0
-                    RQUD>>RCNT
-                  Else
-                    RQUD<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_INTEGER
-                  If RCNT > 0
-                    RINT>>RCNT
-                  Else
-                    RINT<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_LONG
-                  If RCNT > 0
-                    RLNG>>RCNT
-                  Else
-                    RLNG<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_WORD
-                  If RCNT > 0
-                    RWRD>>RCNT
-                  Else
-                    RWRD<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_BYTE
-                  If RCNT > 0
-                    RBYT>>RCNT
-                  Else
-                    RBYT<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_UWORD
-                  If RCNT > 0
-                    RUNI>>RCNT
-                  Else
-                    RUNI<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_CHARACTER
-                  If RCNT > 0
-                    RCHR>>RCNT
-                  Else
-                    RCHR<<(-RCNT)
-                  EndIf
-                Case #PNB_TYPE_UBYTE
-                  If RCNT > 0
-                    RASC>>RCNT
-                  Else
-                    RASC<<(-RCNT)
-                  EndIf
-              EndSelect
-            Next
-            
-            AddElement(nList())
-            Select RTYP
-              Case #PNB_TYPE_NAME
-                nList()\s = RSTR
-              Case #PNB_TYPE_STRING
-                nList()\s = RSTR
-              Case #PNB_TYPE_POINTER
-                nList()\p = *RPTR
-              Case #PNB_TYPE_DOUBLE
-                nList()\q = RQUD
-              Case #PNB_TYPE_FLOAT
-                nList()\l = RLNG
-              Case #PNB_TYPE_EPIC
-                nList()\q = RQUD
-              Case #PNB_TYPE_INTEGER
-                nList()\i = RINT
-              Case #PNB_TYPE_LONG
-                nList()\l = RLNG
-              Case #PNB_TYPE_WORD
-                nList()\w = RWRD
-              Case #PNB_TYPE_BYTE
-                nList()\b = RBYT
-              Case #PNB_TYPE_UWORD
-                nList()\u = RUNI
-              Case #PNB_TYPE_CHARACTER
-                nList()\c = RCHR
-              Case #PNB_TYPE_UBYTE
-                nList()\a = RASC
-            EndSelect
-            nList()\Flags = RTYP
-            
-            RSTR = ""
-            RCNT = 0
-            RINT = 0
-            RTYP = 0
-            RASC = 0
-            RBYT = 0
-            RCHR = 0
-            RLNG = 0
-            RQUD = 0
-            RWRD = 0
-            RUNI = 0
-            *RPTR = 0
+            PNB_ASR(nList())
             
             ;---Sin
           Case "Sin"
             DeleteElement(nList())
-            Select nListTypeFromList(nList())
-              Case #PNB_TYPE_STRING
-                ClearList(nList())
-              Case #PNB_TYPE_NAME
-                ClearList(nList())
-              Case #PNB_TYPE_DOUBLE
-                nListConvert(nList(), #PNB_TYPE_DOUBLE)
-                ForEach nList()
-                  nList()\d = Sin(Radian(nList()\d))
-                Next
-              Default
-                nListConvert(nList(), #PNB_TYPE_FLOAT)
-                ForEach nList()
-                  nList()\f = Sin(Radian(nList()\f))
-                Next
-            EndSelect
+            PNB_Sin(nList())
             
-            ;---ASin
-          Case "ASin"
+            ;---ASn
+          Case "ASn", "ASin"
             DeleteElement(nList())
-            Select nListTypeFromList(nList())
-              Case #PNB_TYPE_STRING
-                ClearList(nList())
-              Case #PNB_TYPE_NAME
-                ClearList(nList())
-              Case #PNB_TYPE_DOUBLE
-                nListConvert(nList(), #PNB_TYPE_DOUBLE)
-                ForEach nList()
-                  nList()\d = Degree(ASin(nList()\d))
-                Next
-              Default
-                nListConvert(nList(), #PNB_TYPE_FLOAT)
-                ForEach nList()
-                  nList()\f = Degree(ASin(nList()\f))
-                Next
-            EndSelect
+            PNB_ASin(nList())
             
             ;---Cos
           Case "Cos"
             DeleteElement(nList())
-            Select nListTypeFromList(nList())
-              Case #PNB_TYPE_STRING
-                ClearList(nList())
-              Case #PNB_TYPE_NAME
-                ClearList(nList())
-              Case #PNB_TYPE_DOUBLE
-                nListConvert(nList(), #PNB_TYPE_DOUBLE)
-                ForEach nList()
-                  nList()\d = Cos(Radian(nList()\d))
-                Next
-              Default
-                nListConvert(nList(), #PNB_TYPE_FLOAT)
-                ForEach nList()
-                  nList()\f = Cos(Radian(nList()\f))
-                Next
-            EndSelect
+            PNB_Cos(nList())
             
-            ;---ACos
-          Case "ACos"
+            ;---ACs
+          Case "ACs", "ACos"
             DeleteElement(nList())
-            Select nListTypeFromList(nList())
-              Case #PNB_TYPE_STRING
-                ClearList(nList())
-              Case #PNB_TYPE_NAME
-                ClearList(nList())
-              Case #PNB_TYPE_DOUBLE
-                nListConvert(nList(), #PNB_TYPE_DOUBLE)
-                ForEach nList()
-                  nList()\d = Degree(ACos(nList()\d))
-                Next
-              Default
-                nListConvert(nList(), #PNB_TYPE_FLOAT)
-                ForEach nList()
-                  nList()\f = Degree(ACos(nList()\f))
-                Next
-            EndSelect
+            PNB_ACos(nList())
             
             ;---Tan
           Case "Tan"
             DeleteElement(nList())
-            Select nListTypeFromList(nList())
-              Case #PNB_TYPE_STRING
-                ClearList(nList())
-              Case #PNB_TYPE_NAME
-                ClearList(nList())
-              Case #PNB_TYPE_DOUBLE
-                nListConvert(nList(), #PNB_TYPE_DOUBLE)
-                ForEach nList()
-                  nList()\d = Tan(Radian(nList()\d))
-                Next
-              Default
-                nListConvert(nList(), #PNB_TYPE_FLOAT)
-                ForEach nList()
-                  nList()\f = Tan(Radian(nList()\f))
-                Next
-            EndSelect
+            PNB_Tan(nList())
             
-            ;---ATan
-          Case "ATan"
+            ;---ATn
+          Case "ATn", "ATan"
             DeleteElement(nList())
-            Select nListTypeFromList(nList())
-              Case #PNB_TYPE_STRING
-                ClearList(nList())
-              Case #PNB_TYPE_NAME
-                ClearList(nList())
-              Case #PNB_TYPE_DOUBLE
-                nListConvert(nList(), #PNB_TYPE_DOUBLE)
-                ForEach nList()
-                  nList()\d = Degree(ATan(nList()\d))
-                Next
-              Default
-                nListConvert(nList(), #PNB_TYPE_FLOAT)
-                ForEach nList()
-                  nList()\f = Degree(ATan(nList()\f))
-                Next
-            EndSelect
+            PNB_ATan(nList())
             
-            ;---Up
-          Case "Up"
+            ;---RUp
+          Case "RUp", "RoundUp"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                Case #PNB_TYPE_DOUBLE
-                  nList()\d = Round(nList()\d, #PB_Round_Up)
-                Case #PNB_TYPE_FLOAT
-                  nList()\f = Round(nList()\f, #PB_Round_Up)
-              EndSelect
-            Next
+            PNB_RoundUp(nList())
             
-            ;---Down
-          Case "Down"
+            ;---RDn
+          Case "RDn", "RoundDown"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                Case #PNB_TYPE_DOUBLE
-                  nList()\d = Round(nList()\d, #PB_Round_Down)
-                Case #PNB_TYPE_FLOAT
-                  nList()\f = Round(nList()\f, #PB_Round_Down)
-              EndSelect
-            Next
+            PNB_RoundDown(nList())
             
-            ;---Round
-          Case "Round"
+            ;---RNr
+          Case "RNr", "Round", "RoundNearest"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                Case #PNB_TYPE_DOUBLE
-                  nList()\d = Round(nList()\d, #PB_Round_Nearest)
-                Case #PNB_TYPE_FLOAT
-                  nList()\f = Round(nList()\f, #PB_Round_Nearest)
-              EndSelect
-            Next
+            PNB_RoundNearest(nList())
             
             ;---Sqr
-          Case "Sqr"
+          Case "Sqr", "Square"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                Case #PNB_TYPE_POINTER
-                  nList()\p = Sqr(nList()\p)
-                Case #PNB_TYPE_DOUBLE
-                  nList()\d = Sqr(nList()\d)
-                Case #PNB_TYPE_FLOAT
-                  nList()\f = Sqr(nList()\f)
-                Case #PNB_TYPE_EPIC
-                  nList()\q = Sqr(nList()\q)
-                Case #PNB_TYPE_INTEGER
-                  nList()\i = Sqr(nList()\i)
-                Case #PNB_TYPE_LONG
-                  nList()\l = Sqr(nList()\l)
-                Case #PNB_TYPE_WORD
-                  nList()\w = Sqr(nList()\w)
-                Case #PNB_TYPE_BYTE
-                  nList()\b = Sqr(nList()\b)
-                Case #PNB_TYPE_UWORD
-                  nList()\u = Sqr(nList()\u)
-                Case #PNB_TYPE_CHARACTER
-                  nList()\c = Sqr(nList()\c)
-                Case #PNB_TYPE_UBYTE
-                  nList()\a = Sqr(nList()\a)
-              EndSelect
-            Next
+            PNB_Square(nList())
+            
             ;---Ran
-          Case "Ran", "Rand"
+          Case "Ran", "Rand", "Random"
             DeleteElement(nList())
-            If NextElement(nList())
-              nListConvert(nList(), #PNB_TYPE_INTEGER)
-              RINT = nList()\i
-              DeleteElement(nList())
-              If NextElement(nList())
-                RCNT = nList()\i
-                DeleteElement(nList())
-              Else
-                RCNT = 0
-              EndIf
-              If RCNT > RINT
-                Swap RCNT, RINT
-              EndIf
-              RINT-RCNT
-              RINT = Random(RINT)
-              RINT+RCNT
-              AddElement(nList())
-              nList()\i = RINT
-              nList()\Flags = #PNB_TYPE_INTEGER
-            Else
-              AddElement(nList())
-              nList()\i = Random(#MAXLONG)-#MINLONG>>1
-              nList()\Flags = #PNB_TYPE_INTEGER
-            EndIf
-            RINT = 0
-            RCNT = 0
+            PNB_Random(nList())
+            
             ;-#Logic
             ;---Bool
           Case "Bool"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  RBOL = Bool(nList()\s = "True")
-                Case #PNB_TYPE_STRING
-                  RBOL = Bool(nList()\s = "True")
-                Case #PNB_TYPE_POINTER
-                  RBOL = Bool(nList()\p)
-                Case #PNB_TYPE_DOUBLE
-                  RBOL = Bool(nList()\d)
-                Case #PNB_TYPE_FLOAT
-                  RBOL = Bool(nList()\f)
-                Case #PNB_TYPE_EPIC
-                  RBOL = Bool(nList()\q)
-                Case #PNB_TYPE_INTEGER
-                  RBOL = Bool(nList()\i)
-                Case #PNB_TYPE_LONG
-                  RBOL = Bool(nList()\l)
-                Case #PNB_TYPE_WORD
-                  RBOL = Bool(nList()\w)
-                Case #PNB_TYPE_BYTE
-                  RBOL = Bool(nList()\b)
-                Case #PNB_TYPE_UWORD
-                  RBOL = Bool(nList()\u)
-                Case #PNB_TYPE_CHARACTER
-                  RBOL = Bool(nList()\c)
-                Case #PNB_TYPE_UBYTE
-                  RBOL = Bool(nList()\a)
-              EndSelect
-              DeleteElement(nList())
-              AddElement(nList())
-              nList()\i = RBOL
-              nList()\Flags | #PNB_TYPE_INTEGER
-              
-            Next
-            RBOL = 0
+            PNB_Bool(nList())
             
             ;---Eql
           Case "=", "==", "Eql"
             DeleteElement(nList())
-            RBOL = 1
-            If NextElement(nList())
-              AddElement(cList1())
-              cList1() = nList()
-              DeleteElement(nList())
-              ForEach nList()
-                AddElement(cList2())
-                cList2() = nList()
-                DeleteElement(nList())
-                RBOL = RBOL & nListCompare(cList1(), cList2())
-                ClearList(cList2())
-              Next
-              ClearList(cList1())
-              AddElement(nList())
-              nList()\i = RBOL
-              nList()\Flags | #PNB_TYPE_INTEGER
-            Else
-              AddElement(nList())
-              nList()\i = 1
-              nList()\Flags | #PNB_TYPE_INTEGER
-            EndIf
-            RBOL = 0
+            PNB_Eql(nList())
             
             ;---Neq
           Case "<>", "><", "Neq"
             DeleteElement(nList())
-            RBOL = 1
-            If NextElement(nList())
-              AddElement(cList1())
-              cList1() = nList()
-              DeleteElement(nList())
-              ForEach nList()
-                AddElement(cList2())
-                cList2() = nList()
-                DeleteElement(nList())
-                RBOL = RBOL & ~nListCompare(cList1(), cList2())
-                ClearList(cList1())
-                MergeLists(cList2(), cList1())
-              Next
-              ClearList(cList1())
-              AddElement(nList())
-              nList()\i = RBOL
-              nList()\Flags | #PNB_TYPE_INTEGER
-            Else
-              AddElement(nList())
-              nList()\i = 0
-              nList()\Flags | #PNB_TYPE_INTEGER
-            EndIf
-            RBOL = 0
+            PNB_Neq(nList())
             
             ;---Lss
           Case "<", "Lss"
             DeleteElement(nList())
-            RBOL = 1
-            If NextElement(nList())
-              RTYP = nListTypeFromList(nList())
-              Select RTYP
-                Case #PNB_TYPE_NAME
-                  RBOL = 0
-                  ClearList(nList())
-                Case #PNB_TYPE_STRING
-                  RBOL = 0
-                  ClearList(nList())
-                Default
-                  nListConvert(nList(), RTYP)
-                  Select RTYP
-                    Case #PNB_TYPE_POINTER
-                      *RPTR = nList()\p
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(*RPTR < nList()\p))
-                        *RPTR = nList()\p
-                        DeleteElement(nList())
-                      Next
-                      *RPTR = 0
-                    Case #PNB_TYPE_DOUBLE
-                      RDBL = nList()\d
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RDBL < nList()\d))
-                        RDBL = nList()\d
-                        DeleteElement(nList())
-                      Next
-                      RDBL = 0.0
-                    Case #PNB_TYPE_FLOAT
-                      RFLT = nList()\f
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RFLT < nList()\f))
-                        RFLT = nList()\d
-                        DeleteElement(nList())
-                      Next
-                      RFLT = 0.0
-                    Case #PNB_TYPE_EPIC
-                      RQUD = nList()\q
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RQUD < nList()\q))
-                        RQUD = nList()\q
-                        DeleteElement(nList())
-                      Next
-                      RQUD = 0
-                    Case #PNB_TYPE_INTEGER
-                      RINT = nList()\i
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RINT < nList()\i))
-                        RINT = nList()\i
-                        DeleteElement(nList())
-                      Next
-                      RINT = 0
-                    Case #PNB_TYPE_LONG
-                      RLNG = nList()\l
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RLNG < nList()\l))
-                        RLNG = nList()\l
-                        DeleteElement(nList())
-                      Next
-                      RLNG = 0
-                    Case #PNB_TYPE_WORD
-                      RWRD = nList()\w
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RWRD < nList()\w))
-                        RWRD = nList()\w
-                        DeleteElement(nList())
-                      Next
-                      RWRD = 0
-                    Case #PNB_TYPE_BYTE
-                      RBYT = nList()\b
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RBYT < nList()\b))
-                        RBYT = nList()\b
-                        DeleteElement(nList())
-                      Next
-                      RBYT = 0
-                    Case #PNB_TYPE_UWORD
-                      RUNI = nList()\u
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RUNI < nList()\u))
-                        RUNI = nList()\u
-                        DeleteElement(nList())
-                      Next
-                      RUNI = 0
-                    Case #PNB_TYPE_CHARACTER
-                      RCHR = nList()\c
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RCHR < nList()\c))
-                        RCHR = nList()\c
-                        DeleteElement(nList())
-                      Next
-                      RCHR = 0
-                    Case #PNB_TYPE_UBYTE
-                      RASC = nList()\a
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RASC < nList()\a))
-                        RASC = nList()\a
-                        DeleteElement(nList())
-                      Next
-                      RASC = 0
-                  EndSelect
-              EndSelect
-              AddElement(nList())
-              nList()\i = RBOL
-              nList()\Flags | #PNB_TYPE_INTEGER
-            Else
-              AddElement(nList())
-              nList()\i = 0
-              nList()\Flags | #PNB_TYPE_INTEGER
-            EndIf
-            RBOL = 0
+            PNB_Lss(nList())
             
             ;---Leq
           Case "<=", "=<", "Leq"
             DeleteElement(nList())
-            RBOL = 1
-            If NextElement(nList())
-              RTYP = nListTypeFromList(nList())
-              Select RTYP
-                Case #PNB_TYPE_NAME
-                  RBOL = 0
-                  ClearList(nList())
-                Case #PNB_TYPE_STRING
-                  RBOL = 0
-                  ClearList(nList())
-                Default
-                  nListConvert(nList(), RTYP)
-                  Select RTYP
-                    Case #PNB_TYPE_POINTER
-                      *RPTR = nList()\p
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(*RPTR <= nList()\p))
-                        *RPTR = nList()\p
-                        DeleteElement(nList())
-                      Next
-                      *RPTR = 0
-                    Case #PNB_TYPE_DOUBLE
-                      RDBL = nList()\d
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RDBL <= nList()\d))
-                        RDBL = nList()\d
-                        DeleteElement(nList())
-                      Next
-                      RDBL = 0.0
-                    Case #PNB_TYPE_FLOAT
-                      RFLT = nList()\f
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RFLT <= nList()\f))
-                        RFLT = nList()\d
-                        DeleteElement(nList())
-                      Next
-                      RFLT = 0.0
-                    Case #PNB_TYPE_EPIC
-                      RQUD = nList()\q
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RQUD <= nList()\q))
-                        RQUD = nList()\q
-                        DeleteElement(nList())
-                      Next
-                      RQUD = 0
-                    Case #PNB_TYPE_INTEGER
-                      RINT = nList()\i
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RINT <= nList()\i))
-                        RINT = nList()\i
-                        DeleteElement(nList())
-                      Next
-                      RINT = 0
-                    Case #PNB_TYPE_LONG
-                      RLNG = nList()\l
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RLNG <= nList()\l))
-                        RLNG = nList()\l
-                        DeleteElement(nList())
-                      Next
-                      RLNG = 0
-                    Case #PNB_TYPE_WORD
-                      RWRD = nList()\w
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RWRD <= nList()\w))
-                        RWRD = nList()\w
-                        DeleteElement(nList())
-                      Next
-                      RWRD = 0
-                    Case #PNB_TYPE_BYTE
-                      RBYT = nList()\b
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RBYT <= nList()\b))
-                        RBYT = nList()\b
-                        DeleteElement(nList())
-                      Next
-                      RBYT = 0
-                    Case #PNB_TYPE_UWORD
-                      RUNI = nList()\u
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RUNI <= nList()\u))
-                        RUNI = nList()\u
-                        DeleteElement(nList())
-                      Next
-                      RUNI = 0
-                    Case #PNB_TYPE_CHARACTER
-                      RCHR = nList()\c
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RCHR <= nList()\c))
-                        RCHR = nList()\c
-                        DeleteElement(nList())
-                      Next
-                      RCHR = 0
-                    Case #PNB_TYPE_UBYTE
-                      RASC = nList()\a
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RASC <= nList()\a))
-                        RASC = nList()\a
-                        DeleteElement(nList())
-                      Next
-                      RASC = 0
-                  EndSelect
-              EndSelect
-              AddElement(nList())
-              nList()\i = RBOL
-              nList()\Flags | #PNB_TYPE_INTEGER
-            Else
-              AddElement(nList())
-              nList()\i = 1
-              nList()\Flags | #PNB_TYPE_INTEGER
-            EndIf
-            RBOL = 0
+            PNB_Leq(nList())
+            
             ;---Gtr
           Case ">", "Gtr"
             DeleteElement(nList())
-            RBOL = 1
-            If NextElement(nList())
-              RTYP = nListTypeFromList(nList())
-              Select RTYP
-                Case #PNB_TYPE_NAME
-                  RBOL = 0
-                  ClearList(nList())
-                Case #PNB_TYPE_STRING
-                  RBOL = 0
-                  ClearList(nList())
-                Default
-                  nListConvert(nList(), RTYP)
-                  Select RTYP
-                    Case #PNB_TYPE_POINTER
-                      *RPTR = nList()\p
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(*RPTR > nList()\p))
-                        *RPTR = nList()\p
-                        DeleteElement(nList())
-                      Next
-                      *RPTR = 0
-                    Case #PNB_TYPE_DOUBLE
-                      RDBL = nList()\d
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RDBL > nList()\d))
-                        RDBL = nList()\d
-                        DeleteElement(nList())
-                      Next
-                      RDBL = 0.0
-                    Case #PNB_TYPE_FLOAT
-                      RFLT = nList()\f
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RFLT > nList()\f))
-                        RFLT = nList()\d
-                        DeleteElement(nList())
-                      Next
-                      RFLT = 0.0
-                    Case #PNB_TYPE_EPIC
-                      RQUD = nList()\q
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RQUD > nList()\q))
-                        RQUD = nList()\q
-                        DeleteElement(nList())
-                      Next
-                      RQUD = 0
-                    Case #PNB_TYPE_INTEGER
-                      RINT = nList()\i
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RINT > nList()\i))
-                        RINT = nList()\i
-                        DeleteElement(nList())
-                      Next
-                      RINT = 0
-                    Case #PNB_TYPE_LONG
-                      RLNG = nList()\l
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RLNG > nList()\l))
-                        RLNG = nList()\l
-                        DeleteElement(nList())
-                      Next
-                      RLNG = 0
-                    Case #PNB_TYPE_WORD
-                      RWRD = nList()\w
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RWRD > nList()\w))
-                        RWRD = nList()\w
-                        DeleteElement(nList())
-                      Next
-                      RWRD = 0
-                    Case #PNB_TYPE_BYTE
-                      RBYT = nList()\b
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RBYT > nList()\b))
-                        RBYT = nList()\b
-                        DeleteElement(nList())
-                      Next
-                      RBYT = 0
-                    Case #PNB_TYPE_UWORD
-                      RUNI = nList()\u
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RUNI > nList()\u))
-                        RUNI = nList()\u
-                        DeleteElement(nList())
-                      Next
-                      RUNI = 0
-                    Case #PNB_TYPE_CHARACTER
-                      RCHR = nList()\c
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RCHR > nList()\c))
-                        RCHR = nList()\c
-                        DeleteElement(nList())
-                      Next
-                      RCHR = 0
-                    Case #PNB_TYPE_UBYTE
-                      RASC = nList()\a
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RASC > nList()\a))
-                        RASC = nList()\a
-                        DeleteElement(nList())
-                      Next
-                      RASC = 0
-                  EndSelect
-              EndSelect
-              AddElement(nList())
-              nList()\i = RBOL
-              nList()\Flags | #PNB_TYPE_INTEGER
-            Else
-              AddElement(nList())
-              nList()\i = 0
-              nList()\Flags | #PNB_TYPE_INTEGER
-            EndIf
-            RBOL = 0
+            PNB_Gtr(nList())
             
             ;---Geq
           Case ">=", "=>", "Geq"
             DeleteElement(nList())
-            RBOL = 1
-            If NextElement(nList())
-              RTYP = nListTypeFromList(nList())
-              Select RTYP
-                Case #PNB_TYPE_NAME
-                  RBOL = 0
-                  ClearList(nList())
-                Case #PNB_TYPE_STRING
-                  RBOL = 0
-                  ClearList(nList())
-                Default
-                  nListConvert(nList(), RTYP)
-                  Select RTYP
-                    Case #PNB_TYPE_POINTER
-                      *RPTR = nList()\p
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(*RPTR >= nList()\p))
-                        *RPTR = nList()\p
-                        DeleteElement(nList())
-                      Next
-                      *RPTR = 0
-                    Case #PNB_TYPE_DOUBLE
-                      RDBL = nList()\d
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RDBL >= nList()\d))
-                        RDBL = nList()\d
-                        DeleteElement(nList())
-                      Next
-                      RDBL = 0.0
-                    Case #PNB_TYPE_FLOAT
-                      RFLT = nList()\f
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RFLT >= nList()\f))
-                        RFLT = nList()\d
-                        DeleteElement(nList())
-                      Next
-                      RFLT = 0.0
-                    Case #PNB_TYPE_EPIC
-                      RQUD = nList()\q
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RQUD >= nList()\q))
-                        RQUD = nList()\q
-                        DeleteElement(nList())
-                      Next
-                      RQUD = 0
-                    Case #PNB_TYPE_INTEGER
-                      RINT = nList()\i
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RINT >= nList()\i))
-                        RINT = nList()\i
-                        DeleteElement(nList())
-                      Next
-                      RINT = 0
-                    Case #PNB_TYPE_LONG
-                      RLNG = nList()\l
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RLNG >= nList()\l))
-                        RLNG = nList()\l
-                        DeleteElement(nList())
-                      Next
-                      RLNG = 0
-                    Case #PNB_TYPE_WORD
-                      RWRD = nList()\w
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RWRD >= nList()\w))
-                        RWRD = nList()\w
-                        DeleteElement(nList())
-                      Next
-                      RWRD = 0
-                    Case #PNB_TYPE_BYTE
-                      RBYT = nList()\b
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RBYT >= nList()\b))
-                        RBYT = nList()\b
-                        DeleteElement(nList())
-                      Next
-                      RBYT = 0
-                    Case #PNB_TYPE_UWORD
-                      RUNI = nList()\u
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RUNI >= nList()\u))
-                        RUNI = nList()\u
-                        DeleteElement(nList())
-                      Next
-                      RUNI = 0
-                    Case #PNB_TYPE_CHARACTER
-                      RCHR = nList()\c
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RCHR >= nList()\c))
-                        RCHR = nList()\c
-                        DeleteElement(nList())
-                      Next
-                      RCHR = 0
-                    Case #PNB_TYPE_UBYTE
-                      RASC = nList()\a
-                      DeleteElement(nList())
-                      ForEach nList()
-                        RBOL = Bool(RBOL & Bool(RASC >= nList()\a))
-                        RASC = nList()\a
-                        DeleteElement(nList())
-                      Next
-                      RASC = 0
-                  EndSelect
-              EndSelect
-              AddElement(nList())
-              nList()\i = RBOL
-              nList()\Flags | #PNB_TYPE_INTEGER
-            Else
-              AddElement(nList())
-              nList()\i = 1
-              nList()\Flags | #PNB_TYPE_INTEGER
-            EndIf
-            RBOL = 0
+            PNB_Geq(nList())
             
             ;---And
           Case "And", "&"
             DeleteElement(nList())
-            RBOL = 1
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  RBOL = Bool(RBOL And Bool(nList()\s = "True"))
-                Case #PNB_TYPE_STRING
-                  RBOL = Bool(RBOL And Bool(nList()\s = "True"))
-                Case #PNB_TYPE_POINTER
-                  RBOL = Bool(RBOL And Bool(nList()\p))
-                Case #PNB_TYPE_DOUBLE
-                  RBOL = Bool(RBOL And Bool(nList()\d))
-                Case #PNB_TYPE_FLOAT
-                  RBOL = Bool(RBOL And Bool(nList()\f))
-                Case #PNB_TYPE_EPIC
-                  RBOL = Bool(RBOL And Bool(nList()\q))
-                Case #PNB_TYPE_INTEGER
-                  RBOL = Bool(RBOL And Bool(nList()\i))
-                Case #PNB_TYPE_LONG
-                  RBOL = Bool(RBOL And Bool(nList()\l))
-                Case #PNB_TYPE_WORD
-                  RBOL = Bool(RBOL And Bool(nList()\w))
-                Case #PNB_TYPE_BYTE
-                  RBOL = Bool(RBOL And Bool(nList()\b))
-                Case #PNB_TYPE_UWORD
-                  RBOL = Bool(RBOL And Bool(nList()\u))
-                Case #PNB_TYPE_CHARACTER
-                  RBOL = Bool(RBOL And Bool(nList()\c))
-                Case #PNB_TYPE_UBYTE
-                  RBOL = Bool(RBOL And Bool(nList()\a))
-              EndSelect
-              DeleteElement(nList())
-            Next
-            AddElement(nList())
-            nList()\i = RBOL
-            nList()\Flags | #PNB_TYPE_INTEGER
-            
-            RBOL = 0
-            
+            PNB_And(nList())
             
             ;---bAnd
           Case "bAnd", "b&"
             DeleteElement(nList())
-            If NextElement(nList())
-              RTYP = nListGetHighestType(nList()\Flags)
-              Select RTYP
-                Case #PNB_TYPE_NAME
-                  ClearList(nList())
-                Case #PNB_TYPE_STRING
-                  ClearList(nList())
-                Default
-                  RQUD = nList()\q
-                  DeleteElement(nList())
-                  ForEach nList()
-                    RQUD&nList()\q
-                    DeleteElement(nList())
-                  Next
-              EndSelect
-              AddElement(nList())
-              nList()\q = RQUD
-              Select RTYP
-                Case #PNB_TYPE_POINTER
-                  *RPTR = nList()\p
-                  nList()\q = 0
-                  nList()\p = *RPTR
-                  *RPTR = 0
-                Case #PNB_TYPE_FLOAT
-                  RLNG = nList()\l
-                  nList()\q = 0
-                  nList()\l = RLNG
-                  RLNG = 0
-                Case #PNB_TYPE_INTEGER
-                  RINT = nList()\i
-                  nList()\q = 0
-                  nList()\l = RINT
-                  RINT = 0
-                Case #PNB_TYPE_LONG
-                  RLNG = nList()\l
-                  nList()\q = 0
-                  nList()\l = RLNG
-                  RLNG = 0
-                Case #PNB_TYPE_WORD
-                  RWRD = nList()\w
-                  nList()\q = 0
-                  nList()\l = RWRD
-                  RWRD = 0
-                Case #PNB_TYPE_BYTE
-                  RBYT = nList()\b
-                  nList()\q = 0
-                  nList()\b = RBYT
-                  RBYT = 0
-                Case #PNB_TYPE_UWORD
-                  RUNI = nList()\b
-                  nList()\q = 0
-                  nList()\u = RUNI
-                  RUNI = 0
-                Case #PNB_TYPE_CHARACTER
-                  RCHR = nList()\c
-                  nList()\q = 0
-                  nList()\c = RCHR
-                  RCHR = 0
-                Case #PNB_TYPE_UBYTE
-                  RASC = nList()\a
-                  nList()\q = 0
-                  nList()\a = RASC
-                  RASC = 0
-              EndSelect
-              nList()\Flags = RTYP
-              RTYP = 0
-              RQUD = 0
-            Else
-              AddElement(nList())
-              nList()\i = 0
-              nList()\Flags | #PNB_TYPE_INTEGER
-            EndIf
+            PNB_bAnd(nList())
             
             ;---Or
           Case "Or", "|"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  RBOL = Bool(RBOL Or Bool(nList()\s = "True"))
-                Case #PNB_TYPE_STRING
-                  RBOL = Bool(RBOL Or Bool(nList()\s = "True"))
-                Case #PNB_TYPE_POINTER
-                  RBOL = Bool(RBOL Or Bool(nList()\p))
-                Case #PNB_TYPE_DOUBLE
-                  RBOL = Bool(RBOL Or Bool(nList()\d))
-                Case #PNB_TYPE_FLOAT
-                  RBOL = Bool(RBOL Or Bool(nList()\f))
-                Case #PNB_TYPE_EPIC
-                  RBOL = Bool(RBOL Or Bool(nList()\q))
-                Case #PNB_TYPE_INTEGER
-                  RBOL = Bool(RBOL Or Bool(nList()\i))
-                Case #PNB_TYPE_LONG
-                  RBOL = Bool(RBOL Or Bool(nList()\l))
-                Case #PNB_TYPE_WORD
-                  RBOL = Bool(RBOL Or Bool(nList()\w))
-                Case #PNB_TYPE_BYTE
-                  RBOL = Bool(RBOL Or Bool(nList()\b))
-                Case #PNB_TYPE_UWORD
-                  RBOL = Bool(RBOL Or Bool(nList()\u))
-                Case #PNB_TYPE_CHARACTER
-                  RBOL = Bool(RBOL Or Bool(nList()\c))
-                Case #PNB_TYPE_UBYTE
-                  RBOL = Bool(RBOL Or Bool(nList()\a))
-              EndSelect
-              DeleteElement(nList())
-            Next
-            AddElement(nList())
-            nList()\i = RBOL
-            nList()\Flags | #PNB_TYPE_INTEGER
-            
-            RBOL = 0
+            PNB_Or(nList())
             
             ;---bOr
           Case "bOr", "b|"
             DeleteElement(nList())
-            If NextElement(nList())
-              RTYP = nListGetHighestType(nList()\Flags)
-              Select RTYP
-                Case #PNB_TYPE_NAME
-                  ClearList(nList())
-                Case #PNB_TYPE_STRING
-                  ClearList(nList())
-                Default
-                  RQUD = nList()\q
-                  DeleteElement(nList())
-                  ForEach nList()
-                    RQUD|nList()\q
-                    DeleteElement(nList())
-                  Next
-              EndSelect
-              AddElement(nList())
-              nList()\q = RQUD
-              Select RTYP
-                Case #PNB_TYPE_POINTER
-                  *RPTR = nList()\p
-                  nList()\q = 0
-                  nList()\p = *RPTR
-                  *RPTR = 0
-                Case #PNB_TYPE_FLOAT
-                  RLNG = nList()\l
-                  nList()\q = 0
-                  nList()\l = RLNG
-                  RLNG = 0
-                Case #PNB_TYPE_INTEGER
-                  RINT = nList()\i
-                  nList()\q = 0
-                  nList()\l = RINT
-                  RINT = 0
-                Case #PNB_TYPE_LONG
-                  RLNG = nList()\l
-                  nList()\q = 0
-                  nList()\l = RLNG
-                  RLNG = 0
-                Case #PNB_TYPE_WORD
-                  RWRD = nList()\w
-                  nList()\q = 0
-                  nList()\l = RWRD
-                  RWRD = 0
-                Case #PNB_TYPE_BYTE
-                  RBYT = nList()\b
-                  nList()\q = 0
-                  nList()\b = RBYT
-                  RBYT = 0
-                Case #PNB_TYPE_UWORD
-                  RUNI = nList()\b
-                  nList()\q = 0
-                  nList()\u = RUNI
-                  RUNI = 0
-                Case #PNB_TYPE_CHARACTER
-                  RCHR = nList()\c
-                  nList()\q = 0
-                  nList()\c = RCHR
-                  RCHR = 0
-                Case #PNB_TYPE_UBYTE
-                  RASC = nList()\a
-                  nList()\q = 0
-                  nList()\a = RASC
-                  RASC = 0
-              EndSelect
-              nList()\Flags = RTYP
-              RTYP = 0
-              RQUD = 0
-            Else
-              AddElement(nList())
-              nList()\i = 0
-              nList()\Flags | #PNB_TYPE_INTEGER
-            EndIf
+            PNB_bOr(nList())
             
             ;---XOr
           Case "XOr", "!"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  RBOL = Bool(RBOL XOr Bool(nList()\s = "True"))
-                Case #PNB_TYPE_STRING
-                  RBOL = Bool(RBOL XOr Bool(nList()\s = "True"))
-                Case #PNB_TYPE_POINTER
-                  RBOL = Bool(RBOL XOr Bool(nList()\p))
-                Case #PNB_TYPE_DOUBLE
-                  RBOL = Bool(RBOL XOr Bool(nList()\d))
-                Case #PNB_TYPE_FLOAT
-                  RBOL = Bool(RBOL XOr Bool(nList()\f))
-                Case #PNB_TYPE_EPIC
-                  RBOL = Bool(RBOL XOr Bool(nList()\q))
-                Case #PNB_TYPE_INTEGER
-                  RBOL = Bool(RBOL XOr Bool(nList()\i))
-                Case #PNB_TYPE_LONG
-                  RBOL = Bool(RBOL XOr Bool(nList()\l))
-                Case #PNB_TYPE_WORD
-                  RBOL = Bool(RBOL XOr Bool(nList()\w))
-                Case #PNB_TYPE_BYTE
-                  RBOL = Bool(RBOL XOr Bool(nList()\b))
-                Case #PNB_TYPE_UWORD
-                  RBOL = Bool(RBOL XOr Bool(nList()\u))
-                Case #PNB_TYPE_CHARACTER
-                  RBOL = Bool(RBOL XOr Bool(nList()\c))
-                Case #PNB_TYPE_UBYTE
-                  RBOL = Bool(RBOL XOr Bool(nList()\a))
-              EndSelect
-              DeleteElement(nList())
-            Next
-            AddElement(nList())
-            nList()\i = RBOL
-            nList()\Flags | #PNB_TYPE_INTEGER
-            
-            RBOL = 0
+            PNB_XOr(nList())
             
             ;---bXOr
           Case "bXOr", "b!"
             DeleteElement(nList())
-            If NextElement(nList())
-              RTYP = nListGetHighestType(nList()\Flags)
-              Select RTYP
-                Case #PNB_TYPE_NAME
-                  ClearList(nList())
-                Case #PNB_TYPE_STRING
-                  ClearList(nList())
-                Default
-                  RQUD = nList()\q
-                  DeleteElement(nList())
-                  ForEach nList()
-                    RQUD!nList()\q
-                    DeleteElement(nList())
-                  Next
-              EndSelect
-              AddElement(nList())
-              nList()\q = RQUD
-              Select RTYP
-                Case #PNB_TYPE_POINTER
-                  *RPTR = nList()\p
-                  nList()\q = 0
-                  nList()\p = *RPTR
-                  *RPTR = 0
-                Case #PNB_TYPE_FLOAT
-                  RLNG = nList()\l
-                  nList()\q = 0
-                  nList()\l = RLNG
-                  RLNG = 0
-                Case #PNB_TYPE_INTEGER
-                  RINT = nList()\i
-                  nList()\q = 0
-                  nList()\l = RINT
-                  RINT = 0
-                Case #PNB_TYPE_LONG
-                  RLNG = nList()\l
-                  nList()\q = 0
-                  nList()\l = RLNG
-                  RLNG = 0
-                Case #PNB_TYPE_WORD
-                  RWRD = nList()\w
-                  nList()\q = 0
-                  nList()\l = RWRD
-                  RWRD = 0
-                Case #PNB_TYPE_BYTE
-                  RBYT = nList()\b
-                  nList()\q = 0
-                  nList()\b = RBYT
-                  RBYT = 0
-                Case #PNB_TYPE_UWORD
-                  RUNI = nList()\b
-                  nList()\q = 0
-                  nList()\u = RUNI
-                  RUNI = 0
-                Case #PNB_TYPE_CHARACTER
-                  RCHR = nList()\c
-                  nList()\q = 0
-                  nList()\c = RCHR
-                  RCHR = 0
-                Case #PNB_TYPE_UBYTE
-                  RASC = nList()\a
-                  nList()\q = 0
-                  nList()\a = RASC
-                  RASC = 0
-              EndSelect
-              nList()\Flags = RTYP
-              RTYP = 0
-              RQUD = 0
-            Else
-              AddElement(nList())
-              nList()\i = 0
-              nList()\Flags | #PNB_TYPE_INTEGER
-            EndIf
+            PNB_bXOr(nList())
             
             ;---Not  
           Case "Not", "~"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  RBOL = Bool(nList()\s = "True")
-                Case #PNB_TYPE_STRING
-                  RBOL = Bool(nList()\s = "True")
-                Case #PNB_TYPE_POINTER
-                  RBOL = Bool(nList()\p)
-                Case #PNB_TYPE_DOUBLE
-                  RBOL = Bool(nList()\d)
-                Case #PNB_TYPE_FLOAT
-                  RBOL = Bool(nList()\f)
-                Case #PNB_TYPE_EPIC
-                  RBOL = Bool(nList()\q)
-                Case #PNB_TYPE_INTEGER
-                  RBOL = Bool(nList()\i)
-                Case #PNB_TYPE_LONG
-                  RBOL = Bool(nList()\l)
-                Case #PNB_TYPE_WORD
-                  RBOL = Bool(nList()\w)
-                Case #PNB_TYPE_BYTE
-                  RBOL = Bool(nList()\b)
-                Case #PNB_TYPE_UWORD
-                  RBOL = Bool(nList()\u)
-                Case #PNB_TYPE_CHARACTER
-                  RBOL = Bool(nList()\c)
-                Case #PNB_TYPE_UBYTE
-                  RBOL = Bool(nList()\a)
-              EndSelect
-              DeleteElement(nList())
-              AddElement(nList())
-              nList()\i = Bool(Not RBOL)
-              nList()\Flags | #PNB_TYPE_INTEGER
-              
-            Next
-            RBOL = 0
+            PNB_Not(nList())
             
             ;---bNot
           Case "bNot", "b~"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                Case #PNB_TYPE_POINTER
-                  nList()\p = ~nList()\p
-                Case #PNB_TYPE_DOUBLE
-                  nList()\q = ~nList()\q
-                Case #PNB_TYPE_FLOAT
-                  nList()\l = ~nList()\l
-                Case #PNB_TYPE_EPIC
-                  nList()\q = ~nList()\q
-                Case #PNB_TYPE_INTEGER
-                  nList()\i = ~nList()\i
-                Case #PNB_TYPE_LONG
-                  nList()\l = ~nList()\l
-                Case #PNB_TYPE_WORD
-                  nList()\w = ~nList()\w
-                Case #PNB_TYPE_BYTE
-                  nList()\b = ~nList()\b
-                Case #PNB_TYPE_UWORD
-                  nList()\u = ~nList()\u
-                Case #PNB_TYPE_CHARACTER
-                  nList()\c = ~nList()\c
-                Case #PNB_TYPE_UBYTE
-                  nList()\a = ~nList()\a
-              EndSelect
-            Next
+            PNB_bNot(nList())
+            
             
             ;-#Memory
             ;---Allocate
           Case "Allocate"
             DeleteElement(nList())
-            ForEach nList()
-              Select nListGetHighestType(nList()\Flags)
-                Case #PNB_TYPE_NAME
-                  DeleteElement(nList())
-                Case #PNB_TYPE_STRING
-                  DeleteElement(nList())
-                Case #PNB_TYPE_POINTER
-                  DeleteElement(nList())
-                Case #PNB_TYPE_DOUBLE
-                  *RPTR = AllocateMemory(nList()\d)
-                  nList()\d = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-                Case #PNB_TYPE_FLOAT
-                  *RPTR = AllocateMemory(nList()\f)
-                  nList()\f = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-                Case #PNB_TYPE_EPIC
-                  *RPTR = AllocateMemory(nList()\q)
-                  nList()\q = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-                Case #PNB_TYPE_INTEGER
-                  *RPTR = AllocateMemory(nList()\i)
-                  nList()\i = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-                Case #PNB_TYPE_LONG
-                  *RPTR = AllocateMemory(nList()\l)
-                  nList()\l = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-                Case #PNB_TYPE_WORD
-                  *RPTR = AllocateMemory(nList()\w)
-                  nList()\w = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-                Case #PNB_TYPE_BYTE
-                  *RPTR = AllocateMemory(nList()\b)
-                  nList()\b = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-                Case #PNB_TYPE_UWORD
-                  *RPTR = AllocateMemory(nList()\u)
-                  nList()\u = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-                Case #PNB_TYPE_CHARACTER
-                  *RPTR = AllocateMemory(nList()\c)
-                  nList()\c = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-                Case #PNB_TYPE_UBYTE
-                  *RPTR = AllocateMemory(nList()\a)
-                  nList()\a = 0
-                  nList()\p = *RPTR
-                  nList()\Flags | #PNB_TYPE_POINTER
-              EndSelect
-              If *RPTR <> 0
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexMemMap)
-                CompilerEndIf
-                If Not FindMapElement(*PLIST(), Str(*RPTR))
-                  AddMapElement(*PLIST(), Str(*RPTR))
-                Else
-                  FreeMemory(*PLIST())
-                  AddMapElement(*PLIST(), Str(*RPTR))
-                EndIf
-                *PLIST() = *RPTR
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexMemMap)
-                CompilerEndIf
-              EndIf
-              *RPTR = 0
-            Next
+            PNB_Allocate(nList())
             
             ;---Free
           Case "Free"
             DeleteElement(nList())
-            ForEach nList()
-              If nList()\Flags & #PNB_TYPE_NAME
-                If nList()\s = "All"
-                  CompilerIf #PB_Compiler_Thread = 1
-                    LockMutex(MutexMemMap)
-                  CompilerEndIf
-                  ForEach *PLIST()
-                    FreeMemory(*PLIST())
-                    DeleteMapElement(*PLIST())
-                  Next
-                  CompilerIf #PB_Compiler_Thread = 1
-                    UnlockMutex(MutexMemMap)
-                  CompilerEndIf
-                EndIf
-              ElseIf nList()\Flags & #PNB_TYPE_POINTER
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexMemMap)
-                CompilerEndIf
-                If FindMapElement(*PLIST(), Str(nList()\p))
-                  FreeMemory(nList()\p)
-                  DeleteMapElement(*PLIST())
-                Else
-                  ResetMap(*PLIST())
-                EndIf
-                CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexMemMap)
-                CompilerEndIf
-              EndIf
-              DeleteElement(nList())
-            Next
+            PNB_Free(nList())
             
             ;---Assert
           Case "Assert"
             DeleteElement(nList())
-            ForEach nList()
-              If nList()\Flags & #PNB_TYPE_POINTER
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexMemMap)
-                CompilerEndIf
-                AddMapElement(*PLIST(), Str(nList()\p))
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexMemMap)
-                CompilerEndIf
-              EndIf
-              DeleteElement(nList())
-            Next
+            PNB_Assert(nList())
             
             ;---Relinquish
           Case "Relinquish"
             DeleteElement(nList())
-            ForEach nList()
-              If nList()\Flags & #PNB_TYPE_POINTER
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexMemMap)
-                CompilerEndIf
-                If FindMapElement(*PLIST(), Str(nList()\p))
-                  DeleteMapElement(*PLIST())
-                Else
-                  ResetMap(*PLIST())
-                EndIf
-                CompilerIf #PB_Compiler_Thread = 1
-                  LockMutex(MutexMemMap)
-                CompilerEndIf
-              EndIf
-              DeleteElement(nList())
-            Next
+            PNB_Relinquish(nList())
             
             ;---Poke
           Case "Poke"
             DeleteElement(nList())
-            If NextElement(nList())
-              If nList()\Flags & #PNB_TYPE_POINTER
-                *RPTR = nList()\p
-                DeleteElement(nList())
-                ForEach nList()
-                  Select nListGetHighestType(nList()\Flags)
-                    Case #PNB_TYPE_NAME
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeS(*RPTR, nList()\s)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+StringByteLength(nList()\s)+SizeOf(Character)
-                    Case #PNB_TYPE_STRING
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeS(*RPTR, nList()\s)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+StringByteLength(nList()\s)+SizeOf(Character)
-                    Case #PNB_TYPE_POINTER
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      If FindMapElement(*PLIST(), Str(nList()\p))
-                        MoveMemory(*PLIST(), *RPTR, MemorySize(*PLIST()))
-                        *RPTR+MemorySize(*PLIST())
-                      Else
-                        ResetMap(*PLIST())
-                      EndIf
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                    Case #PNB_TYPE_DOUBLE
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeD(*RPTR, nList()\d)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Double)
-                    Case #PNB_TYPE_FLOAT
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeF(*RPTR, nList()\f)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Float)
-                    Case #PNB_TYPE_EPIC
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeQ(*RPTR, nList()\q)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Quad)
-                    Case #PNB_TYPE_INTEGER
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeI(*RPTR, nList()\i)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Integer)
-                    Case #PNB_TYPE_LONG
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeL(*RPTR, nList()\l)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Long)
-                    Case #PNB_TYPE_WORD
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeW(*RPTR, nList()\w)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Word)
-                    Case #PNB_TYPE_BYTE
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeB(*RPTR, nList()\b)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Byte)
-                    Case #PNB_TYPE_UWORD
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeU(*RPTR, nList()\u)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Unicode)
-                    Case #PNB_TYPE_CHARACTER
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeC(*RPTR, nList()\c)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Character)
-                    Case #PNB_TYPE_UBYTE
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      PokeA(*RPTR, nList()\a)
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                      *RPTR+SizeOf(Ascii)
-                  EndSelect
-                  DeleteElement(nList())
-                Next
-              Else
-                ClearList(nList())
-              EndIf
-            EndIf
-            *RPTR = 0
+            PNB_Poke(nList())
             
             ;---Peek
           Case "Peek"
             DeleteElement(nList())
-            If NextElement(nList())
-              If nList()\Flags & #PNB_TYPE_POINTER
-                *RPTR = nList()\p
-                DeleteElement(nList())
-                ForEach nList()
-                  Select nListGetHighestType(nList()\Flags)
-                    Case #PNB_TYPE_POINTER
-                      CompilerIf #PB_Compiler_Thread = 1
-                        LockMutex(MutexMemMap)
-                      CompilerEndIf
-                      If FindMapElement(*PLIST(), Str(nList()\p))
-                        CopyMemory(*RPTR, *PLIST(), MemorySize(*PLIST()))
-                        *RPTR+MemorySize(*PLIST())
-                      Else
-                        ResetMap(*PLIST())
-                      EndIf
-                      CompilerIf #PB_Compiler_Thread = 1
-                        UnlockMutex(MutexMemMap)
-                      CompilerEndIf
-                    Case #PNB_TYPE_NAME
-                      Select nList()\s
-                        Case "Name"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\s = PeekS(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+StringByteLength(cList1()\s)+SizeOf(Character)
-                          cList1()\Flags | #PNB_TYPE_NAME
-                        Case "String"
-                          AddElement(cList1())
-                          cList1()\s = PeekS(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+StringByteLength(cList1()\s)+SizeOf(Character)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\Flags | #PNB_TYPE_STRING
-                        Case "Double"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\d = PeekD(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Double)
-                          cList1()\Flags | #PNB_TYPE_DOUBLE
-                        Case "Float"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\f = PeekF(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Float)
-                          cList1()\Flags | #PNB_TYPE_FLOAT
-                        Case "Epic"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\q = PeekQ(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Quad)
-                          cList1()\Flags | #PNB_TYPE_EPIC
-                        Case "Integer"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\i = PeekI(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Integer)
-                          cList1()\Flags | #PNB_TYPE_INTEGER
-                        Case "Long"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\l = PeekL(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Long)
-                          cList1()\Flags | #PNB_TYPE_LONG
-                        Case "Word"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\w = PeekW(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Word)
-                          cList1()\Flags | #PNB_TYPE_WORD
-                        Case "Byte"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\b = PeekB(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Byte)
-                          cList1()\Flags | #PNB_TYPE_BYTE
-                        Case "UWord"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\u = PeekU(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Unicode)
-                          cList1()\Flags | #PNB_TYPE_UWORD
-                        Case "Character"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\c = PeekC(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Character)
-                          cList1()\Flags | #PNB_TYPE_CHARACTER
-                        Case "UByte"
-                          AddElement(cList1())
-                          CompilerIf #PB_Compiler_Thread = 1
-                            LockMutex(MutexMemMap)
-                          CompilerEndIf
-                          cList1()\a = PeekA(*RPTR)
-                          CompilerIf #PB_Compiler_Thread = 1
-                            UnlockMutex(MutexMemMap)
-                          CompilerEndIf
-                          *RPTR+SizeOf(Ascii)
-                          cList1()\Flags | #PNB_TYPE_UBYTE
-                      EndSelect
-                  EndSelect
-                  DeleteElement(nList())
-                Next
-              Else
-                ClearList(nList())
-              EndIf
-            EndIf
-            
-            MergeLists(cList1(), nList())
-            *RPTR = 0
+            PNB_Peek(nList())
             
             ;-#Functions
           Default
