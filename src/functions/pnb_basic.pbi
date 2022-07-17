@@ -112,6 +112,12 @@ EndProcedure
 
 Procedure PNB_Err(List nList.nList())
   Protected RINT.i
+  Protected ColorF.i
+  Protected ColorB.i
+  Protected lpConsoleScreenBufferInfo.CONSOLE_SCREEN_BUFFER_INFO
+  
+  GetConsoleScreenBufferInfo_(GetStdHandle_(#STD_ERROR_HANDLE), @lpConsoleScreenBufferInfo)
+  SetConsoleTextAttribute_(GetStdHandle_(#STD_ERROR_HANDLE), #FOREGROUND_RED|#FOREGROUND_INTENSITY)
   
   ForEach nList()
     Select nListGetHighestType(nList()\Flags)
@@ -170,6 +176,8 @@ Procedure PNB_Err(List nList.nList())
     EndSelect
     DeleteElement(nList())
   Next
+  
+  SetConsoleTextAttribute_(GetStdHandle_(#STD_ERROR_HANDLE), lpConsoleScreenBufferInfo\wAttributes)
   
 EndProcedure
 
