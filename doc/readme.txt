@@ -17,7 +17,8 @@ Index:
         3.1.5 - Arithmetic
         3.1.6 - Logic
         3.1.7 - Memory
-    
+        3.1.8 - DLL
+        
 1.) Preamble
 PNB is supposed to be an easy to learn mix of a LISP like structure and BASIC commands.
 The precompiled DLLs expose two evaluation functions:
@@ -605,7 +606,7 @@ This is for memory management.
 By design, there are no error handlers for memory functions.
 You can edit memory addresses passed from outside, but no bounds check is done.
 Using these functions improperly can lead to crashes.
-
+    
 Allocate
     Takes:      Value0, Value1, ..., ValueN
     Returns:    Pointer1, Pointer1, ..., PointerN
@@ -645,4 +646,61 @@ Peek
     Strings must be null-terminated.
     If a Pointer is specified as read object, it will read the whole block size from the address. This only works for managed Pointer blocks.
     
+    
+3.1.7 - DLL
+This is for loading and calling DLLs.
+By design, there are no error handlers for DLL functions.
+Using these functions improperly can lead to crashes.
+This function set is by design unsafe.
+Currently only available for x86 due to fastcall being a crime.
+Notes on x86 calling conventions:
+-Pointer, Integer, Long, Word, Byte, UWord, Character, UByte:
+    Are passed as 4 byte onto the stack.
+    Returned via EAX.
+-Name, String:
+    Are passed as Pointers onto the stack.
+    Memory is allocated until end of function, then freed.
+    Returned is an address via EAX that is immediately read.
+-Epic:
+    Are passed as two 4 byte onto the stack by being split in the middle.
+    Returned via EAX:EDX.
+-Float:
+    Are passes as 4 byte onto the stack.
+    Returned via FSTP dword[memory].
+-Double:
+    Are passed as two 4 byte onto the stack by being split in the middle.
+    Returned via FSTP qword[memory].
+A maximum of 20 stack parameters (4x20 = 80 bytes on x86) can be passed.
+
+Load
+    Takes:      Name0/String0, Name1/String0, ..., NameN/StringN
+    Returns:    Integer0, Integer1, ..., IntegerN
+    Loads a library. Name/String has to be a path to the library.
+    ONLY ONE LIBRARY CAN BE LOADED PER PATH. If multiple instances are required, copy library into different files.
+    
+Release
+    Takes:      Parameter0, Parameter1, ..., ParameterN EXCEPT Name/String/Double/Float
+    Returns:    None
+    Closes libraries specified by the parameters.
+    
+Examine
+    Takes:      Library(Pointer/Epic/Integer/Long/Word/Byte/UWord/Character/UByte), FunctionName0(Name/String), FunctionName1(Name/String), ... FunctionNameN(Name/String)
+    Returns:    Pointer0, Pointer1, ... PointerN
+    Returns the addresses of functions.
+    
+Invoke/InvokeC
+    Takes:      <Type>(Name/String) OR None(Name/String), FunctionAddress(Pointer/Epic/Integer/Long/Word/Byte/UWord/Character/UByte), Parameter0, Parameter1, ..., ParameterN
+    Returns:    <Type> or None
+    The C variant calls the function as cdecl. Otherwise, stdcall is used.
+    A maximum of 80 bytes can be passed.
+    Everything under 4 bytes is passed as 4 bytes.
+    Under x64, the minimum pass is 8 bytes.
+    
+Call/CallC
+    Takes:      <Type>(Name/String) OR None(Name/String), Library(Pointer/Epic/Integer/Long/Word/Byte/UWord/Character/UByte), FunctionName(Name/String), Parameter0, Parameter1, ..., ParameterN
+    Returns:    <Type> or None
+    The C variant calls the function as cdecl. Otherwise, stdcall is used.
+    A maximum of 80 bytes can be passed.
+    Everything under 4 bytes is passed as 4 bytes.
+    Under x64, the minimum pass is 8 bytes.
     
