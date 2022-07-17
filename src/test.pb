@@ -377,5 +377,6 @@ PNB::nListEvalString("Poke (Get A) 240")
 PNB::nListEvalString("Debug (Peek (Get A) Integer)")
 PNB::nListEvalString("Free All")
 
+PNB::nListEvalString("(Invoke Void (Examine (Load user32.dll) MessageBoxW) 0 '*Steals a dragon tail*' '>:I' 0)")
 
 End

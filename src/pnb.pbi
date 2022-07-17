@@ -10,6 +10,10 @@ DeclareModule PNB
   Declare.i nListEnableBinary(Toggle.i)
 EndDeclareModule
 Module PNB
+  Structure Pointer
+    *p
+  EndStructure
+  
   Structure nList
     List nList.nList()
     Flags.i
@@ -1485,6 +1489,7 @@ Module PNB
   XIncludeFile "functions\pnb_arithmetic.pbi"
   XIncludeFile "functions\pnb_logic.pbi"
   XIncludeFile "functions\pnb_memory.pbi"
+  XIncludeFile "functions\pnb_dll.pbi"
   
   Procedure.i nListEval(List nList.nList())
     Protected CAR.s
@@ -2843,6 +2848,44 @@ Module PNB
           Case "Peek"
             DeleteElement(nList())
             PNB_Peek(nList())
+            
+            
+            ;-#DLL
+            ;---Load
+          Case "Load"
+            DeleteElement(nList())
+            PNB_Load(nList())
+            
+            ;---Release
+          Case "Release"
+            DeleteElement(nList())
+            PNB_Release(nList())
+            
+            ;---Examine
+          Case "Examine"
+            DeleteElement(nList())
+            PNB_Examine(nList())
+            
+            ;---Call
+          Case "Call"
+            DeleteElement(nList())
+            PNB_Call(nList())
+            
+            ;---CallC
+          Case "CallC"
+            DeleteElement(nList())
+            PNB_CallC(nList())
+            
+            ;---Invoke
+          Case "Invoke"
+            DeleteElement(nList())
+            PNB_Invoke(nList())
+            
+            ;---InvokeC
+          Case "InvokeC"
+            DeleteElement(nList())
+            PNB_InvokeC(nList())
+            
             
             ;-#Functions
           Default

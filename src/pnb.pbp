@@ -8,7 +8,7 @@
   <section name="data">
     <explorer view="C:\ProgramData\PureBasic\Examples\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2022-07-06 20:56" user="Dino" host="HUSKLET"/>
+    <lastopen date="2022-07-17 11:59" user="Dino" host="HUSKLET"/>
   </section>
   <section name="files">
     <file name="dll.pb">
@@ -21,7 +21,11 @@
     </file>
     <file name="functions\pnb_basic.pbi">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
-      <fingerprint md5="07d7f8a611b692af33f864b7e45ec549"/>
+      <fingerprint md5="e9036d71774c4c95a2ed7bdcc03f08d7"/>
+    </file>
+    <file name="functions\pnb_dll.pbi">
+      <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
+      <fingerprint md5="fa336271f82e1130b27f51589f38651b"/>
     </file>
     <file name="functions\pnb_listmanipulation.pbi">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
@@ -45,11 +49,11 @@
     </file>
     <file name="pnb.pbi">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="a10abedfcb38c935393104e4d71cf2ed"/>
+      <fingerprint md5="1f4dfa63957cbffefdb3933bbabe41ee"/>
     </file>
     <file name="test.pb">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="1eec43f57a575cadf86613c118d30a9c"/>
+      <fingerprint md5="a8c3b73a4d5e618b020d8d563456265d"/>
     </file>
   </section>
   <section name="targets">
@@ -61,7 +65,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1130"/>
+      <buildcount enable="1" value="1145"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -71,7 +75,32 @@
         <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
         <field6 value="Prefix Notation Basic Dynamic Library"/>
         <field7 value="pnb"/>
-        <field8 value="pnb.dll"/>
+        <field8 value="%EXECUTABLE"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+        <field16 value="VFT_DLL"/>
+      </versioninfo>
+    </target>
+    <target name="DLLa86" enabled="1" default="0">
+      <inputfile value="dll.pb"/>
+      <outputfile value="..\pnba.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
+      <executable value="..\pnba.dll"/>
+      <directory value="..\..\"/>
+      <options thread="1" debug="1"/>
+      <format exe="dll" cpu="0"/>
+      <buildcount enable="1" value="1145"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
         <field15 value="VOS_NT"/>
@@ -86,7 +115,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1130"/>
+      <buildcount enable="1" value="1145"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -96,7 +125,32 @@
         <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
         <field6 value="Prefix Notation Basic Dynamic Library"/>
         <field7 value="pnb"/>
-        <field8 value="pnb.dll"/>
+        <field8 value="%EXECUTABLE"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+        <field16 value="VFT_DLL"/>
+      </versioninfo>
+    </target>
+    <target name="DLLa64" enabled="1" default="0">
+      <inputfile value="dll.pb"/>
+      <outputfile value="..\pnba64.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x64)"/>
+      <executable value="..\pnba64.dll"/>
+      <directory value="..\..\"/>
+      <options thread="1" debug="1"/>
+      <format exe="dll" cpu="0"/>
+      <buildcount enable="1" value="1145"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
         <field15 value="VOS_NT"/>
@@ -107,9 +161,10 @@
       <inputfile value="test.pb"/>
       <outputfile value=""/>
       <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
+      <directory value="..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="console" cpu="0"/>
-      <compilecount enable="1" value="472"/>
+      <compilecount enable="1" value="504"/>
     </target>
   </section>
 </project>
