@@ -92,7 +92,7 @@ Internal types that are used for program flow:
 The lexer searches for the following elements:
 -List           = Everything in (Parentheses) will create a List type element. This does not apply to parentheses inside Strings.
 -Integer/Epic   = Everything starting with numbers, +, and -, without any decimal . in them. Hex input via 0x and binary input via 0b are supported.
--Float/Double   = Everything starting with numbers, +, -, and decimal . . The decimal is only allowed to exist once.
+-Float/Double   = Everything starting with numbers, +, and -, containing a decimal. The decimal is only allowed to exist once.
 -String         = Everything encased in 'quotes', "double quotes", and [square brackets].
 -Command        = Everything that does not fit other criteria, but is the first element. These elements also get the Name type.
 -Name           = Everything that does not fit any other criteria.
