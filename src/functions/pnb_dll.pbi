@@ -1920,6 +1920,8 @@ Procedure PNB_Call(List nList.nList())
       EndSelect
   EndSelect
   
+  FreeArray(*Parameter())
+  
   ForEach *PointerList()
     FreeMemory(*PointerList())
     DeleteElement(*PointerList())
@@ -3745,6 +3747,8 @@ Procedure PNB_CallC(List nList.nList())
       EndSelect
   EndSelect
   
+  FreeArray(*Parameter())
+  
   ForEach *PointerList()
     FreeMemory(*PointerList())
     DeleteElement(*PointerList())
@@ -5555,6 +5559,8 @@ Procedure PNB_Invoke(List nList.nList())
       EndSelect
   EndSelect
   
+  FreeArray(*Parameter())
+  
   ForEach *PointerList()
     FreeMemory(*PointerList())
     DeleteElement(*PointerList())
@@ -7364,6 +7370,8 @@ Procedure PNB_InvokeC(List nList.nList())
           
       EndSelect
   EndSelect
+  
+  FreeArray(*Parameter())
   
   ForEach *PointerList()
     FreeMemory(*PointerList())

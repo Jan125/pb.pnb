@@ -1190,7 +1190,7 @@ Procedure PNB_Sign(List nList.nList())
       Case #PNB_TYPE_DOUBLE
         nList()\d = Sign(nList()\d)
       Case #PNB_TYPE_FLOAT
-        nList()\f = Sign(nList()\p)
+        nList()\f = Sign(nList()\f)
       Case #PNB_TYPE_EPIC
         nList()\q = Sign(nList()\q)
       Case #PNB_TYPE_INTEGER
@@ -1223,26 +1223,26 @@ Procedure PNB_Abs(List nList.nList())
       Case #PNB_TYPE_DOUBLE
         nList()\d = Abs(nList()\d)
       Case #PNB_TYPE_FLOAT
-        nList()\f = Abs(nList()\p)
+        nList()\f = Abs(nList()\f)
       Case #PNB_TYPE_EPIC
-        If nList()\q > 0
-          nList()\q = nList()\q
+        If nList()\q < 0
+          nList()\q = -nList()\q
         EndIf
       Case #PNB_TYPE_INTEGER
-        If nList()\i > 0
-          nList()\i = nList()\i
+        If nList()\i < 0
+          nList()\i = -nList()\i
         EndIf
       Case #PNB_TYPE_LONG
-        If nList()\l > 0
-          nList()\l = nList()\l
+        If nList()\l < 0
+          nList()\l = -nList()\l
         EndIf
       Case #PNB_TYPE_WORD
-        If nList()\w > 0
-          nList()\w = nList()\w
+        If nList()\w < 0
+          nList()\w = -nList()\w
         EndIf
       Case #PNB_TYPE_BYTE
-        If nList()\b > 0
-          nList()\b = nList()\b
+        If nList()\b < 0
+          nList()\b = -nList()\b
         EndIf
     EndSelect
   Next
@@ -1916,6 +1916,7 @@ EndProcedure
 Procedure PNB_Random(List nList.nList())
   Protected RINT.i
   Protected RCNT.i
+  
   If NextElement(nList())
     nListConvert(nList(), #PNB_TYPE_INTEGER)
     RINT = nList()\i

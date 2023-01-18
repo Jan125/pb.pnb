@@ -154,7 +154,7 @@ Procedure PNB_Lss(List nList.nList())
             DeleteElement(nList())
             ForEach nList()
               RBOL = Bool(RBOL & Bool(RFLT < nList()\f))
-              RFLT = nList()\d
+              RFLT = nList()\f
               DeleteElement(nList())
             Next
             RFLT = 0.0
@@ -298,7 +298,7 @@ Procedure PNB_Leq(List nList.nList())
             DeleteElement(nList())
             ForEach nList()
               RBOL = Bool(RBOL & Bool(RFLT <= nList()\f))
-              RFLT = nList()\d
+              RFLT = nList()\f
               DeleteElement(nList())
             Next
             RFLT = 0.0
@@ -443,7 +443,7 @@ Procedure PNB_Gtr(List nList.nList())
             DeleteElement(nList())
             ForEach nList()
               RBOL = Bool(RBOL & Bool(RFLT > nList()\f))
-              RFLT = nList()\d
+              RFLT = nList()\f
               DeleteElement(nList())
             Next
             RFLT = 0.0
@@ -587,7 +587,7 @@ Procedure PNB_Geq(List nList.nList())
             DeleteElement(nList())
             ForEach nList()
               RBOL = Bool(RBOL & Bool(RFLT >= nList()\f))
-              RFLT = nList()\d
+              RFLT = nList()\f
               DeleteElement(nList())
             Next
             RFLT = 0.0
