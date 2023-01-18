@@ -1,6 +1,7 @@
 ﻿XIncludeFile "pnb.pbi"
 DisableExplicit
 
+OpenConsole()
 String.s = ""
 
 ;-General test cases
@@ -14,6 +15,15 @@ EndIf
 String = ""
 
 String = PNB::nListEvalString("(First (Second Third) (Fourth (Fifth)))")
+If String <> "First Second Third Fourth Fifth"
+  Debug "Unit Test Failed: Parameter return with nested lists"
+  Debug "Should be: First Second Third Fourth Fifth"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("((First (Second Third) (Fourth (Fifth))))")
 If String <> "First Second Third Fourth Fifth"
   Debug "Unit Test Failed: Parameter return with nested lists"
   Debug "Should be: First Second Third Fourth Fifth"
@@ -283,7 +293,6 @@ If String <> "[]"
 EndIf
 String = ""
 
-;
 ;-Stress test
 Debug "#Test how many times this query can be called per second:"
 DisableDebugger
@@ -378,5 +387,6 @@ PNB::nListEvalString("Debug (Peek (Get A) Integer)")
 PNB::nListEvalString("Free All")
 
 PNB::nListEvalString("(Invoke Void (Examine (Load user32.dll) MessageBoxW) 0 '*Steals a dragon tail*' '>:I' 0)")
+
 
 End

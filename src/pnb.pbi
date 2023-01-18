@@ -10,6 +10,16 @@ DeclareModule PNB
   Declare.i nListEnableBinary(Toggle.i)
 EndDeclareModule
 Module PNB
+  CompilerIf #PB_Compiler_LineNumbering
+    Procedure ErrorHandler()
+      MessageRequester("Error", ErrorMessage(ErrorCode())+#CRLF$+"File: "+ErrorFile()+#CRLF$+"Line: "+ErrorLine())
+    EndProcedure
+    
+    OnErrorCall(@ErrorHandler())
+    
+  CompilerEndIf
+  
+  
   Structure Pointer
     *p
   EndStructure
@@ -44,7 +54,14 @@ Module PNB
   Declare.i nListEvalThreadFork(*nList.nListThread)
   Declare.i nListEnableBinary(Toggle.i)
   
+  Declare.i CountCommented(String.s, Index.i)
+  Declare.i CountApostrophed(String.s, Index.i)
+  Declare.i CountQuoted(String.s, Index.i)
+  Declare.i CountHardbracketed(String.s, Index.i)
+  Declare.i CountBracketed(String.s, Index.i)
+  
   Global EnableBinary.i
+  
   Procedure.i nListEnableBinary(Toggle.i)
     EnableBinary = Toggle
   EndProcedure
@@ -90,8 +107,6 @@ Module PNB
     #PNB_TYPE_STRING
     #PNB_TYPE_NAME
   EndEnumeration
-  
-  
   
   Procedure.i nListGetHighestType(Flags.i)
     If Flags & #PNB_TYPE_LIST
@@ -1227,90 +1242,159 @@ Module PNB
     
   EndProcedure
   
+  Procedure.i CountCommented(String.s, Start.i)
+    Protected Depth.i
+    Protected Index.i
+    Repeat
+      Index+1
+      Select Asc(Mid(String, Start+Index, 1))
+        Case Asc(";")
+          Break
+      EndSelect
+    Until Start+Index > Len(String)
+    ProcedureReturn Index
+  EndProcedure
+  
+  Procedure.i CountApostrophed(String.s, Start.i)
+    Protected Depth.i
+    Protected Index.i
+    Repeat
+      Index+1
+      Select Asc(Mid(String, Start+Index, 1))
+        Case Asc("'")
+          Break
+      EndSelect
+    Until Start+Index > Len(String)
+    ProcedureReturn Index
+  EndProcedure
+  
+  Procedure.i CountQuoted(String.s, Start.i)
+    Protected Depth.i
+    Protected Index.i
+    Repeat
+      Index+1
+      Select Asc(Mid(String, Start+Index, 1))
+        Case 34
+          Break
+      EndSelect
+    Until Start+Index > Len(String)
+    ProcedureReturn Index
+  EndProcedure
+  
+  Procedure.i CountHardbracketed(String.s, Start.i)
+    Protected Depth.i = 1
+    Protected Index.i
+    Repeat
+      Index+1
+      Select Asc(Mid(String, Start+Index, 1))
+        Case Asc("[")
+          Depth = Depth+1
+        Case Asc("]")
+          Depth = Depth-1
+      EndSelect
+    Until Depth = 0 Or Start+Index > Len(String)
+    ProcedureReturn Index
+  EndProcedure
+  
+  Procedure.i CountBracketed(String.s, Start.i)
+    Protected Depth.i = 1
+    Protected Index.i
+    Repeat
+      Index+1
+      Select Asc(Mid(String, Start+Index, 1))
+        Case Asc(";")
+          Index + CountCommented(String, Start+Index)
+        Case Asc("'")
+          Index + CountApostrophed(String, Start+Index)
+        Case 34
+          Index + CountQuoted(String, Start+Index)
+        Case Asc("[")
+          Index + CountHardbracketed(String, Start+Index)
+        Case Asc("(")
+          Depth = Depth+1
+        Case Asc(")")
+          Depth = Depth-1
+      EndSelect
+    Until Depth = 0 Or Start+Index > Len(String)
+    ProcedureReturn Index
+  EndProcedure
+  
+  
   Procedure.i nListPNBTonList(List nList.nList(), String.s)
     Protected Start.i
     Protected Index.i
     Protected Depth.i
-    Protected Amount.i
     
     Start = 1
     Index = 1
     Depth = 0
-    Amount = 0
     
     While Index <= Len(String)
       Select Asc(Mid(String, Index, 1))
-        Case Asc(";") ;Block comments; will be ignored..
+        Case Asc(";") ;Block comments; will be ignored.
           Start = Index
-          Repeat
-            Index = Index+1
-          Until Asc(Mid(String, Index, 1)) = Asc(";") Or Index > Len(String)
+          Index + CountCommented(String, Start)
           
         Case Asc("'") ;'Apostrophed expressions' are counted as strings. Brackets will be ignored.
           Start = Index
-          Repeat
-            Index = Index+1
-          Until Asc(Mid(String, Index, 1)) = Asc("'") Or Index > Len(String)
+          Index + CountApostrophed(String, Start)
+          
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
           nList()\s = Mid(String, Start+1, Index-Start-1)
           
         Case 34 ;"Quoted expressions" are counted as strings, too.
           Start = Index
-          Repeat
-            Index = Index+1
-          Until Asc(Mid(String, Index, 1)) = 34 Or Index > Len(String)
+          Index + CountQuoted(String, Start)
+          
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
           nList()\s = Mid(String, Start+1, Index-Start-1)
           
         Case Asc("[") ;[Hard bracketed expressions] are an alternative to apostrophes and quotes.
           Start = Index
-          Depth = Depth+1
-          Repeat
-            Index+1
-            Select Asc(Mid(String, Index, 1))
-              Case Asc("[")
-                Depth = Depth+1
-              Case Asc("]")
-                Depth = Depth-1
-            EndSelect
-          Until Depth = 0 Or Index > Len(String)
+          Index + CountHardbracketed(String, Start)
+          
           AddElement(nList())
-          Amount+1
           nList()\Flags | #PNB_TYPE_STRING
           nList()\s = Mid(String, Start+1, Index-Start-1)
           
         Case Asc("(") ;Find (bracketed expressions), pass them, get the return value, then evaluate again.
           Start = Index
-          Depth = Depth+1
-          Repeat
-            Index = Index+1
-            Select Asc(Mid(String, Index, 1))
-              Case Asc("(")
-                Depth = Depth+1
-              Case Asc(")")
-                Depth = Depth-1
-            EndSelect
-          Until Depth = 0 Or Index > Len(String)
+          Index + CountBracketed(String, Start)
+          
           AddElement(nList())
-          Amount+nListPNBtonList(nList()\nList(), Mid(String, Start+1, Index-Start-1))
+          nListPNBtonList(nList()\nList(), Mid(String, Start+1, Index-Start-1))
           nList()\Flags | #PNB_TYPE_LIST
           
         Case Asc(" "), 9, 13, 10 ;Ignore spaces, tabs, carriage returns (CR), and line feeds (LF).
           
         Default               ;Anything else, preferably commands.
           Start = Index
+          
           Repeat
-            Index = Index+1
-          Until Asc(Mid(String, Index, 1)) = Asc(" ") Or Asc(Mid(String, Index, 1)) = 13 Or Asc(Mid(String, Index, 1)) = 10 Or Asc(Mid(String, Index, 1)) = 9 Or Asc(Mid(String, Index, 1)) = Asc("(") Or Asc(Mid(String, Index, 1)) = Asc(")") Or Index > Len(String)
+            Index+1
+            Select Asc(Mid(String, Index, 1))
+              Case Asc(" ")
+                Break
+              Case 9 ;tab
+                Break
+              Case 13, 10 ;CR LF
+                Break
+              Case Asc("("), Asc(")")
+                Break
+              Case Asc("[")
+                Break
+              Case Asc(";")
+                Break
+            EndSelect
+          Until Index > Len(String)
           
           AddElement(nList())
-          Amount+1
           nList()\s = Mid(String, Start, Index-Start)
           
           Select Asc(nList()\s)
-            Case 48 To 57, 43, 45, 46 ; Numbers, plus, minus, and decimal
+            Case 48 To 57, 43, 45 ; Numbers, plus, minus, and decimal
               Select Asc(nList()\s)
                 Case 43, 45
                   If Len(nList()\s) = 1
@@ -1382,11 +1466,16 @@ Module PNB
   EndProcedure
   
   
-  Procedure.s nListPNBToString(List nList.nList(), Binary.i = 0)
+  Procedure.s nListPNBToString(List nList.nList(), Binary.i = 0, PrettyPrint.i = 0)
     Protected String.s
     ForEach nList()
       If ListSize(nList()\nList())
-        String + "("+nListPNBToString(nList()\nList(), Binary)+") "
+        Select PrettyPrint
+          Case 0
+            String + "("+nListPNBToString(nList()\nList(), Binary)+") "
+          Default
+            String + #CRLF$ + RSet("", PrettyPrint, Chr(9)) + "(" + #CRLF$ + RSet("", PrettyPrint+1, Chr(9)) + nListPNBToString(nList()\nList(), Binary, PrettyPrint+1) + #CRLF$ + RSet("", PrettyPrint, Chr(9)) + ")" +  #CRLF$ + " "
+        EndSelect
       Else
         Select nListGetHighestType(nList()\Flags)
           Case #PNB_TYPE_UBYTE
@@ -2983,7 +3072,7 @@ Module PNB
     nListPNBTonList(nList(), String)
     nListEval(nList())
     ReturnString = nListPNBToString(nList(), EnableBinary)
-    ProcedureReturn ReturnString.s
+    ProcedureReturn ReturnString
   EndProcedure
   
   Procedure.i nListEvalThread(*nList.nListThread)
