@@ -2,6 +2,7 @@
 DisableExplicit
 
 OpenConsole()
+
 String.s = ""
 
 ;-General test cases
@@ -293,6 +294,65 @@ If String <> "[]"
 EndIf
 String = ""
 
+;-Matrix test cases
+String = PNB::nListEvalString("Matrix (A B) (1 2)")
+If String <> "A 1 B 2"
+  Debug "Unit Test Failed: Matrix Same Length List Test"
+  Debug "Should be: A 1 B 2"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("Matrix (A) (1 2)")
+If String <> "A 1 2"
+  Debug "Unit Test Failed: Matrix Differing Length List Test"
+  Debug "Should be: A 1 2"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("Matrix A (1 2)")
+If String <> "A 1 A 2"
+  Debug "Unit Test Failed: Matrix Atom Test"
+  Debug "Should be: A 1 A 2"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("Matrix Do + 3 (1 2)")
+If String <> "4 5"
+  Debug "Unit Test Failed: Matrix Calculation Test"
+  Debug "Should be: 4 5"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("Matrix Do (+ 3 4) (+ 1 6)")
+If String <> "7 3 4"
+  Debug "Unit Test Failed: Matrix Preemptive Evaluation Test"
+  Debug "Should be: 7 3 4"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+PNB::nListEvalString("(Set X 3)")
+PNB::nListEvalString("(Set Y 3)")
+PNB::nListEvalString("(Set Z 3)")
+PNB::nListEvalString("(Set Velocity (Get X) (Get Y) (Get Z))")
+String = PNB::nListEvalString("Matrix Do * (0.5 1.0 0.5) (Get Velocity)")
+If String <> "1.50000000000000 3.00000000000000 1.50000000000000"
+  Debug "Unit Test Failed: Matrix Command Multiple Parameter Evaluation"
+  Debug "Should be: 1.50000000000000 3.00000000000000 1.50000000000000"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
 ;-Stress test
 Debug "#Test how many times this query can be called per second:"
 DisableDebugger
@@ -300,15 +360,15 @@ a = 0
 StartTime_Stress = ElapsedMilliseconds()
 Repeat
   a+1
-  PNB::nListEvalString("(+ (+ 'oh no it ' 'is ') (+ 'spaghetticode ' 'D:') )")
+  PNB::nListEvalString("(+ (+ 'This is the ' 'stress ') (+ 'test of this' ' program.'))")
   EndTime_Stress = ElapsedMilliseconds()
 Until EndTime_Stress-StartTime_Stress > 1000
 EnableDebugger
 PNB::nListEvalString("Debug (+ [Your PC has called the single thread stress test ] ["+Str(a-1)+" ] [times in one second!])")
 
 
-Debug "#Test if everything is dissolved in order: Should read 'oh no it is spaghetticode D:'."
-PNB::nListEvalString("Debug (+ (+ 'oh no it ' 'is ') (+ 'spaghetticode ' 'D:'))")
+Debug "#Test if everything is dissolved in order: Should read 'This is the stress test of this program.'"
+PNB::nListEvalString("Debug (+ (+ 'This is the ' 'stress ') (+ 'test of this' ' program.'))")
 
 Debug "#Integer test, multiple parameters: Should read '15', '-2', '-1'."
 PNB::nListEvalString("Debug (+ 1 2 3 4 5)")
@@ -321,10 +381,10 @@ PNB::nListEvalString("Debug (+ 3.55 0.4)")
 Debug "#Self-call test: Should read '9'."
 PNB::nListEvalString("Eval [Debug (+ 3 3 3)]")
 
-Debug "#Storage test: Should read '50', 'owo', 'test', 'of', 'multiline!'."
+Debug "#Storage test: Should read '50', 'this', 'test', 'of', 'multiline!'."
 PNB::nListEvalString("Set Variable 50")
 PNB::nListEvalString("Debug (Get Variable)")
-PNB::nListEvalString("Set Variable [owo]")
+PNB::nListEvalString("Set Variable [this]")
 PNB::nListEvalString("Debug (Get Variable)")
 PNB::nListEvalString("Set Variable [test] [of] [multiline!]")
 PNB::nListEvalString("Debug (Get Variable)")
@@ -386,7 +446,7 @@ PNB::nListEvalString("Poke (Get A) 240")
 PNB::nListEvalString("Debug (Peek (Get A) Integer)")
 PNB::nListEvalString("Free All")
 
-PNB::nListEvalString("(Invoke Void (Examine (Load user32.dll) MessageBoxW) 0 '*Steals a dragon tail*' '>:I' 0)")
+PNB::nListEvalString("(Invoke Void (Examine (Load user32.dll) MessageBoxW) 0 'This is the message.' 'This is the title.' 0)")
 
 
 End

@@ -2393,7 +2393,7 @@ Module PNB
               
               ProcedureReturn
               
-            Case "Command"
+            Case "Command";--Command
               DeleteElement(nList())
               If NextElement(nList()) 
                 If nList()\Flags & #PNB_TYPE_LIST
@@ -2407,6 +2407,113 @@ Module PNB
                   nList()\Flags = #PNB_TYPE_COMMAND | #PNB_TYPE_NAME
                 EndIf
               EndIf
+              
+            Case "Matrix";--Matrix
+              DeleteElement(nList())
+              
+              RINT = 0
+              
+              While NextElement(nList())
+                If nList()\Flags & #PNB_TYPE_NAME
+                  If nList()\s = "Do"
+                    DeleteElement(nList())
+                    If NextElement(nList())
+                      AddElement(cList1())
+                      cList1()\Flags | #PNB_TYPE_LIST | #PNB_TYPE_COMMAND
+                      If nList()\Flags & #PNB_TYPE_LIST
+                        If ListSize(nList()\nList()) > RINT
+                          RINT = ListSize(nList()\nList())
+                        EndIf
+                        
+                        ForEach nList()\nList()
+                          If nList()\nList()\Flags & #PNB_TYPE_NAME
+                            nList()\nList()\Flags | #PNB_TYPE_COMMAND
+                          EndIf
+                        Next
+                        nList()\nList()\Flags | #PNB_TYPE_COMMAND
+                      Else
+                        nList()\Flags | #PNB_TYPE_COMMAND
+                        If RINT = 0
+                          RINT = 1
+                        EndIf
+                      EndIf
+                    Else
+                      Continue
+                    EndIf
+                  ElseIf nList()\s = "With"
+                    DeleteElement(nList())
+                    If NextElement(nList())
+                      AddElement(cList1())
+                      cList1()\Flags | #PNB_TYPE_LIST
+                      If nList()\Flags & #PNB_TYPE_LIST
+                        If ListSize(nList()\nList()) > RINT
+                          RINT = ListSize(nList()\nList())
+                        EndIf
+                      Else
+                        nList()\Flags | #PNB_TYPE_COMMAND
+                        If RINT = 0
+                          RINT = 1
+                        EndIf
+                      EndIf
+                    Else
+                      Continue
+                    EndIf
+                  Else
+                    AddElement(cList1())
+                    cList1()\Flags | #PNB_TYPE_LIST
+                    If RINT = 0
+                      RINT = 1
+                    EndIf
+                  EndIf
+                ElseIf nList()\Flags & #PNB_TYPE_LIST ;Evaluate all expressions so we do not get unforeseen consequences.
+                  nListEval(nList()\nList())
+                  If ListSize(nList()\nList()) > RINT
+                    RINT = ListSize(nList()\nList())
+                  EndIf
+                  If ListSize(nList()\nList()) = 0
+                    DeleteElement(nList())
+                  Else
+                    AddElement(cList1())
+                    cList1()\Flags | #PNB_TYPE_LIST
+                  EndIf
+                Else
+                  AddElement(cList1())
+                  cList1()\Flags | #PNB_TYPE_LIST
+                  If RINT = 0
+                    RINT = 1
+                  EndIf
+                EndIf
+              Wend
+              
+              ;iterate over every list entry. use nul if list and other lists are larger.
+              ;use last known entry on non-list entries for whole expression.
+              
+              RCNT = 0
+              
+              ResetList(cList1())
+              
+              For RCNT = 0 To RINT-1
+                ResetList(nList())
+                  NextElement(cList1())
+                
+                ForEach nList()
+                  If nList()\Flags & #PNB_TYPE_LIST
+                    If RCNT < ListSize(nList()\nList())
+                      SelectElement(nList()\nList(), RCNT)
+                      AddElement(cList1()\nList())
+                      cList1()\nList() = nList()\nList()
+                    EndIf
+                  Else
+                    AddElement(cList1()\nList())
+                    cList1()\nList() = nList()
+                  EndIf
+                  
+                Next
+              Next
+              
+              ClearList(nList())
+              MergeLists(cList1(), nList(), #PB_List_After)
+              
           EndSelect
         EndIf
       EndIf
@@ -2444,6 +2551,7 @@ Module PNB
     RWRD = 0
     RUNI = 0
     *RPTR = 0
+    
     If FirstElement(nList())
       
       If nList()\Flags & #PNB_TYPE_COMMAND
