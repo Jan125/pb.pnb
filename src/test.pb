@@ -1,9 +1,16 @@
 ﻿XIncludeFile "pnb.pbi"
 DisableExplicit
 
+
+
 OpenConsole()
 
+
+
 String.s = ""
+
+
+
 
 ;-General test cases
 String = PNB::nListEvalString("(First Second Third Fourth Fifth)")
@@ -317,6 +324,42 @@ String = PNB::nListEvalString("Matrix A (1 2)")
 If String <> "A 1 A 2"
   Debug "Unit Test Failed: Matrix Atom Test"
   Debug "Should be: A 1 A 2"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("Matrix (A) (1)")
+If String <> "A 1"
+  Debug "Unit Test Failed: One Dimension Test"
+  Debug "Should be: A 1"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("Matrix (A B) (1 2)")
+If String <> "A 1 B 2"
+  Debug "Unit Test Failed: Two Dimension Test"
+  Debug "Should be: A 1 B 2"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("Matrix (A B C) (1 2 3)")
+If String <> "A 1 B 2 C 3"
+  Debug "Unit Test Failed: Three Dimension Test"
+  Debug "Should be: A 1 B 2 C 3"
+  Debug "Is: "+String
+  CallDebugger
+EndIf
+String = ""
+
+String = PNB::nListEvalString("Matrix Do (A B C D) (1 2 3 4)")
+If String <> "A 1 B 2 C 3 D 4"
+  Debug "Unit Test Failed: Four Dimension Test"
+  Debug "Should be: A 1 B 2 C 3 D 4"
   Debug "Is: "+String
   CallDebugger
 EndIf

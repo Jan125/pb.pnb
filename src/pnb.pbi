@@ -2418,8 +2418,6 @@ Module PNB
                   If nList()\s = "Do"
                     DeleteElement(nList())
                     If NextElement(nList())
-                      AddElement(cList1())
-                      cList1()\Flags | #PNB_TYPE_LIST | #PNB_TYPE_COMMAND
                       If nList()\Flags & #PNB_TYPE_LIST
                         If ListSize(nList()\nList()) > RINT
                           RINT = ListSize(nList()\nList())
@@ -2443,8 +2441,6 @@ Module PNB
                   ElseIf nList()\s = "With"
                     DeleteElement(nList())
                     If NextElement(nList())
-                      AddElement(cList1())
-                      cList1()\Flags | #PNB_TYPE_LIST
                       If nList()\Flags & #PNB_TYPE_LIST
                         If ListSize(nList()\nList()) > RINT
                           RINT = ListSize(nList()\nList())
@@ -2459,8 +2455,6 @@ Module PNB
                       Continue
                     EndIf
                   Else
-                    AddElement(cList1())
-                    cList1()\Flags | #PNB_TYPE_LIST
                     If RINT = 0
                       RINT = 1
                     EndIf
@@ -2472,29 +2466,35 @@ Module PNB
                   EndIf
                   If ListSize(nList()\nList()) = 0
                     DeleteElement(nList())
-                  Else
-                    AddElement(cList1())
-                    cList1()\Flags | #PNB_TYPE_LIST
                   EndIf
                 Else
-                  AddElement(cList1())
-                  cList1()\Flags | #PNB_TYPE_LIST
                   If RINT = 0
                     RINT = 1
                   EndIf
                 EndIf
               Wend
               
+              For RCNT = 0 To RINT-1
+                AddElement(cList1())
+                If RBOL
+                  cList1()\Flags | #PNB_TYPE_LIST | #PNB_TYPE_COMMAND
+                EndIf
+                cList1()\Flags | #PNB_TYPE_LIST
+              Next
+              
+              
+              
               ;iterate over every list entry. use nul if list and other lists are larger.
               ;use last known entry on non-list entries for whole expression.
               
               RCNT = 0
               
-              ResetList(cList1())
               
               For RCNT = 0 To RINT-1
                 ResetList(nList())
-                  NextElement(cList1())
+                AddElement(cList1())
+                cList1()\Flags | #PNB_TYPE_LIST
+                
                 
                 ForEach nList()
                   If nList()\Flags & #PNB_TYPE_LIST
@@ -2507,10 +2507,12 @@ Module PNB
                     AddElement(cList1()\nList())
                     cList1()\nList() = nList()
                   EndIf
+                  If nList()\Flags & #PNB_TYPE_COMMAND
+                    cList1()\Flags | #PNB_TYPE_COMMAND
+                  EndIf
                   
                 Next
               Next
-              
               ClearList(nList())
               MergeLists(cList1(), nList(), #PB_List_After)
               
