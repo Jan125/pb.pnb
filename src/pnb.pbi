@@ -2114,7 +2114,7 @@ Module PNB
                                 AddElement(cList3())
                                 cList3() = cList2()
                                 nListEval(cList3()\nList())
-                                MergeLists(cList3()\nList(), nList(), #PB_List_Before)
+                                MergeLists(cList3()\nList(), nList(), #PB_List_After)
                                 ClearList(cList3())
                               Next
                             EndIf
@@ -2370,6 +2370,7 @@ Module PNB
               Next
               ProcedureReturn
               
+              
             Case "Fetch";--Fetch
               DeleteElement(nList())
               ForEach nList()
@@ -2390,8 +2391,8 @@ Module PNB
                   DeleteElement(nList())
                 EndIf
               Next
-              
               ProcedureReturn
+              
               
             Case "Command";--Command
               DeleteElement(nList())
@@ -2483,12 +2484,10 @@ Module PNB
               Next
               
               
-              
               ;iterate over every list entry. use nul if list and other lists are larger.
               ;use last known entry on non-list entries for whole expression.
               
               RCNT = 0
-              
               
               For RCNT = 0 To RINT-1
                 ResetList(nList())
@@ -2515,6 +2514,7 @@ Module PNB
               Next
               ClearList(nList())
               MergeLists(cList1(), nList(), #PB_List_After)
+              
               
           EndSelect
         EndIf
@@ -2587,7 +2587,7 @@ Module PNB
             PNB_Dbg(nList())
             
             
-            ;-#List Manipilation
+            ;-#List Manipulation
             ;---Fork
             ;Case "Fork" is already implemented in a different format in the preprocessing stage.
             
@@ -2772,6 +2772,7 @@ Module PNB
             DeleteElement(nList())
             PNB_ForceUByte(nList())
             
+            
             ;-#Variables
             ;---Set
           Case "Set"
@@ -2797,6 +2798,11 @@ Module PNB
           Case "Cycle"
             DeleteElement(nList())
             PNB_Cycle(nList())
+            
+            ;---Reycle
+          Case "Recycle"
+            DeleteElement(nList())
+            PNB_Recycle(nList())
             
             ;---Bury
           Case "Bury"
@@ -2939,6 +2945,7 @@ Module PNB
           Case "Ran", "Rand", "Random"
             DeleteElement(nList())
             PNB_Random(nList())
+            
             
             ;-#Logic
             ;---Bool
@@ -3152,7 +3159,6 @@ Module PNB
                     ClearList(nList())
                   EndIf
                 EndIf
-                
               Else
                 AddElement(cList1())
                 cList1() = Lexicon()  
@@ -3163,7 +3169,6 @@ Module PNB
                 nListEval(cList1()\nList())
                 MergeLists(cList1()\nList(), nList(), #PB_List_After)
               EndIf
-              
             Else
               CompilerIf #PB_Compiler_Thread = 1
                 UnlockMutex(MutexVarMap)
