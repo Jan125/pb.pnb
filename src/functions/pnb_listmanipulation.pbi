@@ -156,5 +156,3 @@ Procedure PNB_Offset(List nList.nList())
   nList()\Flags | #PNB_TYPE_INTEGER
   
 EndProcedure
-
-

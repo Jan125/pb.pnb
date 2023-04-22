@@ -174,6 +174,40 @@ Procedure PNB_Cycle(List nList.nList())
   
 EndProcedure
 
+Procedure PNB_Recycle(List nList.nList())
+  Protected NewList cList1.nList()
+  
+  ForEach nList()
+    CompilerIf #PB_Compiler_Thread = 1
+      LockMutex(MutexVarMap)
+    CompilerEndIf
+    If nList()\Flags & #PNB_TYPE_NAME
+      If FindMapElement(Memory(), nList()\s)
+        If LastElement(Memory()\nList())
+          AddElement(cList1())
+          cList1() = Memory()\nList()
+          MoveElement(Memory()\nList(), #PB_List_First)
+        EndIf
+      Else
+        ResetMap(Memory())
+      EndIf
+    Else
+      CompilerIf #PB_Compiler_Thread = 1
+        UnlockMutex(MutexVarMap)
+      CompilerEndIf
+      ClearList(nList())
+      ClearList(cList1())
+      Break
+    EndIf
+    CompilerIf #PB_Compiler_Thread = 1
+      UnlockMutex(MutexVarMap)
+    CompilerEndIf
+    DeleteElement(nList())
+  Next
+  MergeLists(cList1(), nList())
+  
+EndProcedure
+
 Procedure PNB_Bury(List nList.nList())
   Protected NewList cList1.nList()
   
