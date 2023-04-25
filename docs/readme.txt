@@ -179,20 +179,20 @@ Function (All) Do ()
 2.5 - Matrix
 The Matrix command shuffles and if requested evaluates lists.
 It can be used to quickly define vector additions and the such.
-[ Matrix Do + With (A B C) With (D E F) ] = [ (+ A D) (+ B E) (+ C F) ]
+( Matrix Do + With (A B C) With (D E F) ) = ( (+ A D) (+ B E) (+ C F) )
 
 Listed elements are applied verbatim in their dimension.
-[ Matrix (A) (1 2) ] = [ (A 1) (2) ]
+( Matrix (A) (1 2) ) = ( (A 1) (2) )
 
 Atoms are applied over the whole length.
-[ Matrix A (1 2) ] = [ (A 1) (A 2) ]
+( Matrix A (1 2) ) = ( (A 1) (A 2) )
 
 Lists not prefixed with Do or With are evaluated before being matrixed.
-[ Matrix (+ 1 2) (3 4) ] = [ Matrix (3) (3 4) ] = [ (3 3) (4) ]
+( Matrix (+ 1 2) (3 4) ) = ( Matrix (3) (3 4) ) = ( (3 3) (4) )
 
 Lists and elements prefixed with Do will not be evaluated beforehand, and will instead be applied as a command.
-[ Matrix Do * 2 (3 2 1) ] = [ 6 4 2 ]
-[ Matrix Do (* + -) 3 3 ] = [ 9 6 0 ]
+( Matrix Do * 2 (3 2 1) ) = ( 6 4 2 )
+( Matrix Do (* + -) 3 3 ) = ( 9 6 0 )
 
 Lists prefixed with With will not be evaluated beforehand nor be applied as a command, but otherwise treated as normal.
 
@@ -366,7 +366,12 @@ Reverse
 Cycle
     Takes:      Name0, Name1, ..., NameN
     Returns:    Parameter0, Parameter1, ..., ParameterN
-    Copies parameters from beginning of variables and returns them. Puts the first element of variable to end of variable.
+    Copies parameters from beginning of variables and returns them. Puts the first element of the variable to end of the variable.
+    
+Recycle
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Parameter0, Parameter1, ..., ParameterN
+    Copies parameters from end of variables and returns them. Puts the last element of the variable to beginning of the variable.
     
 Push
     Takes:      Name, Parameter0, Parameter1, ..., ParameterN
