@@ -34,9 +34,35 @@ EndProcedure
 Procedure PNB_Fuse(List nList.nList())
   Protected RSTR.s
   
-  nListConvert(nList(), #PNB_TYPE_CHARACTER)
   ForEach nList()
-    RSTR+Chr(nList()\c)
+    Select nListGetHighestType(nList()\Flags)
+      Case #PNB_TYPE_NAME
+        RSTR+nList()\s
+      Case #PNB_TYPE_STRING
+        RSTR+nList()\s
+      Case #PNB_TYPE_POINTER
+        RSTR+Chr(nList()\p)
+      Case #PNB_TYPE_DOUBLE
+        RSTR+Chr(nList()\d)
+      Case #PNB_TYPE_FLOAT
+        RSTR+Chr(nList()\f)
+      Case #PNB_TYPE_EPIC
+        RSTR+Chr(nList()\q)
+      Case #PNB_TYPE_INTEGER
+        RSTR+Chr(nList()\i)
+      Case #PNB_TYPE_LONG
+        RSTR+Chr(nList()\l)
+      Case #PNB_TYPE_WORD
+        RSTR+Chr(nList()\w)
+      Case #PNB_TYPE_BYTE
+        RSTR+Chr(nList()\b)
+      Case #PNB_TYPE_UWORD
+        RSTR+Chr(nList()\u)
+      Case #PNB_TYPE_CHARACTER
+        RSTR+Chr(nList()\c)
+      Case #PNB_TYPE_UBYTE
+        RSTR+Chr(nList()\a)
+    EndSelect
     DeleteElement(nList())
   Next
   AddElement(nList())
