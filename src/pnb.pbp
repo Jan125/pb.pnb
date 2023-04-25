@@ -8,7 +8,7 @@
   <section name="data">
     <explorer view="C:\ProgramData\PureBasic\Examples\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2023-04-22 08:09" user="Dino" host="HUSKLET"/>
+    <lastopen date="2023-04-25 10:12" user="Dino" host="HUSKLET"/>
   </section>
   <section name="files">
     <file name="dll.pb">
@@ -41,7 +41,7 @@
     </file>
     <file name="functions\pnb_typemanipulation.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
-      <fingerprint md5="7e2d8a84149e98f63c85b3adc911996b"/>
+      <fingerprint md5="52d2e54d2ab499a3a9fc8bc24b2563d6"/>
     </file>
     <file name="functions\pnb_variables.pbi">
       <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
@@ -53,7 +53,7 @@
     </file>
     <file name="test.pb">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="c8730f2eac0f204739abe6d794f840f9"/>
+      <fingerprint md5="dc56fa638ca650ac722b291b3f111f96"/>
     </file>
   </section>
   <section name="targets">
@@ -64,7 +64,7 @@
       <directory value="..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="console" cpu="0"/>
-      <compilecount enable="1" value="708"/>
+      <compilecount enable="1" value="732"/>
     </target>
     <target name="DLLw86" enabled="1" default="0">
       <inputfile value="dll.pb"/>
@@ -74,7 +74,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1177"/>
+      <buildcount enable="1" value="1182"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -85,6 +85,7 @@
         <field6 value="Prefix Notation Basic Dynamic Library"/>
         <field7 value="pnb"/>
         <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
         <field15 value="VOS_NT"/>
@@ -99,7 +100,7 @@
       <directory value="..\..\"/>
       <options thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1177"/>
+      <buildcount enable="1" value="1182"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -110,6 +111,7 @@
         <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
         <field7 value="pnb"/>
         <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
         <field15 value="VOS_NT"/>
@@ -124,7 +126,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1177"/>
+      <buildcount enable="1" value="1182"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -135,6 +137,7 @@
         <field6 value="Prefix Notation Basic Dynamic Library"/>
         <field7 value="pnb"/>
         <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
         <field15 value="VOS_NT"/>
@@ -149,7 +152,7 @@
       <directory value="..\..\"/>
       <options thread="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1177"/>
+      <buildcount enable="1" value="1182"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -160,6 +163,7 @@
         <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
         <field7 value="pnb"/>
         <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
         <field15 value="VOS_NT"/>
@@ -174,7 +178,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1177"/>
+      <buildcount enable="1" value="1182"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -185,6 +189,7 @@
         <field6 value="Prefix Notation Basic Dynamic Library"/>
         <field7 value="pnb"/>
         <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
         <field12 value="dbg"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
@@ -200,7 +205,7 @@
       <directory value="..\..\"/>
       <options thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1177"/>
+      <buildcount enable="1" value="1182"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -211,6 +216,7 @@
         <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
         <field7 value="pnb"/>
         <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
         <field12 value="dbg"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
@@ -226,7 +232,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1177"/>
+      <buildcount enable="1" value="1182"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -237,6 +243,7 @@
         <field6 value="Prefix Notation Basic Dynamic Library"/>
         <field7 value="pnb"/>
         <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
         <field12 value="dbg"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
@@ -252,7 +259,7 @@
       <directory value="..\..\"/>
       <options thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1177"/>
+      <buildcount enable="1" value="1182"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -263,6 +270,7 @@
         <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
         <field7 value="pnb"/>
         <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
         <field12 value="dbg"/>
         <field13 value="synkronas@outlook.com"/>
         <field14 value="https://github.com/Jan125/pb.pnb"/>
