@@ -1,35 +1,20 @@
-﻿Procedure PNB_Set(List nList.nList())
+﻿Procedure PNB_Variables(List nList.nList())
+  ClearList(nList())
+  ForEach Memory()
+    AddElement(nList())
+    nList()\s = MapKey(Memory())
+    nList()\Flags | #PNB_TYPE_NAME
+  Next
+  
+EndProcedure
+
+Procedure PNB_Set(List nList.nList())
   Protected RSTR.s
   
   If NextElement(nList())
     If nList()\Flags & #PNB_TYPE_NAME
       RSTR = nList()\s
       DeleteElement(nList())
-      If RSTR = "All"
-        If NextElement(nList())
-          If nList()\Flags & #PNB_TYPE_NAME
-            If nList()\s = "Clear"
-              CompilerIf #PB_Compiler_Thread = 1
-                LockMutex(MutexVarMap)
-              CompilerEndIf
-              ClearMap(Memory())
-              ClearList(nList())
-              CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
-              CompilerEndIf
-            EndIf
-          EndIf
-        Else
-          CompilerIf #PB_Compiler_Thread = 1
-            LockMutex(MutexVarMap)
-          CompilerEndIf
-          ClearMap(Memory())
-          ClearList(nList())
-          CompilerIf #PB_Compiler_Thread = 1
-            UnlockMutex(MutexVarMap)
-          CompilerEndIf
-        EndIf
-      Else
         CompilerIf #PB_Compiler_Thread = 1
           LockMutex(MutexVarMap)
         CompilerEndIf
@@ -40,7 +25,6 @@
             Memory()\nList() = nList()
             DeleteElement(nList())
           Next
-          
         Else
           DeleteMapElement(Memory(), RSTR)
           ClearList(nList())
@@ -48,7 +32,6 @@
         CompilerIf #PB_Compiler_Thread = 1
           UnlockMutex(MutexVarMap)
         CompilerEndIf
-      EndIf
     Else
       ClearList(nList())
     EndIf
@@ -112,28 +95,17 @@ EndProcedure
 Procedure PNB_Remove(List nList.nList())
   ForEach nList()
     If nList()\Flags & #PNB_TYPE_NAME
-      If nList()\s = "All"
-        CompilerIf #PB_Compiler_Thread = 1
-          LockMutex(MutexVarMap)
-        CompilerEndIf
-        ClearMap(Memory())
-        ClearList(nList())
-        CompilerIf #PB_Compiler_Thread = 1
-          UnlockMutex(MutexVarMap)
-        CompilerEndIf
+      CompilerIf #PB_Compiler_Thread = 1
+        LockMutex(MutexVarMap)
+      CompilerEndIf
+      If FindMapElement(Memory(), nList()\s)
+        DeleteMapElement(Memory())
       Else
-        CompilerIf #PB_Compiler_Thread = 1
-          LockMutex(MutexVarMap)
-        CompilerEndIf
-        If FindMapElement(Memory(), nList()\s)
-          DeleteMapElement(Memory())
-        Else
-          ResetMap(Memory())
-        EndIf
-        CompilerIf #PB_Compiler_Thread = 1
-          UnlockMutex(MutexVarMap)
-        CompilerEndIf
+        ResetMap(Memory())
       EndIf
+      CompilerIf #PB_Compiler_Thread = 1
+        UnlockMutex(MutexVarMap)
+      CompilerEndIf
       DeleteElement(nList())
     EndIf
   Next
