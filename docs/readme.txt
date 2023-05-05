@@ -12,13 +12,14 @@ Index:
 3.) Command Reference
     3.1 - Basic feature set
         3.1.1 - Basic
-        3.1.2 - List Manipulation
-        3.1.3 - Type Manipulation
-        3.1.4 - Variables
-        3.1.5 - Arithmetic
-        3.1.6 - Logic
-        3.1.7 - Memory
-        3.1.8 - DLL
+        3.1.2 - Functions
+        3.1.3 - Variables
+        3.1.4 - List Manipulation
+        3.1.5 - Type Manipulation
+        3.1.6 - Arithmetic
+        3.1.7 - Logic
+        3.1.8 - Memory
+        3.1.9 - DLL
         
 1.) Preamble
 PNB is supposed to be an easy to learn mix of a LISP like structure and BASIC commands.
@@ -166,14 +167,9 @@ To enable code injection, use this syntax:
 Function (A) Do (Command B C D) With (B C D)
 
 To remove a function, declare it as
-Function (A) Do (Clear)
-OR
 Function (A) Do ()
-
-To clear all function, declare it as
-Function (All) Do (Clear)
 OR
-Function (All) Do ()
+Unfunction A
 
 
 2.5 - Matrix
@@ -230,8 +226,88 @@ Dbg, Debug
     This command discards every input if run outside of the debug environment.
     Otherwise, it returns each parameter in the debug window.
     
+3.1.2 - Functions
     
-3.1.2 - List Manipulation
+    
+3.1.3 - Variables
+These commands enable variable declarations.
+    
+Variables
+    Takes:      None
+    Returns:    Name0, Name1, ..., NameN
+    Returns all currently defined variable names.
+    
+Set
+    Takes:      Name, Parameter0, Parameter1, ..., ParameterN
+    Returns:    Nothing
+    Creates a new variable entry under the given name.
+    This variable entry is a value snapshot of the rest of the list.
+    (Set A 1 2 3) would create the list snapshot (1 2 3) for variable name A.
+    If you want to clear a variable, call it as
+    (Set A)
+    
+Get
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    List snapshot under given names.
+    Creates a new list entry and gets the list snapshot under the given names, in order.
+    
+Take
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    List snapshot under given names.
+    Creates a new list entry and gets the list snapshot under the given names, in order. Removes variable.
+    
+Remove
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Nothing
+    Removes variables.
+    
+Reverse
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Nothing
+    Inverts variables. (1 2 3) will become (3 2 1).
+    
+Cycle
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Parameter0, Parameter1, ..., ParameterN
+    Copies parameters from beginning of variables and returns them. Puts the first element of the variable to end of the variable.
+    
+Recycle
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Parameter0, Parameter1, ..., ParameterN
+    Copies parameters from end of variables and returns them. Puts the last element of the variable to beginning of the variable.
+    
+Push
+    Takes:      Name, Parameter0, Parameter1, ..., ParameterN
+    Returns:    Nothing
+    Appends parameters to beginning of variable.
+    
+Pop
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Parameter0, Parameter1, ..., ParameterN
+    Removes parameters from beginning of variables and returns them.
+    
+Inspect
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Parameter0, Parameter1, ..., ParameterN
+    Copies parameters from beginning of variables and returns them.
+    
+Bury
+    Takes:      Name, Parameter0, Parameter1, ..., ParameterN
+    Returns:    Nothing
+    Appends parameters to end of variable.
+    
+Dig
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Parameter0, Parameter1, ..., ParameterN
+    Removes parameters from end of variables and returns them.
+    
+Detect
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Parameter0, Parameter1, ..., ParameterN
+    Copies parameters from end of variables and returns them.
+    
+    
+3.1.4 - List Manipulation
 These commands manipulate the state of the list.
 
 Fork
@@ -290,7 +366,7 @@ Offset
     Returns total memory offset of all variables. Names return the length of their types instead.
     
     
-3.1.3 - Type Manipulation
+3.1.5 - Type Manipulation
 These commands convert between types.
     
 Split
@@ -325,86 +401,9 @@ Force<Type>
     Accepted types are Name, String, Pointer, Double, Float, Epic, Integer, Long, Word, Byte, UWord, Character, UByte.
     
     
-3.1.4 - Variables
-These commands enable variable declarations.
+
     
-Set
-    Takes:      Name, Parameter0, Parameter1, ..., ParameterN OR Name, Name=Clear OR Name=All, Name=Clear
-    Returns:    Nothing
-    Creates a new variable entry under the given name.
-    This variable entry is a value snapshot of the rest of the list.
-    (Set A 1 2 3) would create the list snapshot (1 2 3) for variable name A.
-    If you want to clear a variable, call it as
-    Set A Clear
-    OR
-    Set A
-    If you want to clear all variables, call them as
-    Set All Clear
-    OR
-    Set All
-    
-Get
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    List snapshot under given names.
-    Creates a new list entry and gets the list snapshot under the given names, in order.
-    
-Take
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    List snapshot under given names.
-    Creates a new list entry and gets the list snapshot under the given names, in order. Removes variable.
-    
-Remove
-    Takes:      Name0, Name1, ..., NameN Or Name=All
-    Returns:    Nothing
-    Removes variables. If Name is All, remove all variables.
-    
-Reverse
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    Nothing
-    Inverts variables. (1 2 3) will become (3 2 1).
-    
-Cycle
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    Parameter0, Parameter1, ..., ParameterN
-    Copies parameters from beginning of variables and returns them. Puts the first element of the variable to end of the variable.
-    
-Recycle
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    Parameter0, Parameter1, ..., ParameterN
-    Copies parameters from end of variables and returns them. Puts the last element of the variable to beginning of the variable.
-    
-Push
-    Takes:      Name, Parameter0, Parameter1, ..., ParameterN
-    Returns:    Nothing
-    Appends parameters to beginning of variable.
-    
-Pop
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    Parameter0, Parameter1, ..., ParameterN
-    Removes parameters from beginning of variables and returns them.
-    
-Inspect
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    Parameter0, Parameter1, ..., ParameterN
-    Copies parameters from beginning of variables and returns them.
-    
-Bury
-    Takes:      Name, Parameter0, Parameter1, ..., ParameterN
-    Returns:    Nothing
-    Appends parameters to end of variable.
-    
-Dig
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    Parameter0, Parameter1, ..., ParameterN
-    Removes parameters from end of variables and returns them.
-    
-Detect
-    Takes:      Name0, Name1, ..., NameN
-    Returns:    Parameter0, Parameter1, ..., ParameterN
-    Copies parameters from end of variables and returns them.
-    
-    
-3.1.5 - Arithmetic
+3.1.6 - Arithmetic
 Mathematics.
     
 Add, +
@@ -530,7 +529,7 @@ Ran, Random
     With two parameters, it is between both.
     
     
-3.1.6 - Logic
+3.1.7 - Logic
 Comparisons and stuff.
     
 Bool
@@ -628,7 +627,7 @@ bNot, b~
     This works with integers only.
     
     
-3.1.7 - Memory
+3.1.8 - Memory
 This is for memory management.
 By design, there are no error handlers for memory functions.
 You can edit memory addresses passed from outside, but no bounds check is done.
@@ -674,7 +673,7 @@ Peek
     If a Pointer is specified as read object, it will read the whole block size from the address. This only works for managed Pointer blocks.
     
     
-3.1.7 - DLL
+3.1.9 - DLL
 This is for loading and calling DLLs.
 By design, there are no error handlers for DLL functions.
 Using these functions improperly can lead to crashes.
