@@ -2147,7 +2147,6 @@ Module PNB
               Else
                 ClearList(nList())
               EndIf
-              
             Case "Function" ;--Function
               DeleteElement(nList()) ;Free the Function
               
@@ -2233,30 +2232,6 @@ Module PNB
                             
                             ForEach cList1()\nList()
                               If cList1()\nList()\Flags & #PNB_TYPE_NAME
-                                If cList1()\nList()\s = "All"
-                                  If FirstElement(cList2()\nList())
-                                    If cList2()\nList()\Flags & #PNB_TYPE_NAME
-                                      If cList2()\nList()\s = "Clear"
-                                        CompilerIf #PB_Compiler_Thread = 1
-                                          LockMutex(MutexFunMap)
-                                        CompilerEndIf
-                                        ClearMap(Lexicon())
-                                        ClearMap(Param())
-                                        ClearMap(ParamDefault())
-                                        CompilerIf #PB_Compiler_Thread = 1
-                                          UnlockMutex(MutexFunMap)
-                                        CompilerEndIf
-                                        Break
-                                      Else
-                                        Break
-                                      EndIf
-                                    Else
-                                      Break
-                                    EndIf
-                                  Else
-                                    Break
-                                  EndIf
-                                Else ;normal function declaration
                                   CompilerIf #PB_Compiler_Thread = 1
                                     LockMutex(MutexFunMap)
                                   CompilerEndIf
@@ -2265,11 +2240,6 @@ Module PNB
                                   AddMapElement(ParamDefault(), cList1()\nList()\s)
                                   If FirstElement(cList2()\nList())
                                     If cList2()\nList()\Flags & #PNB_TYPE_NAME
-                                      If cList2()\nList()\s = "Clear"
-                                        DeleteMapElement(Lexicon())
-                                        DeleteMapElement(Param())
-                                        DeleteMapElement(ParamDefault())
-                                      Else
                                         If ListSize(cList4())
                                           If ListSize(cList3()\nList()) = ListSize(cList4()\nList())
                                             Lexicon() = cList2()
@@ -2287,7 +2257,6 @@ Module PNB
                                             Param() = cList3()
                                           EndIf
                                         EndIf
-                                      EndIf
                                     Else
                                       If ListSize(cList4())
                                         If ListSize(cList3()\nList()) = ListSize(cList4()\nList())
@@ -2315,7 +2284,6 @@ Module PNB
                                   CompilerIf #PB_Compiler_Thread = 1
                                     UnlockMutex(MutexFunMap)
                                   CompilerEndIf
-                                EndIf
                               EndIf
                             Next
                             ClearList(nList())
@@ -2586,7 +2554,30 @@ Module PNB
             DeleteElement(nList())
             PNB_Dbg(nList())
             
-            
+            ;-#Functions
+             ;---Functions
+            Case "Functions"
+              ClearList(nList())
+              ForEach Lexicon()
+                AddElement(nList())
+                nList()\s = MapKey(Lexicon())
+                nList()\Flags | #PNB_TYPE_NAME
+              Next
+              
+              ;---Unfunction
+            Case "Unfunction"
+              ForEach nList()
+                If nList()\Flags & #PNB_TYPE_NAME
+                  If FindMapElement(Lexicon(), nList()\s)
+                    DeleteMapElement(Lexicon())
+                    DeleteMapElement(Param())
+                    DeleteMapElement(ParamDefault())
+                  EndIf
+                EndIf
+                DeleteElement(nList())
+              Next
+              
+              
             ;-#List Manipulation
             ;---Fork
             ;Case "Fork" is already implemented in a different format in the preprocessing stage.
@@ -2774,6 +2765,11 @@ Module PNB
             
             
             ;-#Variables
+            ;---Variables
+          Case "Variables"
+            DeleteElement(nList())
+            PNB_Variables(nList())
+
             ;---Set
           Case "Set"
             DeleteElement(nList())
