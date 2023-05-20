@@ -1,8 +1,6 @@
 ﻿XIncludeFile "pnb.pbi"
 DisableExplicit
 
-
-
 OpenConsole()
 
 Procedure UnitTest(Name.s, Query.s, Expected.s)
@@ -41,6 +39,10 @@ UnitTest("Nothing return",
 
 
 ;-Matrix test cases
+UnitTest("Matrix without parameters",
+         "(Matrix)",
+         "")
+
 UnitTest("Matrix one dimension test",
          "(Matrix (A) (1))",
          "A 1")
@@ -286,96 +288,3 @@ UnitTest("Fuse without parameters",
          "(Fuse)",
          "[]")
 
-
-; 
-; ;-Stress test
-; Debug "#Test how many times this query can be called per second:"
-; DisableDebugger
-; a = 0
-; StartTime_Stress = ElapsedMilliseconds()
-; Repeat
-;   a+1
-;   PNB::nListEvalString("(+ (+ 'This is the ' 'stress ') (+ 'test of this' ' program.'))")
-;   EndTime_Stress = ElapsedMilliseconds()
-; Until EndTime_Stress-StartTime_Stress > 1000
-; EnableDebugger
-; PNB::nListEvalString("Debug (+ [Your PC has called the single thread stress test ] ["+Str(a-1)+" ] [times in one second!])")
-; 
-; 
-; Debug "#Test if everything is dissolved in order: Should read 'This is the stress test of this program.'"
-; PNB::nListEvalString("Debug (+ (+ 'This is the ' 'stress ') (+ 'test of this' ' program.'))")
-; 
-; Debug "#Integer test, multiple parameters: Should read '15', '-2', '-1'."
-; PNB::nListEvalString("Debug (+ 1 2 3 4 5)")
-; PNB::nListEvalString("Debug (+ 1 -3)")
-; PNB::nListEvalString("Debug (- 3 4)")
-; 
-; Debug "#Float test: Should read '3.95' or an approximation."
-; PNB::nListEvalString("Debug (+ 3.55 0.4)")
-; 
-; Debug "#Self-call test: Should read '9'."
-; PNB::nListEvalString("Eval [Debug (+ 3 3 3)]")
-; 
-; Debug "#Storage test: Should read '50', 'this', 'test', 'of', 'multiline!'."
-; PNB::nListEvalString("Set Variable 50")
-; PNB::nListEvalString("Debug (Get Variable)")
-; PNB::nListEvalString("Set Variable [this]")
-; PNB::nListEvalString("Debug (Get Variable)")
-; PNB::nListEvalString("Set Variable [test] [of] [multiline!]")
-; PNB::nListEvalString("Debug (Get Variable)")
-; 
-; Debug "#Select-condition branching test: Should read 'Select is 2.', 'Select is 1.', 'Select is none.'"
-; PNB::nListEvalString("Select (2) Case (1) Do (Debug 'Select is NOT 1.') Case (2) Do (Debug 'Select is 2.') Default Do (Debug 'Select is NOT none.')")
-; PNB::nListEvalString("Select (1) Case (1) Do (Debug 'Select is 1.') Case (2) Do (Debug 'Select is NOT 2.')")
-; PNB::nListEvalString("Select (5) Case (1) Do (Debug 'Select is NOT 1.') Case (2) Do (Debug 'Select is NOT 2.') Default Do (Debug 'Select is none.')")
-; 
-; Debug "#For-loop test: Should read '7'."
-; PNB::nListEvalString("For (7) Do (Set ForVar (+ (Get ForVar) 1))")
-; PNB::nListEvalString("Debug (Get ForVar)")
-; 
-; Debug "#While-Test: Should read 3 'NooooOo!'."
-; PNB::nListEvalString("Set WhileTest 3")
-; PNB::nListEvalString("While (Get WhileTest) Do ((Debug [NooooOo!]) (Set WhileTest (- (Get WhileTest) 1)) )")
-; 
-; Debug "#Until-Test: Should read 4 'Yes!'."
-; PNB::nListEvalString("Set UntilTest 0")
-; PNB::nListEvalString("Until (= (Get UntilTest) 4) Do ((Debug [Yes!]) (Set UntilTest (+ (Get UntilTest) 1)) )")
-; 
-; Debug "#Macro/As test: Should read 3 'Incrementing...', 'Reached it!'"
-; PNB::nListEvalString("Function (Testmacro) Do ((Debug [Incrementing...]) (Set Macro (+ (Get Macro) 1)) (If (= (Get Macro) 3) Do (Debug [Reached it!]) Else Do (Testmacro)) )")
-; PNB::nListEvalString("Testmacro")
-; 
-; Debug "#Macro/As multiple parameters test: Should read 'FirstString', 'SecondString'."
-; PNB::nListEvalString("Function (Testmacro) Do ([FirstString] ([SecondString]))")
-; PNB::nListEvalString("Debug (Testmacro)")
-; 
-; Debug "#Macro/As function test: Should read 'Reverse Order'."
-; PNB::nListEvalString("Function (Testmacro) Do (Debug (+ ee [ ] dd)) With (dd ee)")
-; PNB::nListEvalString("Testmacro Order Reverse")
-; 
-; Debug "#Macro/As function parameter test: Should read 'Order is Reversed'."
-; PNB::nListEvalString("Function (Testmacro) Do (+ ff [ ] ee [ ] dd) With (dd ee ff)")
-; PNB::nListEvalString("Debug (Testmacro Reversed is Order)")
-; 
-; Debug "#Macro/As function default parameter test: Should read 'Defined', 'Undefined'."
-; PNB::nListEvalString("Function (Testmacro) Do (dd ee) With (dd ee) As (Undefined Undefined)")
-; PNB::nListEvalString("Debug (Testmacro Defined)")
-; 
-; Debug "#Macro/As function parameter underload test: Should not be registered and return as list. Should read 'Testmacro', 'This'."
-; PNB::nListEvalString("Function (Testmacro) Do (+ dd ee) With (dd ee) As (Undefined)")
-; PNB::nListEvalString("Debug (Testmacro This)")
-; 
-; Debug "#Memory test. Should read 'This is a string.', '33.3' or an approximation, '240'."
-; PNB::nListEvalString("Set A (Allocate 100)")
-; PNB::nListEvalString("Poke (Get A) [This is a string.] (UByte 0)")
-; PNB::nListEvalString("Debug (Peek (Get A) String)")
-; PNB::nListEvalString("Poke (Get A) 33.3")
-; PNB::nListEvalString("Debug (Peek (Get A) Float)")
-; PNB::nListEvalString("Poke (Get A) 240")
-; PNB::nListEvalString("Debug (Peek (Get A) Integer)")
-; PNB::nListEvalString("Free All")
-; 
-; PNB::nListEvalString("(Invoke Void (Examine (Load user32.dll) MessageBoxW) 0 'This is the message.' 'This is the title.' 0)")
-; 
-; 
-; End

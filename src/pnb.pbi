@@ -1587,20 +1587,6 @@ Module PNB
     Protected RBOL.i
     Protected RCNT.i
     Protected RINT.i
-    Protected RFLT.f
-    Protected RSTR.s
-    
-    Protected RTYP.i
-    
-    Protected RASC.a
-    Protected RBYT.b
-    Protected RCHR.c
-    Protected RDBL.d
-    Protected RLNG.l
-    Protected RQUD.q
-    Protected RWRD.w
-    Protected RUNI.u
-    Protected *RPTR
     
     Protected *TPTR.nListThread
     
@@ -1608,8 +1594,6 @@ Module PNB
     Protected NewList cList2.nList()
     Protected NewList cList3.nList()
     Protected NewList cList4.nList()
-    
-    
     
     ;-Preprocess
     If FirstElement(nList())
@@ -2147,176 +2131,212 @@ Module PNB
               Else
                 ClearList(nList())
               EndIf
+              
+              
             Case "Function" ;--Function
               DeleteElement(nList()) ;Free the Function
               
+              ;Names, Aliases
               If NextElement(nList())
                 If nList()\Flags & #PNB_TYPE_LIST
-                  AddElement(cList1()) ;names, aliases
-                  cList1() = nList()
-                  DeleteElement(nList())
-                  If NextElement(nList());do
-                    If nList()\Flags & #PNB_TYPE_NAME
-                      If nList()\s = "Do"
-                        DeleteElement(nList())
-                        If NextElement(nList())
-                          If nList()\Flags & #PNB_TYPE_LIST
-                            AddElement(cList2()) ;core function
-                            cList2() = nList()
-                            DeleteElement(nList())
-                            If NextElement(nList())
-                              If nList()\Flags & #PNB_TYPE_NAME
-                                If nList()\s = "With"
-                                  DeleteElement(nList())
-                                  If NextElement(nList())
-                                    If nList()\Flags & #PNB_TYPE_LIST
-                                      AddElement(cList3()) ;core function
-                                      cList3() = nList()
-                                      DeleteElement(nList())
-                                      If NextElement(nList())
-                                        If nList()\Flags & #PNB_TYPE_NAME
-                                          If nList()\s = "As"
-                                            DeleteElement(nList())
-                                            If NextElement(nList())
-                                              If nList()\Flags & #PNB_TYPE_LIST
-                                                AddElement(cList4()) ;default params
-                                                cList4() = nList()
-                                                DeleteElement(nList())
-                                              Else
-                                                ClearList(nList())
-                                                ClearList(cList1())
-                                                ClearList(cList2())
-                                                ClearList(cList3())
-                                              EndIf
-                                            Else
-                                              ClearList(nList())
-                                              ClearList(cList1())
-                                              ClearList(cList2())
-                                              ClearList(cList3())
-                                            EndIf
-                                          Else
-                                            ClearList(nList())
-                                            ClearList(cList1())
-                                            ClearList(cList2())
-                                            ClearList(cList3())
-                                          EndIf
-                                        Else
-                                          ClearList(nList())
-                                          ClearList(cList1())
-                                          ClearList(cList2())
-                                          ClearList(cList3())
-                                        EndIf
-                                      EndIf
-                                      ClearList(nList())
-                                    Else
-                                      ClearList(nList())
-                                      ClearList(cList1())
-                                      ClearList(cList2())
-                                    EndIf
-                                  Else
-                                    ClearList(nList())
-                                    ClearList(cList1())
-                                    ClearList(cList2())
-                                  EndIf
-                                Else
-                                  ClearList(nList())
-                                  ClearList(cList1())
-                                  ClearList(cList2())
-                                EndIf
-                              Else
-                                ClearList(nList())
-                                ClearList(cList1())
-                                ClearList(cList2())
-                              EndIf
-                            EndIf
-                            
-                            ForEach cList1()\nList()
-                              If cList1()\nList()\Flags & #PNB_TYPE_NAME
-                                  CompilerIf #PB_Compiler_Thread = 1
-                                    LockMutex(MutexFunMap)
-                                  CompilerEndIf
-                                  AddMapElement(Lexicon(), cList1()\nList()\s)
-                                  AddMapElement(Param(), cList1()\nList()\s)
-                                  AddMapElement(ParamDefault(), cList1()\nList()\s)
-                                  If FirstElement(cList2()\nList())
-                                    If cList2()\nList()\Flags & #PNB_TYPE_NAME
-                                        If ListSize(cList4())
-                                          If ListSize(cList3()\nList()) = ListSize(cList4()\nList())
-                                            Lexicon() = cList2()
-                                            Param() = cList3()
-                                            ParamDefault() = cList4()
-                                          Else
-                                            DeleteMapElement(Lexicon())
-                                            DeleteMapElement(Param())
-                                            DeleteMapElement(ParamDefault())
-                                            Break
-                                          EndIf
-                                        Else
-                                          Lexicon() = cList2()
-                                          If ListSize(cList3())
-                                            Param() = cList3()
-                                          EndIf
-                                        EndIf
-                                    Else
-                                      If ListSize(cList4())
-                                        If ListSize(cList3()\nList()) = ListSize(cList4()\nList())
-                                          Lexicon() = cList2()
-                                          Param() = cList3()
-                                          ParamDefault() = cList4()
-                                        Else
-                                          DeleteMapElement(Lexicon())
-                                          DeleteMapElement(Param())
-                                          DeleteMapElement(ParamDefault())
-                                          Break
-                                        EndIf
-                                      Else
-                                        Lexicon() = cList2()
-                                        If ListSize(cList3())
-                                          Param() = cList3()
-                                        EndIf
-                                      EndIf
-                                    EndIf
-                                  Else
-                                    DeleteMapElement(Lexicon())
-                                    DeleteMapElement(Param())
-                                    DeleteMapElement(ParamDefault())
-                                  EndIf
-                                  CompilerIf #PB_Compiler_Thread = 1
-                                    UnlockMutex(MutexFunMap)
-                                  CompilerEndIf
-                              EndIf
-                            Next
-                            ClearList(nList())
-                            ClearList(cList1())
-                            ClearList(cList2())
-                            ClearList(cList3())
-                            ClearList(cList4())
-                          Else
-                            ClearList(nList())
-                            ClearList(cList1())
-                          EndIf
-                        Else
-                          ClearList(nList())
-                          ClearList(cList1())
-                        EndIf
-                      Else
-                        ClearList(nList())
-                        ClearList(cList1())
-                      EndIf
-                    Else
-                      ClearList(nList())
-                      ClearList(cList1())
+                  ForEach nList()\nList()
+                    If nList()\nList()\Flags & #PNB_TYPE_NAME
+                      AddElement(cList1())
+                      cList1() = nList()
                     EndIf
-                  Else
-                    ClearList(nList())
-                    ClearList(cList1())
-                  EndIf
+                  Next
+                  DeleteElement(nList())
                 Else
                   ClearList(nList())
                 EndIf
               Else
                 ClearList(nList())
               EndIf
+              
+              If NextElement(nList()) And nList()\Flags & #PNB_TYPE_NAME And nList()\s = "Do"
+                DeleteElement(nList())
+                
+                ;Core function
+                If NextElement(nList()) And nList()\Flags & #PNB_TYPE_LIST
+                  AddElement(cList2())
+                  cList2() = nList()
+                  DeleteElement(nList())
+                Else
+                  ClearList(nList())
+                EndIf
+                
+              Else
+                ClearList(nList())
+              EndIf
+              
+              If NextElement(nList()) And nList()\Flags & #PNB_TYPE_NAME And nList()\s = "With"
+                DeleteElement(nList())
+                
+                ;Parameters
+                If NextElement(nList()) And nList()\Flags & #PNB_TYPE_LIST
+                  AddElement(cList3())
+                  cList3() = nList()
+                  DeleteElement(nList())
+                Else
+                  ClearList(nList())
+                  ClearList(cList1())
+                  ClearList(cList2())
+                EndIf
+                
+              Else
+                ClearList(nList())
+              EndIf
+              
+              If NextElement(nList()) And nList()\Flags & #PNB_TYPE_NAME And nList()\s = "As"
+                DeleteElement(nList())
+                
+                ;Default
+                If NextElement(nList()) And nList()\Flags & #PNB_TYPE_LIST
+                  AddElement(cList4())
+                  cList4() = nList()
+                  DeleteElement(nList())
+                Else
+                  ClearList(nList())
+                  ClearList(cList1())
+                  ClearList(cList2())
+                  ClearList(cList3())
+                EndIf
+                
+              Else
+                ClearList(nList())
+              EndIf
+              
+              If FirstElement(cList1())
+                ForEach cList1()\nList()
+                  If cList1()\nList()\Flags & #PNB_TYPE_NAME
+                    CompilerIf #PB_Compiler_Thread = 1
+                      LockMutex(MutexFunMap)
+                    CompilerEndIf
+                    AddMapElement(Lexicon(), cList1()\nList()\s)
+                    AddMapElement(Param(), cList1()\nList()\s)
+                    AddMapElement(ParamDefault(), cList1()\nList()\s)
+                    If ListSize(cList2()) And FirstElement(cList2()\nList())
+                      If cList2()\nList()\Flags & #PNB_TYPE_NAME
+                        If ListSize(cList4())
+                          If ListSize(cList3()\nList()) = ListSize(cList4()\nList())
+                            Lexicon() = cList2()
+                            Param() = cList3()
+                            ParamDefault() = cList4()
+                          Else
+                            DeleteMapElement(Lexicon())
+                            DeleteMapElement(Param())
+                            DeleteMapElement(ParamDefault())
+                            Break
+                          EndIf
+                        Else
+                          Lexicon() = cList2()
+                          If ListSize(cList3())
+                            Param() = cList3()
+                          EndIf
+                        EndIf
+                      Else
+                        If ListSize(cList4())
+                          If ListSize(cList3()\nList()) = ListSize(cList4()\nList())
+                            Lexicon() = cList2()
+                            Param() = cList3()
+                            ParamDefault() = cList4()
+                          Else
+                            DeleteMapElement(Lexicon())
+                            DeleteMapElement(Param())
+                            DeleteMapElement(ParamDefault())
+                            Break
+                          EndIf
+                        Else
+                          Lexicon() = cList2()
+                          If ListSize(cList3())
+                            Param() = cList3()
+                          EndIf
+                        EndIf
+                      EndIf
+                    Else
+                      DeleteMapElement(Lexicon())
+                      DeleteMapElement(Param())
+                      DeleteMapElement(ParamDefault())
+                    EndIf
+                    CompilerIf #PB_Compiler_Thread = 1
+                      UnlockMutex(MutexFunMap)
+                    CompilerEndIf
+                  EndIf
+                Next
+              EndIf
+              ClearList(nList())
+              ClearList(cList1())
+              ClearList(cList2())
+              ClearList(cList3())
+              ClearList(cList4())
+              
+              
+            Case "Lambda"
+              DeleteElement(nList())
+              
+              If NextElement(nList()) And nList()\Flags & #PNB_TYPE_NAME And nList()\s = "Do"
+                DeleteElement(nList())
+                
+                ;Core function
+                If NextElement(nList()) And nList()\Flags & #PNB_TYPE_LIST
+                  AddElement(cList1())
+                  cList1() = nList()
+                  DeleteElement(nList())
+                Else
+                  ClearList(nList())
+                EndIf
+                
+              Else
+                ClearList(nList())
+              EndIf
+              
+              If NextElement(nList()) And nList()\Flags & #PNB_TYPE_NAME And nList()\s = "With"
+                DeleteElement(nList())
+                
+                ;Parameters
+                If NextElement(nList()) And nList()\Flags & #PNB_TYPE_LIST
+                  AddElement(cList2())
+                  cList2() = nList()
+                  DeleteElement(nList())
+                Else
+                  ClearList(nList())
+                  ClearList(cList1())
+                EndIf
+                
+                If NextElement(nList()) And nList()\Flags & #PNB_TYPE_NAME And nList()\s = "As"
+                  DeleteElement(nList())
+                  
+                  ;Default
+                  If NextElement(nList()) And nList()\Flags & #PNB_TYPE_LIST
+                    AddElement(cList3())
+                    cList3() = nList()
+                    DeleteElement(nList())
+                  Else
+                    ClearList(nList())
+                    ClearList(cList1())
+                    ClearList(cList2())
+                  EndIf
+                EndIf
+              EndIf
+              
+              ClearList(nList())
+              If ListSize(cList1())
+                If ListSize(cList2())
+                  ResetList(cList2()\nList())
+                  If ListSize(cList3())
+                    ForEach cList3()\nList()
+                      NextElement(cList2()\nList())
+                      nListReplace(cList1(), cList2()\nList()\s, cList3()\nList())
+                    Next
+                    MergeLists(cList1()\nList(), nList(), #PB_List_After)
+                  EndIf
+                Else
+                  MergeLists(cList1()\nList(), nList(), #PB_List_After)
+                EndIf
+              EndIf
+              ClearList(cList1())
+              ClearList(cList2())
+              ClearList(cList3())
               
               
             Case "List" ;--List
@@ -2504,23 +2524,6 @@ Module PNB
     Next
     
     ;-Command eval
-    RCNT = 0
-    RBOL = 0
-    RINT = 0
-    RFLT = 0.0
-    RSTR = ""
-    
-    RTYP = 0
-    
-    RASC = 0
-    RBYT = 0
-    RCHR = 0
-    RDBL = 0.0
-    RLNG = 0
-    RQUD = 0
-    RWRD = 0
-    RUNI = 0
-    *RPTR = 0
     
     If FirstElement(nList())
       
