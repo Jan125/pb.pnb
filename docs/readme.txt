@@ -162,6 +162,8 @@ If there are either more or less parameters than intended, the function will not
 If the amount of default parameters is not equal to the amount of parameters, the function will not register.
 If default parameters are defined, less parameters in calls can be be used.
 
+Defined functions can be found under the keyword Functions.
+
 B can not be a parameter.
 To enable code injection, use this syntax:
 Function (A) Do (Command B C D) With (B C D)
@@ -170,6 +172,14 @@ To remove a function, declare it as
 Function (A) Do ()
 OR
 Unfunction A
+
+Anonymous functions can be called with the syntax
+Lambda Do (A B C) With (B C) As (1 2)
+
+Note: Replacing parameters in all functions are done in order, and can replace previously replaced parameters as well.
+Lambda Do (X Y Z) With (X Y Z) As (Y Z 1)
+would yield
+(1 1 1)
 
 
 2.5 - Matrix
