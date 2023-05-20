@@ -2194,6 +2194,10 @@ Module PNB
                 If NextElement(nList()) And nList()\Flags & #PNB_TYPE_LIST
                   AddElement(cList4())
                   cList4() = nList()
+                  cList4()\Flags &~ #PNB_TYPE_COMMAND
+                    ForEach cList4()\nList()
+                      cList4()\nList()\Flags &~ #PNB_TYPE_COMMAND
+                    Next
                   DeleteElement(nList())
                 Else
                   ClearList(nList())
@@ -2270,7 +2274,7 @@ Module PNB
               ClearList(cList3())
               ClearList(cList4())
               
-              
+              ;--Lambda
             Case "Lambda"
               DeleteElement(nList())
               
@@ -2310,6 +2314,10 @@ Module PNB
                   If NextElement(nList()) And nList()\Flags & #PNB_TYPE_LIST
                     AddElement(cList3())
                     cList3() = nList()
+                    cList3()\Flags &~ #PNB_TYPE_COMMAND
+                    ForEach cList3()\nList()
+                      cList3()\nList()\Flags &~ #PNB_TYPE_COMMAND
+                    Next
                     DeleteElement(nList())
                   Else
                     ClearList(nList())
@@ -3092,7 +3100,7 @@ Module PNB
             PNB_InvokeC(nList())
             
             
-            ;-#Functions
+            ;-#Function evaluation
           Default
             CompilerIf #PB_Compiler_Thread = 1
               LockMutex(MutexVarMap)
@@ -3165,6 +3173,9 @@ Module PNB
                   UnlockMutex(MutexVarMap)
                 CompilerEndIf
                 ClearList(nList())
+                ForEach cList1()\nList()
+                  Debug cList1()\nList()\Flags & #PNB_TYPE_COMMAND
+                  Next
                 nListEval(cList1()\nList())
                 MergeLists(cList1()\nList(), nList(), #PB_List_After)
               EndIf
@@ -3174,7 +3185,6 @@ Module PNB
               CompilerEndIf
             EndIf
         EndSelect
-      Else
       EndIf
     EndIf
     ProcedureReturn
