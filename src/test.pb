@@ -19,7 +19,6 @@ Procedure UnitTest(Name.s, Query.s, Expected.s)
   ProcedureReturn
 EndProcedure
 
-
 ;-General test cases
 UnitTest("Parameter Return",
          "(First Second Third Fourth Fifth)",

@@ -1088,9 +1088,6 @@ Module PNB
       If ListSize(nList()\nList())
         a = nListReplace(nList()\nList(), StringToFind, *Element)
         Ocurrences = Ocurrences + a
-        If a > 0
-          nList()\Flags | *Element\Flags
-        EndIf
       EndIf
       If nList()\Flags & #PNB_TYPE_NAME
         If nList()\s = StringToFind
@@ -3173,9 +3170,6 @@ Module PNB
                   UnlockMutex(MutexVarMap)
                 CompilerEndIf
                 ClearList(nList())
-                ForEach cList1()\nList()
-                  Debug cList1()\nList()\Flags & #PNB_TYPE_COMMAND
-                  Next
                 nListEval(cList1()\nList())
                 MergeLists(cList1()\nList(), nList(), #PB_List_After)
               EndIf
