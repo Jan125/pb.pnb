@@ -200,6 +200,12 @@ Lists and elements prefixed with Do will not be evaluated beforehand, and will i
 ( Matrix Do * 2 (3 2 1) ) = ( 6 4 2 )
 ( Matrix Do (* + -) 3 3 ) = ( 9 6 0 )
 
+Multiple Do's are not allowed.
+To apply multiple operations, Matrix commands must be nested.
+( Matrix Do * ( Matrix Do + With (A B C) With (D E F) ) With (G H I) ) = ( (* (+ A D) G ) (* (+ B E) H ) (* (+ C F) I ) )
+
+Matrix operations with multiple Do's will not evaluate and be removed.
+
 Lists prefixed with With will not be evaluated beforehand nor be applied as a command, but otherwise treated as normal.
 
 
@@ -237,13 +243,34 @@ Dbg, Debug
     Otherwise, it returns each parameter in the debug window.
     
 3.1.2 - Functions
+Function information.
+
+Function
+    Takes:      List = Name, Name = Do, List, [Name = With, List = Name, [Name = As, List = Name]]
+    Returns:    Nothing
+    Function declaration, see 2.4 for examples.
+    
+Lambda
+    Takes:      Name = Do, List, [Name = With, List = Name, [Name = As, List = Name]]
+    Returns:    Varies
+    Anonymous function, see 2.4 for examples.
+    
+Unfunction
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Nothing
+    Frees all named functions.
+    
+Functions
+    Takes:      Nothing
+    Returns:    Name0, Name1, ..., NameN
+    Returns all currently defined functions.
     
     
 3.1.3 - Variables
 These commands enable variable declarations.
     
 Variables
-    Takes:      None
+    Takes:      Nothing
     Returns:    Name0, Name1, ..., NameN
     Returns all currently defined variable names.
     
