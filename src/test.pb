@@ -98,6 +98,10 @@ UnitTest("Matrix preemptive evaluation test",
          "(Matrix Do (+ 3 4) (+ 1 6)",
          "7 3 4")
 
+UnitTest("Matrix disallow multiple Do test",
+         "(Matrix Do + Do * (3 4) (1 6)",
+         "")
+
 
 ;--Flow control
 ;-If test cases

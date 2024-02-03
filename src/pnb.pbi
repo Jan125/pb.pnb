@@ -57,8 +57,8 @@ Module PNB
   Declare.i CountCommented(String.s, Index.i)
   Declare.i CountApostrophed(String.s, Index.i)
   Declare.i CountQuoted(String.s, Index.i)
-  Declare.i CountHardbracketed(String.s, Index.i)
   Declare.i CountBracketed(String.s, Index.i)
+  Declare.i CountParenthesized(String.s, Index.i)
   
   Global EnableBinary.i
   
@@ -1239,95 +1239,139 @@ Module PNB
     
   EndProcedure
   
-  Procedure.i CountCommented(String.s, Start.i)
-    Protected Depth.i
-    Protected Index.i
-    Repeat
-      Index+1
-      Select Asc(Mid(String, Start+Index, 1))
-        Case Asc(";")
-          Break
-      EndSelect
-    Until Start+Index > Len(String)
-    ProcedureReturn Index
-  EndProcedure
+Procedure.i CountCommented(String.s, Start.i)
   
-  Procedure.i CountApostrophed(String.s, Start.i)
-    Protected Depth.i
-    Protected Index.i
-    Repeat
-      Index+1
-      Select Asc(Mid(String, Start+Index, 1))
-        Case Asc("'")
-          Break
-      EndSelect
-    Until Start+Index > Len(String)
-    ProcedureReturn Index
-  EndProcedure
+  Protected Finish.i = Len(String)
+  Protected Depth.i
+  Protected Index.i
   
-  Procedure.i CountQuoted(String.s, Start.i)
-    Protected Depth.i
-    Protected Index.i
-    Repeat
-      Index+1
-      Select Asc(Mid(String, Start+Index, 1))
-        Case 34
-          Break
-      EndSelect
-    Until Start+Index > Len(String)
-    ProcedureReturn Index
-  EndProcedure
+  If PeekC(@String+Start*SizeOf(Character)) <> Asc(";")
+    ProcedureReturn 0
+  EndIf
   
-  Procedure.i CountHardbracketed(String.s, Start.i)
-    Protected Depth.i = 1
-    Protected Index.i
-    Repeat
-      Index+1
-      Select Asc(Mid(String, Start+Index, 1))
-        Case Asc("[")
-          Depth = Depth+1
-        Case Asc("]")
-          Depth = Depth-1
-      EndSelect
-    Until Depth = 0 Or Start+Index > Len(String)
-    ProcedureReturn Index
-  EndProcedure
+  Repeat
+    Index+1
+    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Case Asc(";")
+        Break
+    EndSelect
+  Until Start+Index > Finish
   
-  Procedure.i CountBracketed(String.s, Start.i)
-    Protected Depth.i = 1
-    Protected Index.i
-    Repeat
-      Index+1
-      Select Asc(Mid(String, Start+Index, 1))
-        Case Asc(";")
-          Index + CountCommented(String, Start+Index)
-        Case Asc("'")
-          Index + CountApostrophed(String, Start+Index)
-        Case 34
-          Index + CountQuoted(String, Start+Index)
-        Case Asc("[")
-          Index + CountHardbracketed(String, Start+Index)
-        Case Asc("(")
-          Depth = Depth+1
-        Case Asc(")")
-          Depth = Depth-1
-      EndSelect
-    Until Depth = 0 Or Start+Index > Len(String)
-    ProcedureReturn Index
-  EndProcedure
+  ProcedureReturn Index
+  
+EndProcedure
+
+Procedure.i CountApostrophed(String.s, Start.i)
+  
+  Protected Finish.i = Len(String)
+  Protected Depth.i
+  Protected Index.i
+  
+  If PeekC(@String+Start*SizeOf(Character)) <> Asc(";")
+    ProcedureReturn 0
+  EndIf
+  
+  Repeat
+    Index+1
+    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Case Asc("'")
+        Break
+    EndSelect
+  Until Start+Index > Finish
+  
+  ProcedureReturn Index
+  
+EndProcedure
+
+Procedure.i CountQuoted(String.s, Start.i)
+  
+  Protected Finish.i = Len(String)
+  Protected Depth.i
+  Protected Index.i
+  
+  If PeekC(@String+Start*SizeOf(Character)) <> 34
+    ProcedureReturn 0
+  EndIf
+  
+  Repeat
+    Index+1
+    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Case 34
+        Break
+    EndSelect
+  Until Start+Index > Finish
+  
+  ProcedureReturn Index
+  
+EndProcedure
+
+Procedure.i CountBracketed(String.s, Start.i)
+  
+  Protected Finish.i = Len(String)
+  Protected Depth.i = 1
+  Protected Index.i
+  
+  If PeekC(@String+Start*SizeOf(Character)) <> Asc("[")
+    ProcedureReturn 0
+  EndIf
+  
+  Repeat
+    Index+1
+    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Case Asc("[")
+        Depth = Depth+1
+      Case Asc("]")
+        Depth = Depth-1
+    EndSelect
+  Until Depth = 0 Or Start+Index > Finish
+  
+  ProcedureReturn Index
+  
+EndProcedure
+
+Procedure.i CountParenthesized(String.s, Start.i)
+  
+  Protected Finish.i = Len(String)
+  Protected Depth.i = 1
+  Protected Index.i
+  
+  If PeekC(@String+Start*SizeOf(Character)) <> Asc("(")
+    ProcedureReturn 0
+  EndIf
+  
+  Repeat
+    Index+1
+    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Case Asc(";")
+        Index + CountCommented(String, Start+Index)
+      Case Asc("'")
+        Index + CountApostrophed(String, Start+Index)
+      Case 34
+        Index + CountQuoted(String, Start+Index)
+      Case Asc("[")
+        Index + CountBracketed(String, Start+Index)
+      Case Asc("(")
+        Depth = Depth+1
+      Case Asc(")")
+        Depth = Depth-1
+    EndSelect
+  Until Depth = 0 Or Start+Index > Finish
+  
+  ProcedureReturn Index
+  
+EndProcedure
   
   
   Procedure.i nListPNBTonList(List nList.nList(), String.s)
-    Protected Start.i
-    Protected Index.i
-    Protected Depth.i
     
-    Start = 1
-    Index = 1
-    Depth = 0
+  Protected Start.i
+  Protected Finish.i = Len(String)
+  Protected Index.i
+  Protected Depth.i
+  
     
-    While Index <= Len(String)
-      Select Asc(Mid(String, Index, 1))
+    While Index < Finish
+      Select PeekC(@String+Index*SizeOf(Character))
         Case Asc(";") ;Block comments; will be ignored.
           Start = Index
           Index + CountCommented(String, Start)
@@ -1338,7 +1382,7 @@ Module PNB
           
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
-          nList()\s = Mid(String, Start+1, Index-Start-1)
+          nList()\s = PeekS(@String+Start*SizeOf(Character)+SizeOf(Character), Index-Start-1)
           
         Case 34 ;"Quoted expressions" are counted as strings, too.
           Start = Index
@@ -1346,22 +1390,22 @@ Module PNB
           
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
-          nList()\s = Mid(String, Start+1, Index-Start-1)
+          nList()\s = PeekS(@String+Start*SizeOf(Character)+SizeOf(Character), Index-Start-1)
           
         Case Asc("[") ;[Hard bracketed expressions] are an alternative to apostrophes and quotes.
-          Start = Index
-          Index + CountHardbracketed(String, Start)
-          
-          AddElement(nList())
-          nList()\Flags | #PNB_TYPE_STRING
-          nList()\s = Mid(String, Start+1, Index-Start-1)
-          
-        Case Asc("(") ;Find (bracketed expressions), pass them, get the return value, then evaluate again.
           Start = Index
           Index + CountBracketed(String, Start)
           
           AddElement(nList())
-          nListPNBtonList(nList()\nList(), Mid(String, Start+1, Index-Start-1))
+          nList()\Flags | #PNB_TYPE_STRING
+          nList()\s = PeekS(@String+Start*SizeOf(Character)+SizeOf(Character), Index-Start-1)
+          
+        Case Asc("(") ;Find (bracketed expressions), pass them, get the return value, then evaluate again.
+          Start = Index
+          Index + CountParenthesized(String, Start)
+          
+          AddElement(nList())
+          nListPNBtonList(nList()\nList(), PeekS(@String+Start*SizeOf(Character)+SizeOf(Character), Index-Start-1))
           nList()\Flags | #PNB_TYPE_LIST
           
         Case Asc(" "), 9, 13, 10 ;Ignore spaces, tabs, carriage returns (CR), and line feeds (LF).
@@ -1371,7 +1415,7 @@ Module PNB
           
           Repeat
             Index+1
-            Select Asc(Mid(String, Index, 1))
+            Select PeekC(@String+(Index*SizeOf(Character)))
               Case Asc(" ")
                 Break
               Case 9 ;tab
@@ -1385,14 +1429,14 @@ Module PNB
               Case Asc(";")
                 Break
             EndSelect
-          Until Index > Len(String)
+          Until Index > Finish
           
           AddElement(nList())
-          nList()\s = Mid(String, Start, Index-Start)
+          nList()\s = PeekS(@String+Start*SizeOf(Character), Index-Start)
           
-          Select Asc(nList()\s)
+          Select PeekC(@nList()\s)
             Case 48 To 57, 43, 45 ; Numbers, plus, minus, and decimal
-              Select Asc(nList()\s)
+              Select PeekC(@nList()\s)
                 Case 43, 45
                   If Len(nList()\s) = 1
                     If ListIndex(nList()) = 0
@@ -1414,7 +1458,7 @@ Module PNB
                   nList()\s = ""
                 EndIf
               Else
-                If Mid(nList()\s, 1, 2) = "0x"
+                If PeekS(@nList()\s, 2) = "0x"
                   If Len(nList()\s) < 11
                     nList()\l = Val("$"+Mid(nList()\s, 3))
                     nList()\Flags | #PNB_TYPE_INTEGER
@@ -1424,7 +1468,7 @@ Module PNB
                     nList()\Flags | #PNB_TYPE_EPIC
                     nList()\s = ""
                   EndIf
-                ElseIf Mid(nList()\s, 1, 2) = "0b"
+                ElseIf PeekS(@nList()\s, 2) = "0b"
                   If Len(nList()\s) < 35
                     nList()\l = Val("%"+Mid(nList()\s, 3))
                     nList()\Flags | #PNB_TYPE_INTEGER
@@ -2192,9 +2236,9 @@ Module PNB
                   AddElement(cList4())
                   cList4() = nList()
                   cList4()\Flags &~ #PNB_TYPE_COMMAND
-                    ForEach cList4()\nList()
-                      cList4()\nList()\Flags &~ #PNB_TYPE_COMMAND
-                    Next
+                  ForEach cList4()\nList()
+                    cList4()\nList()\Flags &~ #PNB_TYPE_COMMAND
+                  Next
                   DeleteElement(nList())
                 Else
                   ClearList(nList())
@@ -2410,27 +2454,32 @@ Module PNB
               While NextElement(nList())
                 If nList()\Flags & #PNB_TYPE_NAME
                   If nList()\s = "Do"
-                    DeleteElement(nList())
-                    If NextElement(nList())
-                      If nList()\Flags & #PNB_TYPE_LIST
-                        If ListSize(nList()\nList()) > RINT
-                          RINT = ListSize(nList()\nList())
-                        EndIf
-                        
-                        ForEach nList()\nList()
-                          If nList()\nList()\Flags & #PNB_TYPE_NAME
-                            nList()\nList()\Flags | #PNB_TYPE_COMMAND
+                    If ListIndex(nList()) = 0
+                      DeleteElement(nList())
+                      If NextElement(nList())
+                        If nList()\Flags & #PNB_TYPE_LIST
+                          If ListSize(nList()\nList()) > RINT
+                            RINT = ListSize(nList()\nList())
                           EndIf
-                        Next
-                        nList()\nList()\Flags | #PNB_TYPE_COMMAND
-                      Else
-                        nList()\Flags | #PNB_TYPE_COMMAND
-                        If RINT = 0
-                          RINT = 1
+                          
+                          ForEach nList()\nList()
+                            If nList()\nList()\Flags & #PNB_TYPE_NAME
+                              nList()\nList()\Flags | #PNB_TYPE_COMMAND
+                            EndIf
+                          Next
+                          nList()\nList()\Flags | #PNB_TYPE_COMMAND
+                        Else
+                          nList()\Flags | #PNB_TYPE_COMMAND
+                          If RINT = 0
+                            RINT = 1
+                          EndIf
                         EndIf
+                      Else
+                        Continue
                       EndIf
                     Else
-                      Continue
+                      RINT = 0
+                      Break
                     EndIf
                   ElseIf nList()\s = "With"
                     DeleteElement(nList())
@@ -2446,7 +2495,8 @@ Module PNB
                         EndIf
                       EndIf
                     Else
-                      Continue
+                      RINT = 0
+                      Break
                     EndIf
                   Else
                     If RINT = 0
@@ -2468,46 +2518,45 @@ Module PNB
                 EndIf
               Wend
               
-              For RCNT = 0 To RINT-1
-                AddElement(cList1())
-                If RBOL
-                  cList1()\Flags | #PNB_TYPE_LIST | #PNB_TYPE_COMMAND
-                EndIf
-                cList1()\Flags | #PNB_TYPE_LIST
-              Next
-              
-              
-              ;iterate over every list entry. use nul if list and other lists are larger.
-              ;use last known entry on non-list entries for whole expression.
-              
-              RCNT = 0
-              
-              For RCNT = 0 To RINT-1
-                ResetList(nList())
-                AddElement(cList1())
-                cList1()\Flags | #PNB_TYPE_LIST
-                
-                
-                ForEach nList()
-                  If nList()\Flags & #PNB_TYPE_LIST
-                    If RCNT < ListSize(nList()\nList())
-                      SelectElement(nList()\nList(), RCNT)
-                      AddElement(cList1()\nList())
-                      cList1()\nList() = nList()\nList()
-                    EndIf
-                  Else
-                    AddElement(cList1()\nList())
-                    cList1()\nList() = nList()
+              If RINT
+                For RCNT = 0 To RINT-1
+                  AddElement(cList1())
+                  If RBOL
+                    cList1()\Flags | #PNB_TYPE_LIST | #PNB_TYPE_COMMAND
                   EndIf
-                  If nList()\Flags & #PNB_TYPE_COMMAND
-                    cList1()\Flags | #PNB_TYPE_COMMAND
-                  EndIf
-                  
+                  cList1()\Flags | #PNB_TYPE_LIST
                 Next
-              Next
+                
+                ;iterate over every list entry. use nul if list and other lists are larger.
+                ;use last known entry on non-list entries for whole expression.
+                
+                
+                For RCNT = 0 To RINT-1
+                  ResetList(nList())
+                  AddElement(cList1())
+                  cList1()\Flags | #PNB_TYPE_LIST
+                  
+                  ForEach nList()
+                    If nList()\Flags & #PNB_TYPE_LIST
+                      If RCNT < ListSize(nList()\nList())
+                        SelectElement(nList()\nList(), RCNT)
+                        AddElement(cList1()\nList())
+                        cList1()\nList() = nList()\nList()
+                      EndIf
+                    Else
+                      AddElement(cList1()\nList())
+                      cList1()\nList() = nList()
+                    EndIf
+                    If nList()\Flags & #PNB_TYPE_COMMAND
+                      cList1()\Flags | #PNB_TYPE_COMMAND
+                    EndIf
+                    
+                  Next
+                Next
+              EndIf
+              
               ClearList(nList())
               MergeLists(cList1(), nList(), #PB_List_After)
-              
               
           EndSelect
         EndIf
@@ -2563,29 +2612,29 @@ Module PNB
             PNB_Dbg(nList())
             
             ;-#Functions
-             ;---Functions
-            Case "Functions"
-              ClearList(nList())
-              ForEach Lexicon()
-                AddElement(nList())
-                nList()\s = MapKey(Lexicon())
-                nList()\Flags | #PNB_TYPE_NAME
-              Next
-              
-              ;---Unfunction
-            Case "Unfunction"
-              ForEach nList()
-                If nList()\Flags & #PNB_TYPE_NAME
-                  If FindMapElement(Lexicon(), nList()\s)
-                    DeleteMapElement(Lexicon())
-                    DeleteMapElement(Param())
-                    DeleteMapElement(ParamDefault())
-                  EndIf
+            ;---Functions
+          Case "Functions"
+            ClearList(nList())
+            ForEach Lexicon()
+              AddElement(nList())
+              nList()\s = MapKey(Lexicon())
+              nList()\Flags | #PNB_TYPE_NAME
+            Next
+            
+            ;---Unfunction
+          Case "Unfunction"
+            ForEach nList()
+              If nList()\Flags & #PNB_TYPE_NAME
+                If FindMapElement(Lexicon(), nList()\s)
+                  DeleteMapElement(Lexicon())
+                  DeleteMapElement(Param())
+                  DeleteMapElement(ParamDefault())
                 EndIf
-                DeleteElement(nList())
-              Next
-              
-              
+              EndIf
+              DeleteElement(nList())
+            Next
+            
+            
             ;-#List Manipulation
             ;---Fork
             ;Case "Fork" is already implemented in a different format in the preprocessing stage.
@@ -2777,7 +2826,7 @@ Module PNB
           Case "Variables"
             DeleteElement(nList())
             PNB_Variables(nList())
-
+            
             ;---Set
           Case "Set"
             DeleteElement(nList())
