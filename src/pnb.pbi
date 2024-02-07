@@ -1239,136 +1239,136 @@ Module PNB
     
   EndProcedure
   
-Procedure.i CountCommented(String.s, Start.i)
+  Procedure.i CountCommented(String.s, Start.i)
+    
+    Protected Finish.i = Len(String)
+    Protected Depth.i
+    Protected Index.i
+    
+    If PeekC(@String+Start*SizeOf(Character)) <> Asc(";")
+      ProcedureReturn 0
+    EndIf
+    
+    Repeat
+      Index+1
+      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+        Case Asc(";")
+          Break
+      EndSelect
+    Until Start+Index > Finish
+    
+    ProcedureReturn Index
+    
+  EndProcedure
   
-  Protected Finish.i = Len(String)
-  Protected Depth.i
-  Protected Index.i
+  Procedure.i CountApostrophed(String.s, Start.i)
+    
+    Protected Finish.i = Len(String)
+    Protected Depth.i
+    Protected Index.i
+    
+    If PeekC(@String+Start*SizeOf(Character)) <> Asc(";")
+      ProcedureReturn 0
+    EndIf
+    
+    Repeat
+      Index+1
+      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+        Case Asc("'")
+          Break
+      EndSelect
+    Until Start+Index > Finish
+    
+    ProcedureReturn Index
+    
+  EndProcedure
   
-  If PeekC(@String+Start*SizeOf(Character)) <> Asc(";")
-    ProcedureReturn 0
-  EndIf
+  Procedure.i CountQuoted(String.s, Start.i)
+    
+    Protected Finish.i = Len(String)
+    Protected Depth.i
+    Protected Index.i
+    
+    If PeekC(@String+Start*SizeOf(Character)) <> 34
+      ProcedureReturn 0
+    EndIf
+    
+    Repeat
+      Index+1
+      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+        Case 34
+          Break
+      EndSelect
+    Until Start+Index > Finish
+    
+    ProcedureReturn Index
+    
+  EndProcedure
   
-  Repeat
-    Index+1
-    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
-      Case Asc(";")
-        Break
-    EndSelect
-  Until Start+Index > Finish
+  Procedure.i CountBracketed(String.s, Start.i)
+    
+    Protected Finish.i = Len(String)
+    Protected Depth.i = 1
+    Protected Index.i
+    
+    If PeekC(@String+Start*SizeOf(Character)) <> Asc("[")
+      ProcedureReturn 0
+    EndIf
+    
+    Repeat
+      Index+1
+      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+        Case Asc("[")
+          Depth = Depth+1
+        Case Asc("]")
+          Depth = Depth-1
+      EndSelect
+    Until Depth = 0 Or Start+Index > Finish
+    
+    ProcedureReturn Index
+    
+  EndProcedure
   
-  ProcedureReturn Index
-  
-EndProcedure
-
-Procedure.i CountApostrophed(String.s, Start.i)
-  
-  Protected Finish.i = Len(String)
-  Protected Depth.i
-  Protected Index.i
-  
-  If PeekC(@String+Start*SizeOf(Character)) <> Asc(";")
-    ProcedureReturn 0
-  EndIf
-  
-  Repeat
-    Index+1
-    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
-      Case Asc("'")
-        Break
-    EndSelect
-  Until Start+Index > Finish
-  
-  ProcedureReturn Index
-  
-EndProcedure
-
-Procedure.i CountQuoted(String.s, Start.i)
-  
-  Protected Finish.i = Len(String)
-  Protected Depth.i
-  Protected Index.i
-  
-  If PeekC(@String+Start*SizeOf(Character)) <> 34
-    ProcedureReturn 0
-  EndIf
-  
-  Repeat
-    Index+1
-    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
-      Case 34
-        Break
-    EndSelect
-  Until Start+Index > Finish
-  
-  ProcedureReturn Index
-  
-EndProcedure
-
-Procedure.i CountBracketed(String.s, Start.i)
-  
-  Protected Finish.i = Len(String)
-  Protected Depth.i = 1
-  Protected Index.i
-  
-  If PeekC(@String+Start*SizeOf(Character)) <> Asc("[")
-    ProcedureReturn 0
-  EndIf
-  
-  Repeat
-    Index+1
-    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
-      Case Asc("[")
-        Depth = Depth+1
-      Case Asc("]")
-        Depth = Depth-1
-    EndSelect
-  Until Depth = 0 Or Start+Index > Finish
-  
-  ProcedureReturn Index
-  
-EndProcedure
-
-Procedure.i CountParenthesized(String.s, Start.i)
-  
-  Protected Finish.i = Len(String)
-  Protected Depth.i = 1
-  Protected Index.i
-  
-  If PeekC(@String+Start*SizeOf(Character)) <> Asc("(")
-    ProcedureReturn 0
-  EndIf
-  
-  Repeat
-    Index+1
-    Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
-      Case Asc(";")
-        Index + CountCommented(String, Start+Index)
-      Case Asc("'")
-        Index + CountApostrophed(String, Start+Index)
-      Case 34
-        Index + CountQuoted(String, Start+Index)
-      Case Asc("[")
-        Index + CountBracketed(String, Start+Index)
-      Case Asc("(")
-        Depth = Depth+1
-      Case Asc(")")
-        Depth = Depth-1
-    EndSelect
-  Until Depth = 0 Or Start+Index > Finish
-  
-  ProcedureReturn Index
-  
-EndProcedure
+  Procedure.i CountParenthesized(String.s, Start.i)
+    
+    Protected Finish.i = Len(String)
+    Protected Depth.i = 1
+    Protected Index.i
+    
+    If PeekC(@String+Start*SizeOf(Character)) <> Asc("(")
+      ProcedureReturn 0
+    EndIf
+    
+    Repeat
+      Index+1
+      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+        Case Asc(";")
+          Index + CountCommented(String, Start+Index)
+        Case Asc("'")
+          Index + CountApostrophed(String, Start+Index)
+        Case 34
+          Index + CountQuoted(String, Start+Index)
+        Case Asc("[")
+          Index + CountBracketed(String, Start+Index)
+        Case Asc("(")
+          Depth = Depth+1
+        Case Asc(")")
+          Depth = Depth-1
+      EndSelect
+    Until Depth = 0 Or Start+Index > Finish
+    
+    ProcedureReturn Index
+    
+  EndProcedure
   
   
   Procedure.i nListPNBTonList(List nList.nList(), String.s)
     
-  Protected Start.i
-  Protected Finish.i = Len(String)
-  Protected Index.i
-  Protected Depth.i
-  
+    Protected Start.i
+    Protected Finish.i = Len(String)
+    Protected Index.i
+    Protected Depth.i
+    
     
     While Index < Finish
       Select PeekC(@String+Index*SizeOf(Character))
@@ -2627,8 +2627,12 @@ EndProcedure
               If nList()\Flags & #PNB_TYPE_NAME
                 If FindMapElement(Lexicon(), nList()\s)
                   DeleteMapElement(Lexicon())
-                  DeleteMapElement(Param())
-                  DeleteMapElement(ParamDefault())
+                  If FindMapElement(Param(), nList()\s)
+                    DeleteMapElement(Param())
+                    If FindMapElement(ParamDefault(), nList()\s)
+                      DeleteMapElement(ParamDefault())
+                    EndIf
+                  EndIf
                 EndIf
               EndIf
               DeleteElement(nList())
