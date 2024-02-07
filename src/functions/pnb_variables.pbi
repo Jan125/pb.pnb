@@ -1,10 +1,19 @@
 ﻿Procedure PNB_Variables(List nList.nList())
   ClearList(nList())
+  
+  CompilerIf #PB_Compiler_Thread = 1
+    LockMutex(MutexVarMap)
+  CompilerEndIf
+  
   ForEach Memory()
     AddElement(nList())
     nList()\s = MapKey(Memory())
     nList()\Flags | #PNB_TYPE_NAME
   Next
+  
+  CompilerIf #PB_Compiler_Thread = 1
+    UnlockMutex(MutexVarMap)
+  CompilerEndIf
   
 EndProcedure
 

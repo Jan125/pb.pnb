@@ -2625,6 +2625,9 @@ Module PNB
           Case "Unfunction"
             ForEach nList()
               If nList()\Flags & #PNB_TYPE_NAME
+                CompilerIf #PB_Compiler_Thread = 1
+                  LockMutex(MutexFunMap)
+                CompilerEndIf
                 If FindMapElement(Lexicon(), nList()\s)
                   DeleteMapElement(Lexicon())
                   If FindMapElement(Param(), nList()\s)
@@ -2634,6 +2637,9 @@ Module PNB
                     EndIf
                   EndIf
                 EndIf
+                CompilerIf #PB_Compiler_Thread = 1
+                  UnlockMutex(MutexFunMap)
+                CompilerEndIf
               EndIf
               DeleteElement(nList())
             Next
@@ -3153,7 +3159,7 @@ Module PNB
             ;-#Function evaluation
           Default
             CompilerIf #PB_Compiler_Thread = 1
-              LockMutex(MutexVarMap)
+              LockMutex(MutexFunMap)
             CompilerEndIf
             If FindMapElement(Lexicon(), CAR)
               DeleteElement(nList())
@@ -3183,14 +3189,14 @@ Module PNB
                       EndIf
                     Next
                     CompilerIf #PB_Compiler_Thread = 1
-                      UnlockMutex(MutexVarMap)
+                      UnlockMutex(MutexFunMap)
                     CompilerEndIf
                     ClearList(nList())
                     nListEval(cList1()\nList())
                     MergeLists(cList1()\nList(), nList(), #PB_List_After)
                   Else
                     CompilerIf #PB_Compiler_Thread = 1
-                      UnlockMutex(MutexVarMap)
+                      UnlockMutex(MutexFunMap)
                     CompilerEndIf
                     ClearList(nList())
                   EndIf
@@ -3204,14 +3210,14 @@ Module PNB
                       DeleteElement(nList())
                     Next
                     CompilerIf #PB_Compiler_Thread = 1
-                      UnlockMutex(MutexVarMap)
+                      UnlockMutex(MutexFunMap)
                     CompilerEndIf
                     ClearList(nList())
                     nListEval(cList1()\nList())
                     MergeLists(cList1()\nList(), nList(), #PB_List_After)
                   Else
                     CompilerIf #PB_Compiler_Thread = 1
-                      UnlockMutex(MutexVarMap)
+                      UnlockMutex(MutexFunMap)
                     CompilerEndIf
                     ClearList(nList())
                   EndIf
@@ -3220,7 +3226,7 @@ Module PNB
                 AddElement(cList1())
                 cList1() = Lexicon()  
                 CompilerIf #PB_Compiler_Thread = 1
-                  UnlockMutex(MutexVarMap)
+                  UnlockMutex(MutexFunMap)
                 CompilerEndIf
                 ClearList(nList())
                 nListEval(cList1()\nList())
@@ -3228,7 +3234,7 @@ Module PNB
               EndIf
             Else
               CompilerIf #PB_Compiler_Thread = 1
-                UnlockMutex(MutexVarMap)
+                UnlockMutex(MutexFunMap)
               CompilerEndIf
             EndIf
         EndSelect
