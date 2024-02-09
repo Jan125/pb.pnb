@@ -1,24 +1,5 @@
 ﻿EnableExplicit
 DeclareModule PNB
-  CompilerIf #PB_Compiler_Thread = 1
-    Global MutexFunMap.i
-    Global MutexVarMap.i
-    Global MutexMemMap.i
-  CompilerEndIf
-  Global NewMap *PLIST()
-  Declare.s nListEvalString(String.s)
-  Declare.i nListEnableBinary(Toggle.i)
-EndDeclareModule
-Module PNB
-  CompilerIf #PB_Compiler_LineNumbering
-    Procedure ErrorHandler()
-      MessageRequester("Error", ErrorMessage(ErrorCode())+#CRLF$+"File: "+ErrorFile()+#CRLF$+"Line: "+ErrorLine())
-    EndProcedure
-    
-    OnErrorCall(@ErrorHandler())
-    
-  CompilerEndIf
-  
   
   Structure Pointer
     *p
@@ -46,6 +27,31 @@ Module PNB
   Structure nListThread
     List nList.nList()
   EndStructure
+  
+  
+  CompilerIf #PB_Compiler_Thread = 1
+    Global MutexFunMap.i
+    Global MutexVarMap.i
+    Global MutexMemMap.i
+  CompilerEndIf
+  
+  
+  Global NewMap *PLIST()
+  Declare.s nListEvalString(String.s)
+  Declare.i nListEnableBinary(Toggle.i)
+  
+EndDeclareModule
+
+
+Module PNB
+  CompilerIf #PB_Compiler_LineNumbering
+    Procedure ErrorHandler()
+      MessageRequester("Error", ErrorMessage(ErrorCode())+#CRLF$+"File: "+ErrorFile()+#CRLF$+"Line: "+ErrorLine())
+    EndProcedure
+    
+    OnErrorCall(@ErrorHandler())
+    
+  CompilerEndIf
   
   Declare.i nListEval(List nList.nList())
   
@@ -2611,15 +2617,22 @@ Module PNB
             DeleteElement(nList())
             PNB_Dbg(nList())
             
+            
             ;-#Functions
             ;---Functions
           Case "Functions"
             ClearList(nList())
+            CompilerIf #PB_Compiler_Thread = 1
+              LockMutex(MutexFunMap)
+            CompilerEndIf
             ForEach Lexicon()
               AddElement(nList())
               nList()\s = MapKey(Lexicon())
               nList()\Flags | #PNB_TYPE_NAME
             Next
+            CompilerIf #PB_Compiler_Thread = 1
+              UnlockMutex(MutexFunMap)
+            CompilerEndIf
             
             ;---Unfunction
           Case "Unfunction"
