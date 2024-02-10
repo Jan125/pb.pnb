@@ -8,7 +8,7 @@
   <section name="data">
     <explorer view="C:\ProgramData\PureBasic\Examples\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2024-02-07 17:09" user="Dino" host="HUSKLET"/>
+    <lastopen date="2024-02-10 14:22" user="Dino" host="HUSKLET"/>
   </section>
   <section name="files">
     <file name="dll.pb">
@@ -49,7 +49,7 @@
     </file>
     <file name="pnb.pbi">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="a2db527c45181c9b923b9eaddd91bad9"/>
+      <fingerprint md5="f7d9906dbdcfe2f4d258b8e51e237d1f"/>
     </file>
     <file name="test.pb">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
@@ -63,8 +63,8 @@
       <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
       <directory value="..\"/>
       <options unicode="1" thread="1"/>
-      <format exe="console" cpu="0"/>
-      <compilecount enable="1" value="840"/>
+      <format exe="console" cpu="1"/>
+      <compilecount enable="1" value="848"/>
     </target>
     <target name="DLLw86" enabled="1" default="0">
       <inputfile value="dll.pb"/>
@@ -73,8 +73,8 @@
       <executable value="..\pnb.dll"/>
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
-      <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1204"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="1205"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -99,8 +99,8 @@
       <executable value="..\pnba.dll"/>
       <directory value="..\..\"/>
       <options thread="1" debug="1"/>
-      <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1204"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="1205"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -125,8 +125,8 @@
       <executable value="..\pnb64.dll"/>
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
-      <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1204"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="1205"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -151,8 +151,8 @@
       <executable value="..\pnba64.dll"/>
       <directory value="..\..\"/>
       <options thread="1" debug="1"/>
-      <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1204"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="1205"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -177,8 +177,8 @@
       <executable value="..\pnb_dbg.dll"/>
       <directory value="..\..\"/>
       <options unicode="1" thread="1" onerror="1" debug="1"/>
-      <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1204"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="1205"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -204,8 +204,8 @@
       <executable value="..\pnba_dbg.dll"/>
       <directory value="..\..\"/>
       <options thread="1" onerror="1" debug="1"/>
-      <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1204"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="1205"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -231,8 +231,8 @@
       <executable value="..\pnb64_dbg.dll"/>
       <directory value="..\..\"/>
       <options unicode="1" thread="1" onerror="1" debug="1"/>
-      <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1204"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="1205"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -258,8 +258,8 @@
       <executable value="..\pnba64_dbg.dll"/>
       <directory value="..\..\"/>
       <options thread="1" onerror="1" debug="1"/>
-      <format exe="dll" cpu="0"/>
-      <buildcount enable="1" value="1204"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="1205"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>

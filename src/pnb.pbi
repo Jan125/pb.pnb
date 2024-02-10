@@ -622,10 +622,10 @@ Module PNB
                 nList()\p = 0
                 nlist()\Flags = #PNB_TYPE_STRING
               Case #PNB_TYPE_DOUBLE
-                nList()\d = nList()\p
+                nList()\d = PeekI(@nList()\p)
                 nlist()\Flags = #PNB_TYPE_DOUBLE
               Case #PNB_TYPE_FLOAT
-                nList()\f = nList()\p
+                nList()\f = PeekI(@nList()\p)
                 nlist()\Flags = #PNB_TYPE_FLOAT
               Case #PNB_TYPE_EPIC
                 nList()\q = nList()\p
