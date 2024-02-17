@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://www.purebasic.com/namespace" version="1.0" creator="PureBasic 5.46 LTS (Windows - x86)">
+  <section name="config">
+    <options closefiles="1" openmode="1" name="Prefix Notation Basic"/>
+    <comment>A LISP/BASIC hybrid language.</comment>
+  </section>
+  <section name="data">
+    <explorer view="" pattern="0"/>
+    <log show="1"/>
+    <lastopen date="2024-02-17 13:14" user="Dino" host="HUSKLET"/>
+  </section>
+  <section name="files">
+    <file name="__dll.pb">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="da94f4bf8e3673f97039b8724bf290e1"/>
+    </file>
+    <file name="__test.pb">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="926d6dceef57b48be66958de25ed2c10"/>
+    </file>
+    <file name="_main.pbi">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="d69cbc98dafcfa5421858889ec9b0171"/>
+    </file>
+    <file name="lexer.pbd">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="5edd1924ce75e71a0a24da701b0576f5"/>
+    </file>
+    <file name="lexer.pbh">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="599b0434a44e4cff7e71e318ccdd4943"/>
+    </file>
+    <file name="lexer.pbi">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="d33bbf2e311cbcbdca1a2d419d7f5c43"/>
+    </file>
+    <file name="pnb.pbd">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="451e18eaf37d0739df48f22ffdaaf558"/>
+    </file>
+    <file name="pnb.pbh">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="768885b388d40bdfc3eaa39b4e2b5cae"/>
+    </file>
+    <file name="pnb.pbi">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="7fe80518a0685eb44d110811df31ce13"/>
+    </file>
+    <file name="util.pbd">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="5edd1924ce75e71a0a24da701b0576f5"/>
+    </file>
+    <file name="util.pbh">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="516d6a88430d790ad5cf594c84bb3af2"/>
+    </file>
+    <file name="util.pbi">
+      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="f70a239b36603b090aebcf014b3708c5"/>
+    </file>
+  </section>
+  <section name="targets">
+    <target name="TEST" enabled="0" default="1">
+      <inputfile value="__test.pb"/>
+      <outputfile value=""/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
+      <directory value="..\"/>
+      <options unicode="1" thread="1" debug="1"/>
+      <format exe="console" cpu="1"/>
+      <compilecount enable="1" value="8"/>
+    </target>
+    <target name="DLLw86" enabled="1" default="0">
+      <inputfile value="__dll.pb"/>
+      <outputfile value="..\pnb.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
+      <executable value="..\pnb.dll"/>
+      <directory value="..\..\"/>
+      <options unicode="1" thread="1" debug="1"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="2002"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+      </versioninfo>
+    </target>
+    <target name="DLLa86" enabled="1" default="0">
+      <inputfile value="__dll.pb"/>
+      <outputfile value="..\pnba.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
+      <executable value="..\pnba.dll"/>
+      <directory value="..\..\"/>
+      <options thread="1" debug="1"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="2002"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+      </versioninfo>
+    </target>
+    <target name="DLLw64" enabled="1" default="0">
+      <inputfile value="__dll.pb"/>
+      <outputfile value="..\pnb64.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x64)"/>
+      <executable value="..\pnb64.dll"/>
+      <directory value="..\..\"/>
+      <options unicode="1" thread="1" debug="1"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="2002"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+      </versioninfo>
+    </target>
+    <target name="DLLa64" enabled="1" default="0">
+      <inputfile value="__dll.pb"/>
+      <outputfile value="..\pnba64.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x64)"/>
+      <executable value="..\pnba64.dll"/>
+      <directory value="..\..\"/>
+      <options thread="1" debug="1"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="2002"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+      </versioninfo>
+    </target>
+    <target name="DLLw86DBG" enabled="1" default="0">
+      <inputfile value="__dll.pb"/>
+      <outputfile value="..\pnb_dbg.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
+      <executable value="..\pnb_dbg.dll"/>
+      <directory value="..\..\"/>
+      <options unicode="1" thread="1" onerror="1" debug="1"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="2002"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
+        <field12 value="dbg"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+      </versioninfo>
+    </target>
+    <target name="DLLa86DBG" enabled="1" default="0">
+      <inputfile value="__dll.pb"/>
+      <outputfile value="..\pnba_dbg.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x86)"/>
+      <executable value="..\pnba_dbg.dll"/>
+      <directory value="..\..\"/>
+      <options thread="1" onerror="1" debug="1"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="2002"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
+        <field12 value="dbg"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+      </versioninfo>
+    </target>
+    <target name="DLLw64DBG" enabled="1" default="0">
+      <inputfile value="__dll.pb"/>
+      <outputfile value="..\pnb64_dbg.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x64)"/>
+      <executable value="..\pnb64_dbg.dll"/>
+      <directory value="..\..\"/>
+      <options unicode="1" thread="1" onerror="1" debug="1"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="2002"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
+        <field12 value="dbg"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+      </versioninfo>
+    </target>
+    <target name="DLLa64DBG" enabled="1" default="0">
+      <inputfile value="__dll.pb"/>
+      <outputfile value="..\pnba64_dbg.dll"/>
+      <compiler version="PureBasic 5.46 LTS (Windows - x64)"/>
+      <executable value="..\pnba64_dbg.dll"/>
+      <directory value="..\..\"/>
+      <options thread="1" onerror="1" debug="1"/>
+      <format exe="dll" cpu="1"/>
+      <buildcount enable="1" value="2002"/>
+      <versioninfo enable="1">
+        <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
+        <field2 value="Synkronas NeV"/>
+        <field3 value="Prefix Notation Basic"/>
+        <field4 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field5 value="%yyyy.%mm.%dd.%BUILDCOUNT"/>
+        <field6 value="Prefix Notation Basic Dynamic Library (ASCII)"/>
+        <field7 value="pnb"/>
+        <field8 value="%EXECUTABLE"/>
+        <field9 value="(CC-0) %yyyy"/>
+        <field12 value="dbg"/>
+        <field13 value="synkronas@outlook.com"/>
+        <field14 value="https://github.com/Jan125/pb.pnb"/>
+        <field15 value="VOS_NT"/>
+      </versioninfo>
+    </target>
+  </section>
+</project>
