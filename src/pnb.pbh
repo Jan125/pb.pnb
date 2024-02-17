@@ -1,0 +1,8 @@
+EnableExplicit
+
+Declare.i TypePriority(Flags.i)
+
+Declare.i EvalTriList(List Base.TriList())
+Declare.i EvalTriListFork(List Base.TriList())
+
+Declare.s EvalString(String.s)
