@@ -2,20 +2,20 @@
 
 DeclareModule PNB
   
-  IncludeFile "pnb.pbd"
-  IncludeFile "lexer.pbd"
-  IncludeFile "util.pbd"
+  IncludeFile "pnb.public.pbi"
+  IncludeFile "lexer.public.pbi"
+  IncludeFile "util.public.pbi"
   
 EndDeclareModule
 
 Module PNB
   
-  IncludeFile "pnb.pbh"
-  IncludeFile "lexer.pbh"
-  IncludeFile "util.pbh"
+  IncludeFile "pnb.internal.pbi"
+  IncludeFile "lexer.internal.pbi"
+  IncludeFile "util.internal.pbi"
   
-  IncludeFile "pnb.pbi"
-  IncludeFile "lexer.pbi"
-  IncludeFile "util.pbi"
+  IncludeFile "pnb.code.pbi"
+  IncludeFile "lexer.code.pbi"
+  IncludeFile "util.code.pbi"
   
 EndModule
