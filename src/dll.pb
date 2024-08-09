@@ -6,6 +6,8 @@ CompilerIf #PB_Compiler_ExecutableFormat = #PB_Compiler_DLL And #PB_Compiler_Thr
     PNB::MutexVarMap = CreateMutex()
     PNB::MutexMemMap = CreateMutex()
     
+    DisableThreadLibraryCalls_(Instance)
+    
   EndProcedure
   
   ProcedureDLL DetachProcess(Instance)
