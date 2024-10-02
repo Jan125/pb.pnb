@@ -8,7 +8,7 @@
   <section name="data">
     <explorer view="C:\ProgramData\PureBasic\Examples\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2024-08-09 15:15" user="Dino" host="HUSKLET"/>
+    <lastopen date="2024-10-02 21:06" user="dino" host="DESKTOP-C5DN0BR"/>
   </section>
   <section name="files">
     <file name="dll.pb">
@@ -49,11 +49,11 @@
     </file>
     <file name="pnb.pbi">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="f7d9906dbdcfe2f4d258b8e51e237d1f"/>
+      <fingerprint md5="89e300148ac6cb40cb0b8a73882a9218"/>
     </file>
     <file name="test.pb">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="2363a86084f8109dd2c5275855d8c237"/>
+      <fingerprint md5="2285559563cf0ecb04b07c10ed9dfe3c"/>
     </file>
   </section>
   <section name="targets">
@@ -64,7 +64,7 @@
       <directory value="..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="console" cpu="1"/>
-      <compilecount enable="1" value="851"/>
+      <compilecount enable="1" value="853"/>
     </target>
     <target name="DLLw86" enabled="1" default="0">
       <inputfile value="dll.pb"/>
@@ -74,7 +74,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1208"/>
+      <buildcount enable="1" value="1210"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -100,7 +100,7 @@
       <directory value="..\..\"/>
       <options thread="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1208"/>
+      <buildcount enable="1" value="1210"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -126,7 +126,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1208"/>
+      <buildcount enable="1" value="1210"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -152,7 +152,7 @@
       <directory value="..\..\"/>
       <options thread="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1208"/>
+      <buildcount enable="1" value="1210"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -178,7 +178,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1208"/>
+      <buildcount enable="1" value="1210"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -205,7 +205,7 @@
       <directory value="..\..\"/>
       <options thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1208"/>
+      <buildcount enable="1" value="1210"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -232,7 +232,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1208"/>
+      <buildcount enable="1" value="1210"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -259,7 +259,7 @@
       <directory value="..\..\"/>
       <options thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1208"/>
+      <buildcount enable="1" value="1210"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>

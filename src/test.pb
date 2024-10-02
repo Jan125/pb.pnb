@@ -28,6 +28,10 @@ UnitTest("Parameter return with nested lists",
          "(First (Second Third) (Fourth (Fifth)))",
          "First Second Third Fourth Fifth")
 
+UnitTest("Parameter return with missing spaces",
+         "(First(Second Third)(Fourth (Fifth)))",
+         "First Second Third Fourth Fifth")
+
 UnitTest("Parameter return with unicode string",
          "([Σιγμα!])",
          "[Σιγμα!]")

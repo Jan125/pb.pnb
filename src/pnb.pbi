@@ -60,11 +60,11 @@ Module PNB
   Declare.i nListEvalThreadFork(*nList.nListThread)
   Declare.i nListEnableBinary(Toggle.i)
   
-  Declare.i CountCommented(String.s, Index.i)
-  Declare.i CountApostrophed(String.s, Index.i)
-  Declare.i CountQuoted(String.s, Index.i)
-  Declare.i CountBracketed(String.s, Index.i)
-  Declare.i CountParenthesized(String.s, Index.i)
+  Declare.i CountCommented(*StringPtr, Start.i, Finish.i)
+  Declare.i CountApostrophed(*StringPtr, Start.i, Finish.i)
+  Declare.i CountQuoted(*StringPtr, Start.i, Finish.i)
+  Declare.i CountBracketed(*StringPtr, Start.i, Finish.i)
+  Declare.i CountParenthesized(*StringPtr, Start.i, Finish.i)
   
   Global EnableBinary.i
   
@@ -1245,19 +1245,17 @@ Module PNB
     
   EndProcedure
   
-  Procedure.i CountCommented(String.s, Start.i)
+  Procedure.i CountCommented(*StringPtr, Start.i, Finish.i)
     
-    Protected Finish.i = Len(String)
-    Protected Depth.i
     Protected Index.i
     
-    If PeekC(@String+Start*SizeOf(Character)) <> Asc(";")
+    If PeekC(*StringPtr+Start*SizeOf(Character)) <> Asc(";")
       ProcedureReturn 0
     EndIf
     
     Repeat
       Index+1
-      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Select PeekC(*StringPtr+Start*SizeOf(Character)+Index*SizeOf(Character))
         Case Asc(";")
           Break
       EndSelect
@@ -1267,19 +1265,17 @@ Module PNB
     
   EndProcedure
   
-  Procedure.i CountApostrophed(String.s, Start.i)
+  Procedure.i CountApostrophed(*StringPtr, Start.i, Finish.i)
     
-    Protected Finish.i = Len(String)
-    Protected Depth.i
     Protected Index.i
     
-    If PeekC(@String+Start*SizeOf(Character)) <> Asc(";")
+    If PeekC(*StringPtr+Start*SizeOf(Character)) <> Asc(";")
       ProcedureReturn 0
     EndIf
     
     Repeat
       Index+1
-      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Select PeekC(*StringPtr+Start*SizeOf(Character)+Index*SizeOf(Character))
         Case Asc("'")
           Break
       EndSelect
@@ -1289,19 +1285,17 @@ Module PNB
     
   EndProcedure
   
-  Procedure.i CountQuoted(String.s, Start.i)
+  Procedure.i CountQuoted(*StringPtr, Start.i, Finish.i)
     
-    Protected Finish.i = Len(String)
-    Protected Depth.i
     Protected Index.i
     
-    If PeekC(@String+Start*SizeOf(Character)) <> 34
+    If PeekC(*StringPtr+Start*SizeOf(Character)) <> 34
       ProcedureReturn 0
     EndIf
     
     Repeat
       Index+1
-      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Select PeekC(*StringPtr+Start*SizeOf(Character)+Index*SizeOf(Character))
         Case 34
           Break
       EndSelect
@@ -1311,19 +1305,18 @@ Module PNB
     
   EndProcedure
   
-  Procedure.i CountBracketed(String.s, Start.i)
+  Procedure.i CountBracketed(*StringPtr, Start.i, Finish.i)
     
-    Protected Finish.i = Len(String)
     Protected Depth.i = 1
     Protected Index.i
     
-    If PeekC(@String+Start*SizeOf(Character)) <> Asc("[")
+    If PeekC(*StringPtr+Start*SizeOf(Character)) <> Asc("[")
       ProcedureReturn 0
     EndIf
     
     Repeat
       Index+1
-      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Select PeekC(*StringPtr+Start*SizeOf(Character)+Index*SizeOf(Character))
         Case Asc("[")
           Depth = Depth+1
         Case Asc("]")
@@ -1335,27 +1328,26 @@ Module PNB
     
   EndProcedure
   
-  Procedure.i CountParenthesized(String.s, Start.i)
+  Procedure.i CountParenthesized(*StringPtr, Start.i, Finish.i)
     
-    Protected Finish.i = Len(String)
     Protected Depth.i = 1
     Protected Index.i
     
-    If PeekC(@String+Start*SizeOf(Character)) <> Asc("(")
+    If PeekC(*StringPtr+Start*SizeOf(Character)) <> Asc("(")
       ProcedureReturn 0
     EndIf
     
     Repeat
       Index+1
-      Select PeekC(@String+Start*SizeOf(Character)+Index*SizeOf(Character))
+      Select PeekC(*StringPtr+Start*SizeOf(Character)+Index*SizeOf(Character))
         Case Asc(";")
-          Index + CountCommented(String, Start+Index)
+          Index + CountCommented(*StringPtr, Start+Index, Finish)
         Case Asc("'")
-          Index + CountApostrophed(String, Start+Index)
+          Index + CountApostrophed(*StringPtr, Start+Index, Finish)
         Case 34
-          Index + CountQuoted(String, Start+Index)
+          Index + CountQuoted(*StringPtr, Start+Index, Finish)
         Case Asc("[")
-          Index + CountBracketed(String, Start+Index)
+          Index + CountBracketed(*StringPtr, Start+Index, Finish)
         Case Asc("(")
           Depth = Depth+1
         Case Asc(")")
@@ -1380,11 +1372,11 @@ Module PNB
       Select PeekC(@String+Index*SizeOf(Character))
         Case Asc(";") ;Block comments; will be ignored.
           Start = Index
-          Index + CountCommented(String, Start)
+          Index + CountCommented(@String, Start, Finish)
           
         Case Asc("'") ;'Apostrophed expressions' are counted as strings. Brackets will be ignored.
           Start = Index
-          Index + CountApostrophed(String, Start)
+          Index + CountApostrophed(@String, Start, Finish)
           
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
@@ -1392,7 +1384,7 @@ Module PNB
           
         Case 34 ;"Quoted expressions" are counted as strings, too.
           Start = Index
-          Index + CountQuoted(String, Start)
+          Index + CountQuoted(@String, Start, Finish)
           
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
@@ -1400,7 +1392,7 @@ Module PNB
           
         Case Asc("[") ;[Hard bracketed expressions] are an alternative to apostrophes and quotes.
           Start = Index
-          Index + CountBracketed(String, Start)
+          Index + CountBracketed(@String, Start, Finish)
           
           AddElement(nList())
           nList()\Flags | #PNB_TYPE_STRING
@@ -1408,7 +1400,7 @@ Module PNB
           
         Case Asc("(") ;Find (bracketed expressions), pass them, get the return value, then evaluate again.
           Start = Index
-          Index + CountParenthesized(String, Start)
+          Index + CountParenthesized(@String, Start, Finish)
           
           AddElement(nList())
           nListPNBtonList(nList()\nList(), PeekS(@String+Start*SizeOf(Character)+SizeOf(Character), Index-Start-1))
