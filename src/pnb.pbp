@@ -2,13 +2,13 @@
 
 <project xmlns="http://www.purebasic.com/namespace" version="1.0" creator="PureBasic 5.46 LTS (Windows - x86)">
   <section name="config">
-    <options closefiles="1" openmode="1" name="Prefix Notation Basic"/>
+    <options closefiles="1" openmode="2" name="Prefix Notation Basic"/>
     <comment>A LISP/BASIC hybrid language.</comment>
   </section>
   <section name="data">
     <explorer view="C:\ProgramData\PureBasic\Examples\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2024-10-02 21:06" user="dino" host="DESKTOP-C5DN0BR"/>
+    <lastopen date="2024-11-18 09:15" user="Dino" host="HUSKLET"/>
   </section>
   <section name="files">
     <file name="dll.pb">
@@ -20,36 +20,36 @@
       <fingerprint md5="8df00ce999790e25e8ac46b85e472e43"/>
     </file>
     <file name="functions\pnb_basic.pbi">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="++"/>
       <fingerprint md5="e9036d71774c4c95a2ed7bdcc03f08d7"/>
     </file>
     <file name="functions\pnb_dll.pbi">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="++"/>
       <fingerprint md5="0c9f212324ba998588d890c7b9e61e9e"/>
     </file>
     <file name="functions\pnb_listmanipulation.pbi">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="++"/>
       <fingerprint md5="d725738bcf641982d364fd439e5d3a19"/>
     </file>
     <file name="functions\pnb_logic.pbi">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="++"/>
       <fingerprint md5="de0383f1bc5d59d08549139d8b755511"/>
     </file>
     <file name="functions\pnb_memory.pbi">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="++"/>
       <fingerprint md5="60209f9e629a85ffd41f7f537c2be520"/>
     </file>
     <file name="functions\pnb_typemanipulation.pbi">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="++"/>
       <fingerprint md5="52d2e54d2ab499a3a9fc8bc24b2563d6"/>
     </file>
     <file name="functions\pnb_variables.pbi">
-      <config load="0" scan="1" panel="1" warn="1" lastopen="1" panelstate="++"/>
+      <config load="0" scan="1" panel="1" warn="1" lastopen="0" panelstate="++"/>
       <fingerprint md5="9c0929c0bf3f60e09719c2c0ab67e65c"/>
     </file>
     <file name="pnb.pbi">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
-      <fingerprint md5="89e300148ac6cb40cb0b8a73882a9218"/>
+      <fingerprint md5="b36e9e4fb12a92b842f5cad947d2f77a"/>
     </file>
     <file name="test.pb">
       <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
@@ -64,7 +64,7 @@
       <directory value="..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="console" cpu="1"/>
-      <compilecount enable="1" value="853"/>
+      <compilecount enable="1" value="863"/>
     </target>
     <target name="DLLw86" enabled="1" default="0">
       <inputfile value="dll.pb"/>
@@ -74,7 +74,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1210"/>
+      <buildcount enable="1" value="1217"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -100,7 +100,7 @@
       <directory value="..\..\"/>
       <options thread="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1210"/>
+      <buildcount enable="1" value="1217"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -126,7 +126,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1210"/>
+      <buildcount enable="1" value="1217"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -152,7 +152,7 @@
       <directory value="..\..\"/>
       <options thread="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1210"/>
+      <buildcount enable="1" value="1217"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -178,7 +178,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1210"/>
+      <buildcount enable="1" value="1217"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -205,7 +205,7 @@
       <directory value="..\..\"/>
       <options thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1210"/>
+      <buildcount enable="1" value="1217"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -232,7 +232,7 @@
       <directory value="..\..\"/>
       <options unicode="1" thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1210"/>
+      <buildcount enable="1" value="1217"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
@@ -259,7 +259,7 @@
       <directory value="..\..\"/>
       <options thread="1" onerror="1" debug="1"/>
       <format exe="dll" cpu="1"/>
-      <buildcount enable="1" value="1210"/>
+      <buildcount enable="1" value="1217"/>
       <versioninfo enable="1">
         <field0 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>
         <field1 value="%yyyy,%mm,%dd,%BUILDCOUNT"/>

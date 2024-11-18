@@ -12,14 +12,15 @@ Index:
 3.) Command Reference
     3.1 - Basic feature set
         3.1.1 - Basic
-        3.1.2 - Functions
-        3.1.3 - Variables
-        3.1.4 - List Manipulation
-        3.1.5 - Type Manipulation
-        3.1.6 - Arithmetic
-        3.1.7 - Logic
-        3.1.8 - Memory
-        3.1.9 - DLL
+        3.1.2 - Info
+        3.1.3 - Functions
+        3.1.4 - Variables
+        3.1.5 - List Manipulation
+        3.1.6 - Type Manipulation
+        3.1.7 - Arithmetic
+        3.1.8 - Logic
+        3.1.9 - Memory
+        3.1.A - DLL
         
 1.) Preamble
 PNB is supposed to be an easy to learn mix of a LISP like structure and BASIC commands.
@@ -242,7 +243,28 @@ Dbg, Debug
     This command discards every input if run outside of the debug environment.
     Otherwise, it returns each parameter in the debug window.
     
-3.1.2 - Functions
+    
+    3.1.2 - Info
+Returns information regarding PNB and its current context.
+
+Thread
+    Takes:      Nothing
+    Returns:    Integer
+    Returns the internal thread handle (not the NT handle!) of the current thread.
+    0 for the main thread.
+    
+Version
+    Takes:      Nothing
+    Returns:    Integer
+    Returns the current build count of PNB.
+    
+Platform
+    Takes:      Nothing
+    Returns:    Name0 = OS, Name1 = Processor Architecture, Name2 = Unicode
+    Returns platform information.
+    
+    
+3.1.3 - Functions
 Function information.
 
 Function
@@ -266,7 +288,7 @@ Functions
     Returns all currently defined functions.
     
     
-3.1.3 - Variables
+3.1.4 - Variables
 These commands enable variable declarations.
     
 Variables
@@ -344,15 +366,16 @@ Detect
     Copies parameters from end of variables and returns them.
     
     
-3.1.4 - List Manipulation
+3.1.5 - List Manipulation
 These commands manipulate the state of the list.
 
 Fork
     Takes:      List0, List1, ..., ListN
-    Returns:    Nothing
+    Returns:    Integer0, Integer1, ..., IntegerN
     All Lists are handled in their own thread.
     Return values are not handled.
     Execution of subsequent commands does not halt.
+    Returned values are internal thread IDs.
     
 Fetch
     Takes:      List0, List1, ..., ListN
@@ -360,6 +383,20 @@ Fetch
     All Lists are handled in their own thread.
     Return values are returned to their original position.
     Execution of subsequent commands is suspended until all Lists have been evaluated.
+    
+Expect
+    Takes:      Integer0, Integer1, ..., IntegerN
+    Returns:    Integer0, Integer1, ..., IntegerN
+    Takes internal thread pointers as input.
+    Returns thread state:
+        1 = Thread is finished
+        0 = Thread is running
+        
+Demand
+    Takes:      Integer0, Integer1, ..., IntegerN
+    Returns:    Nothing
+    Takes internal thread pointers as input.
+    Pauses execution until all threads have finished running.
     
 Command
     Takes:      Command, Parameter0, Parameter1, ..., ParameterN
@@ -403,7 +440,7 @@ Offset
     Returns total memory offset of all variables. Names return the length of their types instead.
     
     
-3.1.5 - Type Manipulation
+3.1.6 - Type Manipulation
 These commands convert between types.
     
 Split
@@ -440,7 +477,7 @@ Force<Type>
     
 
     
-3.1.6 - Arithmetic
+3.1.7 - Arithmetic
 Mathematics.
     
 Add, +
@@ -566,7 +603,7 @@ Ran, Random
     With two parameters, it is between both.
     
     
-3.1.7 - Logic
+3.1.8 - Logic
 Comparisons and stuff.
     
 Bool
@@ -664,7 +701,7 @@ bNot, b~
     This works with integers only.
     
     
-3.1.8 - Memory
+3.1.9 - Memory
 This is for memory management.
 By design, there are no error handlers for memory functions.
 You can edit memory addresses passed from outside, but no bounds check is done.
@@ -710,7 +747,7 @@ Peek
     If a Pointer is specified as read object, it will read the whole block size from the address. This only works for managed Pointer blocks.
     
     
-3.1.9 - DLL
+3.1.A - DLL
 This is for loading and calling DLLs.
 By design, there are no error handlers for DLL functions.
 Using these functions improperly can lead to crashes.

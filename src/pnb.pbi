@@ -25,6 +25,8 @@ DeclareModule PNB
   EndStructure
   
   Structure nListThread
+    Thread.i
+    *nListPTR.nList
     List nList.nList()
   EndStructure
   
@@ -53,7 +55,7 @@ Module PNB
     
   CompilerEndIf
   
-  Declare.i nListEval(List nList.nList())
+  Declare.i nListEval(List nList.nList(), Thread.i = 0)
   
   Declare.s nListEvalString(String.s)
   Declare.i nListEvalThread(*nList.nListThread)
@@ -1619,7 +1621,7 @@ Module PNB
   XIncludeFile "functions\pnb_memory.pbi"
   XIncludeFile "functions\pnb_dll.pbi"
   
-  Procedure.i nListEval(List nList.nList())
+  Procedure.i nListEval(List nList.nList(), Thread.i = 0)
     Protected CAR.s
     Protected a.i
     Protected b.i
@@ -1662,7 +1664,7 @@ Module PNB
                       If NextElement(nList())
                         ;We compare here.
                         If nList()\Flags & #PNB_TYPE_LIST
-                          nListEval(nList()\nList())
+                          nListEval(nList()\nList(), Thread)
                           MergeLists(nList()\nList(), cList1(), #PB_List_After)
                         Else
                           ClearList(nList())
@@ -1706,7 +1708,7 @@ Module PNB
                                 ClearList(cList1())
                                 If RBOL
                                   If nList()\Flags & #PNB_TYPE_LIST
-                                    nListEval(nList()\nList())
+                                    nListEval(nList()\nList(), Thread)
                                     MergeLists(nList()\nList(), nList(), #PB_List_Before)
                                     DeleteElement(nList())
                                   Else
@@ -1747,7 +1749,7 @@ Module PNB
                             DeleteElement(nList())
                             If NextElement(nList()) ;Expression
                               If nList()\Flags & #PNB_TYPE_LIST
-                                nListEval(nList()\nList())
+                                nListEval(nList()\nList(), Thread)
                                 MergeLists(nList()\nList(), nList(), #PB_List_Before)
                                 DeleteElement(nList())
                               Else
@@ -1784,7 +1786,7 @@ Module PNB
               DeleteElement(nList()) ;Free the Select
               If NextElement(nList())
                 If nList()\Flags & #PNB_TYPE_LIST
-                  nListEval(nList()\nList())
+                  nListEval(nList()\nList(), Thread)
                   MergeLists(nList()\nList(), cList1(), #PB_List_After)
                 Else
                   ClearList(nList())
@@ -1797,7 +1799,7 @@ Module PNB
                         DeleteElement(nList())
                         If NextElement(nList()) ;Expression
                           If nList()\Flags & #PNB_TYPE_LIST
-                            nListEval(nList()\nList())
+                            nListEval(nList()\nList(), Thread)
                             MergeLists(nList()\nList(), cList2(), #PB_List_After)
                           Else
                             ClearList(nList())
@@ -1812,7 +1814,7 @@ Module PNB
                                 If NextElement(nList())
                                   If nListCompare(cList1(), cList2())
                                     If nList()\Flags & #PNB_TYPE_LIST
-                                      nListEval(nList()\nList())
+                                      nListEval(nList()\nList(), Thread)
                                       MergeLists(nList()\nList(), nList(), #PB_List_Before)
                                       DeleteElement(nList())
                                     Else
@@ -1860,7 +1862,7 @@ Module PNB
                               DeleteElement(nList()) ;do
                               If NextElement(nList())
                                 If nList()\Flags & #PNB_TYPE_LIST
-                                  nListEval(nList()\nList())
+                                  nListEval(nList()\nList(), Thread)
                                   MergeLists(nList()\nList(), nList(), #PB_List_Before)
                                   DeleteElement(nList())
                                 Else
@@ -1917,7 +1919,7 @@ Module PNB
                               AddElement(cList3())
                               cList3() = cList1()
                               If cList3()\Flags & #PNB_TYPE_LIST
-                                nListEval(cList3()\nList())
+                                nListEval(cList3()\nList(), Thread)
                                 MergeLists(cList3()\nList(), cList3(), #PB_List_After)
                                 DeleteElement(cList3())
                               EndIf
@@ -1955,7 +1957,7 @@ Module PNB
                               cList4() = cList2()
                               If RBOL
                                 If cList4()\Flags & #PNB_TYPE_LIST
-                                  nListEval(cList4()\nList())
+                                  nListEval(cList4()\nList(), Thread)
                                   MergeLists(cList4()\nList(), nList(), #PB_List_Before)
                                 EndIf
                               Else
@@ -2014,11 +2016,11 @@ Module PNB
                             Repeat
                               AddElement(cList4())
                               cList4() = cList2()
-                              nListEval(cList4()\nList())
+                              nListEval(cList4()\nList(), Thread)
                               MergeLists(cList4()\nList(), nList(), #PB_List_Before)
                               AddElement(cList3())
                               cList3() = cList1()
-                              nListEval(cList3()\nList())
+                              nListEval(cList3()\nList(), Thread)
                               MergeLists(cList3()\nList(), cList3(), #PB_List_After)
                               DeleteElement(cList3())
                               RBOL = Bool(ListSize(cList3()))
@@ -2094,7 +2096,7 @@ Module PNB
               DeleteElement(nList()) ;Free the For
               If NextElement(nList());count
                 If nList()\Flags & #PNB_TYPE_LIST
-                  nListEval(nList()\nList())
+                  nListEval(nList()\nList(), Thread)
                   MergeLists(nList()\nList(), cList1(), #PB_List_After)
                   DeleteElement(nList())
                   RINT = 0
@@ -2136,7 +2138,7 @@ Module PNB
                               For RCNT = 1 To RINT
                                 AddElement(cList3())
                                 cList3() = cList2()
-                                nListEval(cList3()\nList())
+                                nListEval(cList3()\nList(), Thread)
                                 MergeLists(cList3()\nList(), nList(), #PB_List_After)
                                 ClearList(cList3())
                               Next
@@ -2397,12 +2399,16 @@ Module PNB
                 If nList()\Flags & #PNB_TYPE_LIST
                   *TPTR = AllocateStructure(nListThread)
                   CopyList(nList()\nList(), *TPTR\nList())
-                  CreateThread(@nListEvalThreadFork(), *TPTR)
+                  *TPTR\Thread = CreateThread(@nListEvalThreadFork(), *TPTR)
+                  AddElement(cList1())
+                  cList1()\i = *TPTR\Thread
+                  cList1()\Flags | #PNB_TYPE_INTEGER
                   DeleteElement(nList())
                 Else
                   DeleteElement(nList())
                 EndIf
               Next
+              MergeLists(cList1(), nList(), #PB_List_After)
               ProcedureReturn
               
               
@@ -2411,13 +2417,18 @@ Module PNB
               ForEach nList()
                 If nList()\Flags & #PNB_TYPE_LIST
                   AddElement(cList1())
-                  cList1()\p = CreateThread(@nListEvalThread(), @nList())
+                  *TPTR = AllocateStructure(nListThread)
+                  *TPTR\nListPTR = @nList()
+                  *TPTR\Thread = CreateThread(@nListEvalThread(), *TPTR)
+                  cList1()\p = *TPTR
                 Else
                   DeleteElement(nList())
                 EndIf
               Next
               ForEach cList1()
-                WaitThread(cList1()\p)
+                *TPTR = cList1()\p
+                WaitThread(*TPTR\Thread)
+                FreeStructure(*TPTR)
                 DeleteElement(cList1())
               Next
               ForEach nList()
@@ -2433,7 +2444,7 @@ Module PNB
               DeleteElement(nList())
               If NextElement(nList()) 
                 If nList()\Flags & #PNB_TYPE_LIST
-                  nListEval(nList()\nList())
+                  nListEval(nList()\nList(), Thread)
                   MergeLists(nList()\nList(), nList(), #PB_List_After)
                   DeleteElement(nList())
                   If NextElement(nList())
@@ -2502,7 +2513,7 @@ Module PNB
                     EndIf
                   EndIf
                 ElseIf nList()\Flags & #PNB_TYPE_LIST ;Evaluate all expressions so we do not get unforeseen consequences.
-                  nListEval(nList()\nList())
+                  nListEval(nList()\nList(), Thread)
                   If ListSize(nList()\nList()) > RINT
                     RINT = ListSize(nList()\nList())
                   EndIf
@@ -2566,7 +2577,7 @@ Module PNB
     ForEach nList()
       If nList()\Flags & #PNB_TYPE_LIST
         If ListSize(nList()\nList())
-          nListEval(nList()\nList())
+          nListEval(nList()\nList(), Thread)
           MergeLists(nList()\nList(), nList(), #PB_List_After)
           DeleteElement(nList())
         Else
@@ -2608,6 +2619,64 @@ Module PNB
           Case "Dbg", "Debug"
             DeleteElement(nList())
             PNB_Dbg(nList())
+            
+            
+            ;-#Info
+            ;---Thread
+          Case "Thread"
+            ClearList(nList())
+            AddElement(nList())
+            nList()\i = Thread
+            nList()\Flags | #PNB_TYPE_INTEGER
+            
+            ;---Version
+          Case "Version"
+            ClearList(nList())
+            AddElement(nList())
+            CompilerIf Defined(PB_Editor_BuildCount, #PB_Constant)
+              nList()\i = #PB_Editor_BuildCount
+            CompilerElse
+              nList()\i = 0
+            CompilerEndIf
+            nList()\Flags | #PNB_TYPE_INTEGER
+            
+            ;---Platform
+          Case "Platform"
+            ClearList(nList())
+            AddElement(nList())
+            CompilerSelect #PB_Compiler_OS
+              CompilerCase #PB_OS_Windows
+                nList()\s = "Windows"
+              CompilerCase #PB_OS_Linux
+                nList()\s = "Linux"
+              CompilerCase #PB_OS_MacOS
+                nList()\s = "Mac"
+              CompilerDefault
+                nList()\s = "Unknown"
+            CompilerEndSelect
+            nList()\Flags | #PNB_TYPE_NAME
+            
+            AddElement(nList())
+            CompilerSelect #PB_Compiler_Processor
+              CompilerCase #PB_Processor_x86
+                nList()\s = "x86"
+              CompilerCase #PB_Processor_x64
+                nList()\s = "x64"
+              CompilerDefault
+                nList()\s = "Unknown"
+            CompilerEndSelect
+            nList()\Flags | #PNB_TYPE_NAME
+            
+            AddElement(nList())
+            CompilerSelect #PB_Compiler_Unicode
+              CompilerCase 0
+                nList()\s = "ASCII"
+              CompilerCase 1
+                nList()\s = "UNICODE"
+              CompilerDefault
+                nList()\s = "Unknown"
+            CompilerEndSelect
+            nList()\Flags | #PNB_TYPE_NAME
             
             
             ;-#Functions
@@ -2656,6 +2725,31 @@ Module PNB
             
             ;---Fetch
             ;Case "Fetch" is already implemented in a different format in the preprocessing stage.
+            
+            ;---Expect
+          Case "Expect"
+            DeleteElement(nList())
+            
+            nListConvert(nList(), #PNB_TYPE_INTEGER)
+            
+            ForEach nList()
+              If WaitThread(nList()\i, 0)
+                nList()\i = 1
+              Else
+                nList()\i = 0
+              EndIf
+            Next
+            
+            ;---Demand
+          Case "Demand"
+            DeleteElement(nList())
+            
+            nListConvert(nList(), #PNB_TYPE_INTEGER)
+            
+            ForEach nList()
+              WaitThread(nList()\i)
+              DeleteElement(nList())
+            Next
             
             ;---Command
             ;Case "Command" is already implemented in a different format in the preprocessing stage.
@@ -3197,7 +3291,7 @@ Module PNB
                       UnlockMutex(MutexFunMap)
                     CompilerEndIf
                     ClearList(nList())
-                    nListEval(cList1()\nList())
+                    nListEval(cList1()\nList(), Thread)
                     MergeLists(cList1()\nList(), nList(), #PB_List_After)
                   Else
                     CompilerIf #PB_Compiler_Thread = 1
@@ -3218,7 +3312,7 @@ Module PNB
                       UnlockMutex(MutexFunMap)
                     CompilerEndIf
                     ClearList(nList())
-                    nListEval(cList1()\nList())
+                    nListEval(cList1()\nList(), Thread)
                     MergeLists(cList1()\nList(), nList(), #PB_List_After)
                   Else
                     CompilerIf #PB_Compiler_Thread = 1
@@ -3234,7 +3328,7 @@ Module PNB
                   UnlockMutex(MutexFunMap)
                 CompilerEndIf
                 ClearList(nList())
-                nListEval(cList1()\nList())
+                nListEval(cList1()\nList(), Thread)
                 MergeLists(cList1()\nList(), nList(), #PB_List_After)
               EndIf
             Else
@@ -3258,13 +3352,12 @@ Module PNB
   EndProcedure
   
   Procedure.i nListEvalThread(*nList.nListThread)
-    nListEval(*nList\nList())
+    nListEval(*nList\nListPTR\nList(), *nList\Thread)
   EndProcedure
   
   Procedure.i nListEvalThreadFork(*nList.nListThread)
-    nListEval(*nList\nList())
-    ClearStructure(*nList, nListThread)
-    FreeMemory(*nList)
+    nListEval(*nList\nList(), *nList\Thread)
+    FreeStructure(*nList)
   EndProcedure
   
 EndModule
