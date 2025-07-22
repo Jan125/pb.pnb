@@ -17,6 +17,41 @@
   
 EndProcedure
 
+Procedure PNB_Objects(List nList.nList())
+  Protected RSTR.s
+  Protected NewList cList1.nList()
+  
+  While NextElement(nList())
+    If nList()\Flags & #PNB_TYPE_NAME
+      RSTR = nList()\s
+      DeleteElement(nList())
+      
+      CompilerIf #PB_Compiler_Thread = 1
+        LockMutex(MutexVarMap)
+      CompilerEndIf
+      
+      ForEach Memory()
+        If FindString(MapKey(Memory()), RSTR) = 1
+          AddElement(cList1())
+          cList1()\s = MapKey(Memory())
+          cList1()\Flags | #PNB_TYPE_NAME
+        EndIf
+      Next
+      
+      CompilerIf #PB_Compiler_Thread = 1
+        UnlockMutex(MutexVarMap)
+      CompilerEndIf
+      
+    Else
+      ClearList(nList())
+      ClearList(cList1())
+    EndIf
+    
+  Wend
+  
+  MergeLists(cList1(), nList())
+EndProcedure
+
 Procedure PNB_Set(List nList.nList())
   Protected RSTR.s
   
@@ -24,23 +59,23 @@ Procedure PNB_Set(List nList.nList())
     If nList()\Flags & #PNB_TYPE_NAME
       RSTR = nList()\s
       DeleteElement(nList())
-        CompilerIf #PB_Compiler_Thread = 1
-          LockMutex(MutexVarMap)
-        CompilerEndIf
-        AddMapElement(Memory(), RSTR)
-        If ListSize(nList())
-          ForEach nList()
-            AddElement(Memory()\nList())
-            Memory()\nList() = nList()
-            DeleteElement(nList())
-          Next
-        Else
-          DeleteMapElement(Memory(), RSTR)
-          ClearList(nList())
-        EndIf
-        CompilerIf #PB_Compiler_Thread = 1
-          UnlockMutex(MutexVarMap)
-        CompilerEndIf
+      CompilerIf #PB_Compiler_Thread = 1
+        LockMutex(MutexVarMap)
+      CompilerEndIf
+      AddMapElement(Memory(), RSTR)
+      If ListSize(nList())
+        ForEach nList()
+          AddElement(Memory()\nList())
+          Memory()\nList() = nList()
+          DeleteElement(nList())
+        Next
+      Else
+        DeleteMapElement(Memory(), RSTR)
+        ClearList(nList())
+      EndIf
+      CompilerIf #PB_Compiler_Thread = 1
+        UnlockMutex(MutexVarMap)
+      CompilerEndIf
     Else
       ClearList(nList())
     EndIf

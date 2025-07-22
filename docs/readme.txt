@@ -296,6 +296,11 @@ Variables
     Returns:    Name0, Name1, ..., NameN
     Returns all currently defined variable names.
     
+Objects
+    Takes:      Name0, Name1, ..., NameN
+    Returns:    Name0, Name1, ..., NameN
+    Returns all currently defined variable names that begin with Name.
+    
 Set
     Takes:      Name, Parameter0, Parameter1, ..., ParameterN
     Returns:    Nothing

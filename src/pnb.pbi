@@ -2936,6 +2936,10 @@ Module PNB
             DeleteElement(nList())
             PNB_Variables(nList())
             
+          Case "Objects"
+            DeleteElement(nList())
+            PNB_Objects(nList())
+            
             ;---Set
           Case "Set"
             DeleteElement(nList())
